@@ -1,5 +1,5 @@
-import events
 import pyhome
+from pyhome import event
 
 def command(func):
     def decorator(*args, **kwargs):
@@ -25,6 +25,12 @@ def command(func):
             pyhome.on_after_command(post_event)
     return decorator
 
+def load(modules):
+    for module in m:
+        print(m)
+        if hasattr(m, "items"):
+            print("Found items in {}".format(m.__name__))
+
 class BaseItem:
     """The base class for an item which implements all the basic
     behind-the-scenes functionality and makes no assumptions about the
@@ -46,6 +52,8 @@ class BaseItem:
 
         self.command_listeners = {}
         self.change_listeners = []
+
+        pyhome._register_item(self)
 
     def bind_on_command(self, command, function):
         if command not in self.command_listeners:
@@ -149,7 +157,7 @@ class Group(BaseItem):
     summarize its state.
 
     """
-    def __init__(self, *args, state=any, state_set=None, commands=False, command_send=False **kwargs):
+    def __init__(self, *args, state=any, state_set=None, commands=False, command_send=False, **kwargs):
         """Initialize a Group item, which may or may not handle state updates
         and commands in a custom manner.
 
