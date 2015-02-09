@@ -91,7 +91,7 @@ class Switch(BaseItem):
 
     """
     def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @command
     def on(self):
@@ -113,7 +113,7 @@ class Trigger(BaseItem):
 
     """
     def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @command
     def activate(self):
@@ -124,7 +124,7 @@ class Number(BaseItem):
 
     def __init__(self, *args, kind=float, **kwargs):
         self.kind = kind
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @command
     def set(self, val):
@@ -198,7 +198,7 @@ class Group(BaseItem):
                       command on all members of the group.
 
         """
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.members = []
 
