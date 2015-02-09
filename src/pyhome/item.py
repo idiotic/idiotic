@@ -26,8 +26,8 @@ def command(func):
     return decorator
 
 def load(modules):
-    for module in m:
-        print(m)
+    for m in modules:
+        print("Searching module {} for items...".format(m))
         if hasattr(m, "items"):
             print("Found items in {}".format(m.__name__))
 

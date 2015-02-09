@@ -23,7 +23,7 @@ import os
 import sys
 import docopt
 import logging
-from pyhome import utils
+from pyhome import utils, item
 
 def main():
     # load command-line options
@@ -39,6 +39,7 @@ def main():
     logging.basicConfig(level=max(0, 5-arguments["verbose"]))
     logging.info("Loading items from {}".format(arguments["items"]))
     items = utils.load_dir(arguments["items"])
+    item.load(items)
     print(items)
     # load configuration
     # load bindings
