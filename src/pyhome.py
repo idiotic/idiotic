@@ -4,26 +4,42 @@
 Usage:
   pyhome.py --help
   pyhome.py --version
-  pyhome.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--ui=<dir>]] [-v | -vv] [-s]
+  pyhome.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--ui=<dir>]] [-v | -vv | -vvv | -vvvv | -vvvvv] [-s]
+  pyhome.py <test>
 
 Options:
   -h --help           Show this text.
      --version        Print the version
   -v --verbose        Set verbosity.
   -b --base=<dir>     Path to pyHome config base directory [default: /etc/pyhome].
-  -c --config=<file>  Path to pyHome config file [default: /etc/pyhome/conf.json].
-  -r --rules=<dir>    Path to rules config directory [default: /etc/pyhome/rules].
-  -i --items=<dir>    Path to Item config directory [default: /etc/pyhome/items].
-  -u --ui=<dir>       Path to UI config directory [defaul: /etc/pyhome/ui].
+  -c --config=<file>  Path to pyHome config file [default: <base>/conf.json].
+  -r --rules=<dir>    Path to rules config directory [default: <base>/rules].
+  -i --items=<dir>    Path to Item config directory [default: <base>/items].
+  -u --ui=<dir>       Path to UI config directory [default: <base>/ui].
   -s --standalone     Run without connecting to other instances.
 """
 
+import os
+import sys
 import docopt
+import logging
+from pyhome import utils
 
 def main():
     # load command-line options
-    arguments = docopt.docopt(__doc__, "Current version")
+    arguments = docopt.docopt(__doc__, version="Current version")
+
+    # All these dashes are stupid
+    arguments = {k.lstrip('--'): v for k,v in arguments.items()}
+    # A little strange, but this should work correctly for everything.
+    arguments = {k: os.path.join(arguments["base"],v.replace("<base>/","")) if type(v) is str and "<base>" in v else v for k,v in arguments.items()}
+
     print(arguments)
+
+    logging.basicConfig(level=max(0, 5-arguments["verbose"]))
+    logging.info("Loading items from {}".format(arguments["items"]))
+    items = utils.load_dir(arguments["items"])
+    print(items)
     # load configuration
     # load bindings
     # load items
