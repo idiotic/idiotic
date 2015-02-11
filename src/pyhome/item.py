@@ -1,5 +1,8 @@
+import logging
 import pyhome
 from pyhome import event
+
+log = logging.getLogger("pyhome.item")
 
 def command(func):
     def decorator(*args, **kwargs):
@@ -121,7 +124,7 @@ class Number(BaseItem):
         try:
             self.state = self.kind(val)
         except (ValueError, TypeError) as e:
-            pyhome.logger.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
+            log.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
 
 class _BagOfHolding:
     def __contains__(self, arg):
