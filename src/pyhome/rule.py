@@ -1,13 +1,17 @@
 import pyhome
 
 def bind(func=None, *events):
+    if len(events) == 0:
+        events = [func]
+        func = None
+
     if func:
         for event in events:
             event.bind(func)
 
-        if not hasattr(func, "_rule_triggers"):
-            func._rule_triggers = []
-        func._rule_triggers.extend(event)
+            if not hasattr(func, "_rule_triggers"):
+                func._rule_triggers = []
+        func._rule_triggers.extend(list(events))
         return func
     else:
         def partial(func):
@@ -38,31 +42,30 @@ class Command(EventBinder):
 
     def bind(self, callback):
         if self.commands is None and self.time == "both":
-            self.item.bind_on_command(None, callback)
+            self.item.bind_on_command(callback)
+        elif not self.commands:
+            self.item.bind_on_command(callback, kind=self.time)
+        elif not self.time:
+            self.item.bind_on_command(callback, command_in=commands)
         else:
-            def wrapper(event, *args, **kwargs):
-                if self.time == "both" or event.kind == self.time:
-                    if self.commands is None or event.command in self.commands:
-                        callback(event, *args, **kwargs)
-            if self.commands is None:
-                self.item.bind_on_command(None, wrapper)
-            else:
-                for cmd in self.commands:
-                    self.item.bind_on_command(cmd, wrapper)
+            self.item.bind_on_command(callback, command_in=commands, kind=self.time)
 
 class Change(EventBinder):
     def __init__(self, item, old=None, new=None, time="after"):
         self.item = item
         self.old = old
         self.new = new
+        self.time = time
 
     def bind(self, callback):
-        def wrapper(event, *args, **kwargs):
-            if self.time == "both" or self.time == event.kind:
-                if self.old is None or self.old == event.old:
-                    if self.new is None or self.new == event.new:
-                        callback(event, *args, **kwargs)
-        self.item.bind_on_change(wrapper)
+        kw = {}
+        if self.old:
+            kw['old'] = self.old
+        if self.new:
+            kw['new'] = self.new
+        if self.time != "both":
+            kw['kind'] = self.time
+        self.item.bind_on_change(callback, **kw)
 
 class Schedule(EventBinder):
     """A class for binding rules to cron-like schedules.
@@ -73,6 +76,7 @@ class Schedule(EventBinder):
     """
     def __init__(self, schedule):
         self.schedule = schedule
-        
+
     def bind(self, callback):
-        pyhome.scheduler.bind_to_schedule(schedule, callback)
+        self.schedule.do(callback)
+        #pyhome.scheduler.bind_to_schedule(schedule, callback)
