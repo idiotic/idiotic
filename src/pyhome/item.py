@@ -17,19 +17,14 @@ def command(func):
             command = func.__name__
 
         # Create an event and send it 
-        pre_event = events.CommandEvent(func.__self__, command, source)
-        pyhome.on_before_command(pre_event)
+        pre_event = event.CommandEvent(func.__self__, command, source)
+        pyhome.dispatcher.dispatch(pre_event)
+
         if not pre_event.canceled:
             func(*args, **kwargs)
-            post_event = events.CommandEvent(func.__self__, command, source)
-            pyhome.on_after_command(post_event)
+            post_event = event.CommandEvent(func.__self__, command, source)
+            pyhome.dispatcher.dispatch(post_event)
     return decorator
-
-def load(modules):
-    for m in modules:
-        print("Searching module {} for items...".format(m))
-        if hasattr(m, "items"):
-            print("Found items in {}".format(m.__name__))
 
 class BaseItem:
     """The base class for an item which implements all the basic
@@ -50,18 +45,13 @@ class BaseItem:
         else:
             self.groups = set(groups)
 
-        self.command_listeners = {}
-        self.change_listeners = []
-
         pyhome._register_item(self)
 
-    def bind_on_command(self, command, function):
-        if command not in self.command_listeners:
-            self.command_listeners[command] = []
-        self.command_listeners[command].append(function)
+    def bind_on_command(self, function, **kwargs):
+        pyhome.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
 
-    def bind_on_change(self, function):
-        self.change_listeners.append(function)
+    def bind_on_change(self, function, **kwargs):
+        pyhome.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
 
     @property
     def state(self):
@@ -74,16 +64,16 @@ class BaseItem:
     def _set_state_from_context(self, val, source="rule"):
         # We don't send an event if there has been literally no change
         if self._state == val:
-            pyhome.logger.verbose("Ignoring redundant state change for {}".format(self))
+            log.verbose("Ignoring redundant state change for {}".format(self))
             return
 
         old = self._state
-        pre_event = events.StateChangeEvent(self, old, val, source, kind="before")
-        pyhome.on_before_state_change(pre_event)
+        pre_event = event.StateChangeEvent(self, old, val, source, kind="before")
+        pyhome.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self._state = val
-            post_event = events.StateChangeEvent(self, old, val, source, kind="after")
-            pyhome.on_after_state_change(post_event)
+            post_event = event.StateChangeEvent(self, old, val, source, kind="after")
+            pyhome.dispatcher.dispatch(post_event)
 
 class Switch(BaseItem):
     """An item which has two discrete states between which it may be
