@@ -51,7 +51,7 @@ class BaseItem:
         idiotic._register_item(self)
 
     def bind_on_command(self, function, **kwargs):
-        idiotic.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
+        idiotic.dispatcher.bind(function, event.EventFilter(type=event.CommandEvent, item=self, **kwargs))
 
     def bind_on_change(self, function, **kwargs):
         idiotic.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))

@@ -46,9 +46,9 @@ class Command(EventBinder):
         elif not self.commands:
             self.item.bind_on_command(callback, kind=self.time)
         elif not self.time:
-            self.item.bind_on_command(callback, command_in=commands)
+            self.item.bind_on_command(callback, command__in=self.commands)
         else:
-            self.item.bind_on_command(callback, command_in=commands, kind=self.time)
+            self.item.bind_on_command(callback, command__in=self.commands, kind=self.time)
 
 class Change(EventBinder):
     def __init__(self, item, old=None, new=None, time="after"):
