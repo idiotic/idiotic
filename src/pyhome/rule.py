@@ -1,4 +1,4 @@
-import pyhome
+import idiotic
 
 def bind(func=None, *events):
     if len(events) == 0:
@@ -79,4 +79,4 @@ class Schedule(EventBinder):
 
     def bind(self, callback):
         self.schedule.do(callback)
-        #pyhome.scheduler.bind_to_schedule(schedule, callback)
+        #idiotic.scheduler.bind_to_schedule(schedule, callback)

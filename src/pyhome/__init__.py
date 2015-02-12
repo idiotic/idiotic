@@ -1,7 +1,7 @@
 import schedule
 import time
 import asyncio
-from pyhome.dispatch import Dispatcher
+from idiotic.dispatch import Dispatcher
 
 class ItemProxy:
     def __init__(self, item_dict):

@@ -1,8 +1,8 @@
 import logging
-import pyhome
-from pyhome import event
+import idiotic
+from idiotic import event
 
-log = logging.getLogger("pyhome.item")
+log = logging.getLogger("idiotic.item")
 
 def command(func):
     def decorator(*args, **kwargs):
@@ -21,12 +21,12 @@ def command(func):
 
         # Create an event and send it 
         pre_event = event.CommandEvent(func.__self__, command, source)
-        pyhome.dispatcher.dispatch(pre_event)
+        idiotic.dispatcher.dispatch(pre_event)
 
         if not pre_event.canceled:
             func(*args, **kwargs)
             post_event = event.CommandEvent(func.__self__, command, source)
-            pyhome.dispatcher.dispatch(post_event)
+            idiotic.dispatcher.dispatch(post_event)
     return decorator
 
 class BaseItem:
@@ -48,13 +48,13 @@ class BaseItem:
         else:
             self.groups = set(groups)
 
-        pyhome._register_item(self)
+        idiotic._register_item(self)
 
     def bind_on_command(self, function, **kwargs):
-        pyhome.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
+        idiotic.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
 
     def bind_on_change(self, function, **kwargs):
-        pyhome.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
+        idiotic.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
 
     @property
     def state(self):
@@ -72,11 +72,11 @@ class BaseItem:
 
         old = self._state
         pre_event = event.StateChangeEvent(self, old, val, source, kind="before")
-        pyhome.dispatcher.dispatch(pre_event)
+        idiotic.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self._state = val
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
-            pyhome.dispatcher.dispatch(post_event)
+            idiotic.dispatcher.dispatch(post_event)
 
 class Switch(BaseItem):
     """An item which has two discrete states between which it may be

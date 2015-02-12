@@ -2,17 +2,17 @@
 """A python-based Home Automation Hub
 
 Usage:
-  pyhome.py --help
-  pyhome.py --version
-  pyhome.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--ui=<dir>]] [-v | -vv | -vvv | -vvvv | -vvvvv] [-s]
-  pyhome.py <test>
+  idiotic.py --help
+  idiotic.py --version
+  idiotic.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--ui=<dir>]] [-v | -vv | -vvv | -vvvv | -vvvvv] [-s]
+  idiotic.py <test>
 
 Options:
   -h --help           Show this text.
      --version        Print the version
   -v --verbose        Set verbosity.
-  -b --base=<dir>     Path to pyHome config base directory [default: /etc/pyhome].
-  -c --config=<file>  Path to pyHome config file [default: <base>/conf.json].
+  -b --base=<dir>     Path to idiotic config base directory [default: /etc/idiotic].
+  -c --config=<file>  Path to idiotic config file [default: <base>/conf.json].
   -r --rules=<dir>    Path to rules config directory [default: <base>/rules].
   -i --items=<dir>    Path to Item config directory [default: <base>/items].
   -u --ui=<dir>       Path to UI config directory [default: <base>/ui].
@@ -26,7 +26,7 @@ import logging
 import threading
 import schedule
 import time
-from pyhome import utils, item, items, rule, dispatcher, _scheduler_thread
+from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread
 
 class ShutdownWaiter:
     def __init__(self):

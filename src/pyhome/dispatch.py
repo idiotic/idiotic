@@ -1,4 +1,4 @@
-from pyhome.event import EventFilter
+from idiotic.event import EventFilter
 
 class Dispatcher:
     def __init__(self):
