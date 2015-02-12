@@ -1,3 +1,7 @@
+import logging
+
+log = logging.getLogger("idiotic.event")
+
 class StateChangeEvent:
     def __init__(self, item, old, new, source, kind):
         self.item = item
@@ -88,5 +92,9 @@ class EventFilter:
         cur = e
         for key in path:
             if key:
-                cur = getattr(cur, key)
+                try:
+                    cur = getattr(cur, key)
+                except AttributeError as e:
+                    log.warn("Unable to resolve path '{}' at '{}': {}".format(".".join(path), key, e))
+                    raise e
         return cur

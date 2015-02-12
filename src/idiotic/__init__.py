@@ -7,7 +7,7 @@ class ItemProxy:
     def __init__(self, item_dict):
         self.__items = item_dict
 
-    def all(self, name, mask=lambda _:True):
+    def all(self, mask=lambda _:True):
         return filter(mask, self.__items.values())
 
     def __getattr__(self, name):
