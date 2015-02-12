@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A python-based Home Automation Hub
+"""Idiotic Distributed Internet of Things Interaction Controller
 
 Usage:
   idiotic.py --help
