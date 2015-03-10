@@ -42,6 +42,7 @@ class EventFilter:
             kwargs.update(filters)
 
         for k, v in kwargs.items():
+            log.debug("{}: Adding '{} = {}' to filter checks".format(self, k, v))
             # I'm very surprised I had to use a closure here. The only
             # other time I had to, I was doing some serious black
             # magic...
@@ -91,6 +92,7 @@ class EventFilter:
             closure(k,v)
 
     def check(self, event):
+        log.debug("{}: Checking {}".format(self, event))
         res = self.mode(c(event) for c in self.checks)
         return res
 
