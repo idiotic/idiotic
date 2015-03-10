@@ -29,9 +29,12 @@ class CommandEvent:
         self.canceled = True
 
 class EventFilter:
-    def __init__(self, mode=all, filters=None, **kwargs):
+    def __init__(self, mode=None, filters=None, **kwargs):
         self.checks = []
-        self.mode = mode # any or all
+        if mode is None:
+            self.mode = lambda *x:all(*x)
+        else:
+            self.mode = lambda *x:mode(*x)
 
         if filters:
             # filters is used in case we need to use a reserved word
