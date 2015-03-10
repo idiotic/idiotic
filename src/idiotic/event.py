@@ -96,5 +96,5 @@ class EventFilter:
                     cur = getattr(cur, key)
                 except AttributeError as e:
                     log.warn("Unable to resolve path '{}' at '{}': {}".format(".".join(path), key, e))
-                    raise e
+                    return None
         return cur
