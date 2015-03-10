@@ -65,9 +65,9 @@ for boilerplate code.
 
 Want to do something whenever an item changes?
 
-    @bind(Change(item.foo)
+    @bind(Change(item.foo))
 	def rule(event):
-	    print("Do something!")
+	    print("Wow, how exciting!")
 
 Want to call a rule every Tuesday at 7:15pm?
 
