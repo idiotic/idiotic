@@ -43,7 +43,8 @@ idiotic is designed with these goals in mind:
 *Note that idiotic is currently in alpha. Some parts in this section
 describes its design ideals and goals, rather than its current
 state. They may be incomplete, buggy, or completely absent at this
-time, but they will event*
+time, but they will eventually exist. Check the documentation for
+what is currently available.*
 
 ## Uniform Configuration ##
 
