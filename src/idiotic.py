@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Idiotic Distributed Internet of Things Interaction Controller
+"""idiotic Distributed Internet of Things Inhabitance Controller
 
 Usage:
   idiotic.py --help
