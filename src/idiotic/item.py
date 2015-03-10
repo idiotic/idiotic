@@ -56,6 +56,12 @@ class BaseItem:
     def bind_on_change(self, function, **kwargs):
         idiotic.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
 
+    def __str__(self):
+        return type(self).__name__ + " '" + self.name + "'"
+
+    def __repr__(self):
+        return type(self).__name__ + " '" + self.name + "' on local"
+
     @property
     def state(self):
         return self._state

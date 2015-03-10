@@ -14,6 +14,9 @@ class StateChangeEvent:
     def cancel(self):
         self.canceled = True
 
+    def __repr__(self):
+        return "StateChangeEvent {0.kind}, {0.old} -> {0.new} on {0.item} from {0.source}".format(self)
+
 class CommandEvent:
     def __init__(self, item, command, source, kind):
         self.item = item
@@ -98,3 +101,6 @@ class EventFilter:
                     log.warn("Unable to resolve path '{}' at '{}': {}".format(".".join(path), key, e))
                     return None
         return cur
+
+    def __str__(self):
+        return "EventFilter ({} checks)".format(len(self.checks))
