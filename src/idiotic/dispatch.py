@@ -1,4 +1,7 @@
 from idiotic.event import EventFilter
+import logging
+
+log = logging.getLogger("idiotic.dispatch")
 
 class Dispatcher:
     def __init__(self):
