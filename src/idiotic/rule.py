@@ -26,10 +26,14 @@ class Command(EventBinder):
     def __init__(self, item, command=None, time="after"):
         self.item = item
         if command:
-            try:
-                self.commands = list(command)
-            except TypeError:
+            if isinstance(command, str):
+                # Stupid strings and their also-being-iterable
                 self.commands = [command]
+            else:
+                try:
+                    self.commands = list(command)
+                except TypeError:
+                    self.commands = [command]
         else:
             self.commands = None
 
