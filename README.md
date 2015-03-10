@@ -1,7 +1,3 @@
-# idiotic #
-
-emergen
-
 # Introduction #
 
 The idiotic distributed internet of things inhabitance controller
