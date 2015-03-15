@@ -37,7 +37,10 @@ def augment(func=None, augmentation):
 
 class EventBinder:
     def bind(self, callback):
-        raise NotImplemented("You must override EventBinder.bind()")
+        raise NotImplementedError("You must override EventBinder.bind()")
+
+    def get_filter(self, callback):
+        raise NotImplementedError("You must override EventBinder.get_filter()")
 
 class Command(EventBinder):
     def __init__(self, item, command=None, time="after"):
