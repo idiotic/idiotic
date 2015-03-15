@@ -18,6 +18,23 @@ def bind(func=None, *events):
             return bind(func, *events)
         return partial
 
+def augment(func=None, augmentation):
+    if not augmentation:
+        augmentation = func
+        func = None
+
+    if func:
+        if not hasattr(func, "_rule_augments"):
+            func._rule_augments = []
+
+        func._rule_augments.append(augmentation)
+
+        return augmentation.wrap(func)
+    else:
+        def partial(func):
+            return bind(func, augmentation)
+        return partial
+
 class EventBinder:
     def bind(self, callback):
         raise NotImplemented("You must override EventBinder.bind()")
@@ -44,6 +61,20 @@ class Command(EventBinder):
             raise ValueError("argument 'time' to Command() must be either 'after', 'before', or 'both'")
         self.time = time
 
+    def get_filter(self):
+        kw = {}
+        if self.commands is None and self.time == "both":
+            pass
+        elif not self.commands:
+            kw["kind"] = self.time
+        elif not self.time:
+            kw["command__in"] = self.commands
+        else:
+            kw["command__in"] = self.commands
+            kw["kind"] = self.time
+
+        return idiotic.event.EventFilter(type=idiotic.event.CommandEvent, **kw)
+
     def bind(self, callback):
         if self.commands is None and self.time == "both":
             self.item.bind_on_command(callback)
@@ -60,6 +91,16 @@ class Change(EventBinder):
         self.old = old
         self.new = new
         self.time = time
+
+    def get_filter(self):
+        kw = {}
+        if self.old:
+            kw['old'] = self.old
+        if self.new:
+            kw['new'] = self.new
+        if self.time != "both":
+            kw['kind'] = self.time
+        return idiotic.event.eventFilter(type=idiotic.event.StateChangeEvent, item=self.item, **kw)
 
     def bind(self, callback):
         kw = {}
@@ -84,3 +125,107 @@ class Schedule(EventBinder):
     def bind(self, callback):
         self.schedule.do(callback)
         #idiotic.scheduler.bind_to_schedule(schedule, callback)
+
+    def get_filter(self):
+        raise NotImplementedError("get_filter() is not supported on Schedule")
+
+class EventAugmentation:
+    def wrap(func):
+        raise NotImplementedError("You must override EventAugmentation.wrap()")
+
+class Delay(EventAugmentation):
+    def __init__(self, binder, period=None, cancel=False, reset=True):
+        """Initialize a rule augmentation that delays the execution of a rule
+when receives certain commands.
+
+        Arguments:
+        binder -- An EventBinder which determines when the rule will be
+                  delayed. Any events which match this binder will be
+                  delayed by period seconds before being sent to the rule.
+
+        Keyword arguments:
+        period -- How long, in seconds, to delay the event when binder is
+                  matched.
+        cancel -- When to cancel the pending event timer. If True, cancels
+                  when any event other than binder is received. If False,
+                  never cancels the pending event when it has started. If
+                  an iterable of EventBinder, will cancel when any event
+                  it contains is matched. If an EventBinder, will cancel
+                  when an event matches it.
+        reset --  When to reset the pending event timer, if it has not yet
+                  completed running. By default, will reset when the event
+                  received matches binder. If set to False, will never
+                  reset the timer. If set to an iterable of EventBinder,
+                  will reset when any event it contains is matched. If an
+                  EventBinder, will reset when an event matches it.
+
+        Example:
+        The most common use case for this augmentation is for preventing
+        outputs from changing state rapidly when an input changes state.
+        This is especially useful for something like a motion-sensor
+        which controls a light. The following augmentation will delay
+        responses to the "OFF" command of "motion_sensor" for 5 minutes,
+        cancel the timer when the "ON" command is received, and reset the
+        timer when the "OFF" command is received (if the timer is already
+        running).
+            Delay(Command(items.motion_sensor, "OFF"), period=300,
+                          cancel=Command(items.motion_sensor, "ON"))
+        """
+        if binder != True and binder != False:
+            self.filt = [binder.get_filter()] if isinstance(binder, EventBinder) else [b.get_filter() for b in binder]
+
+        if cancel != True and cancel != False:
+            self.cancel = [cancel.get_filter()] if isinstance(cancel, EventBinder) else [c.get_filter() for c in cancel]
+
+        if reset != True and reset != False:
+            self.reset = [reset.get_filter()] if isinstance(reset, EventBinder) else [r.get_filter() for r in reset]
+
+        self.period = period
+
+    def wrap(func):
+        def wrapper(event, *args, **kwargs):
+            for f in self.filt:
+                if f.check(event):
+                    if self.timer.running:
+                        if self.reset == True:
+                            self.timer.reschedule(self.period)
+                            return
+                    else:
+                        #if not self.timer.running:
+                        #    self.timer.schedule(self.period)
+                        time.sleep(self.period)
+                        return func(event, *args, **kwargs)
+
+            if self.timer.running:
+                if cancel is True:
+                    #self.timer.cancel()
+                    return
+                elif cancel:
+                    for c in self.cancel:
+                        if c.check(event):
+                            # TODO: Somehow cancel timer...
+                            #self.timer.cancel()
+                            return
+
+                if reset is True:
+                    #TODO: Reset timer to go off in <period>
+                    self.timer.reschedule
+                    return
+                elif reset:
+                    for r in self.reset:
+                        if r.check(event):
+                            # TODO: Reset timer to go off in <period>
+                            #self.timer.reschedule(self.period)
+                            return
+        return wrapper
+
+class DeDup(EventAugmentation):
+    def __init__(self, binder=None, period=5, count=1, method="rolling"):
+        """Combine multiple instances of the same event within a certain time
+        period. NYI
+
+        """
+        log.warn("EventAugmentation DeDup: NOT YET IMPLEMENTED")
+
+    def wrap(self, func):
+        return func
