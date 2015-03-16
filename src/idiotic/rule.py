@@ -18,7 +18,7 @@ def bind(func=None, *events):
             return bind(func, *events)
         return partial
 
-def augment(func=None, augmentation):
+def augment(func=None, augmentation=None):
     if not augmentation:
         augmentation = func
         func = None
@@ -28,11 +28,10 @@ def augment(func=None, augmentation):
             func._rule_augments = []
 
         func._rule_augments.append(augmentation)
-
         return augmentation.wrap(func)
     else:
         def partial(func):
-            return bind(func, augmentation)
+            return augment(func, augmentation)
         return partial
 
 class EventBinder:
@@ -229,6 +228,9 @@ class DeDup(EventAugmentation):
 
         """
         log.warn("EventAugmentation DeDup: NOT YET IMPLEMENTED")
+
+    def bind(self, func, *args, **kwargs):
+        pass
 
     def wrap(self, func):
         return func
