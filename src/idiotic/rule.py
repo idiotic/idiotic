@@ -1,4 +1,8 @@
 import idiotic
+import logging
+import datetime
+from schedule import CancelJob
+log = logging.getLogger("idiotic.rule")
 
 def bind(func=None, *events):
     if len(events) == 0:
@@ -183,42 +187,62 @@ when receives certain commands.
             self.reset = [reset.get_filter()] if isinstance(reset, EventBinder) else [r.get_filter() for r in reset]
 
         self.period = period
+        self.job = None
 
-    def wrap(func):
+
+    def schedule(self, func, event):
+        runtime = (datetime.datetime.now() + datetime.timedelta(seconds=self.period)).time()
+        timestr = "{:%H:%M}".format(runtime)
+        # This is a stupid hack, because schedule doesn't let you add seconds
+        self.job = idiotic.scheduler.every().day.at(timestr)
+        self.job.at_time = runtime
+
+        def do_once(func, event):
+            func(event)
+            self.job = None
+            return CancelJob
+
+        self.job.do(do_once, func, event)
+
+    def cancel_job(self):
+        if self.job:
+            idiotic.scheduler.cancel_job(self.job)
+            self.job = None
+
+    def reschedule(self, func, event):
+        if self.job:
+            self.cancel_job()
+        self.schedule(func, event)
+
+    def wrap(self, func):
         def wrapper(event, *args, **kwargs):
             for f in self.filt:
                 if f.check(event):
-                    if self.timer.running:
-                        if self.reset == True:
-                            self.timer.reschedule(self.period)
-                            return
+                    if self.job:
+                        if self.reset is True:
+                            self.reschedule(func, event)
                     else:
-                        #if not self.timer.running:
-                        #    self.timer.schedule(self.period)
-                        time.sleep(self.period)
-                        return func(event, *args, **kwargs)
-
-            if self.timer.running:
-                if cancel is True:
-                    #self.timer.cancel()
+                        self.schedule(func, event)
                     return
+
+            if self.job:
+                if cancel is True:
+                    self.cancel_job()
+                    return func(event, *args, **kwargs)
                 elif cancel:
                     for c in self.cancel:
                         if c.check(event):
-                            # TODO: Somehow cancel timer...
-                            #self.timer.cancel()
-                            return
+                            self.cancel_job()
+                            return func(event, *args, **kwargs)
 
-                if reset is True:
-                    #TODO: Reset timer to go off in <period>
-                    self.timer.reschedule
-                    return
-                elif reset:
+                if reset:
                     for r in self.reset:
                         if r.check(event):
-                            # TODO: Reset timer to go off in <period>
-                            #self.timer.reschedule(self.period)
-                            return
+                            self.reschedule(func, event)
+                            return func(event, *args, **kwargs)
+
+            # Don't forget to pass it through if we're not capturing it!
+            return func(event, *args, **kwargs)
         return wrapper
 
 class DeDup(EventAugmentation):
