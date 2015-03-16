@@ -16,23 +16,28 @@ class ItemProxy:
         else:
             raise NameError("Item {} does not exist.".format(name))
 
-class BindingProxy:
-    def __init__(self, binding_dict):
-        self.__bindings = binding_dict
+class ModuleProxy:
+    def __init__(self, module_dict):
+        self.__modules = module_dict
+
+    def all(self, mask=lambda _:True):
+        return filter(mask, self.__modules.values())
 
     def __getattr__(self, name):
-        if name in self.__bindings:
-            return self.__bindings[name]
+        if name in self.__modules:
+            return self.__modules[name]
         else:
-            raise NameError("Binding {} not found.".format(name))
+            raise NameError("Module {} not found.".format(name))
+
+config = {}
 
 _items = {}
 items = ItemProxy(_items)
 
 _rules = {}
 
-_bindings = {}
-binding = BindingProxy(_bindings)
+_modules = {}
+modules = ModuleProxy(_modules)
 
 scheduler = schedule.Scheduler()
 
@@ -63,7 +68,11 @@ def _scheduler_thread():
             pass
         finally:
             time.sleep(scheduler.idle_seconds / 2)
-        
+
+def _set_config(conf):
+    global config
+    config.update(conf)
+
 def _mangle_name(name):
     # TODO regex replace things other than spaces
     out = name.lower().replace(" ", "_") if name else ""
@@ -73,7 +82,16 @@ def _register_item(item):
     global _items
     _items[_mangle_name(item.name)] = item
 
-def _register_binding(module):
-    global _bindings
-    _bindings[module.__name__] = module
-    
+def _register_module(module):
+    global _modules
+
+    if hasattr(module, "MODULE_NAME"):
+        name = module.MODULE_NAME
+    else:
+        name = _mangle_name(module.__name__)
+    _modules[name] = module
+
+    if hasattr(module, "configure"):
+        print("Configuring module {}".format(name))
+        if "modules" in config and name in config["modules"]:
+            module.configure(config["modules"][name])

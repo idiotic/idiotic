@@ -4,7 +4,7 @@
 Usage:
   idiotic.py --help
   idiotic.py --version
-  idiotic.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--ui=<dir>]] [-v | -vv | -vvv | -vvvv | -vvvvv] [-s]
+  idiotic.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--modules=<dir>] [--ui=<dir>]] [-v | -vv | -vvv | -vvvv | -vvvvv] [-s]
   idiotic.py <test>
 
 Options:
@@ -14,20 +14,22 @@ Options:
   -b --base=<dir>     Path to idiotic config base directory [default: /etc/idiotic].
   -c --config=<file>  Path to idiotic config file [default: <base>/conf.json].
   -r --rules=<dir>    Path to rules config directory [default: <base>/rules].
-  -i --items=<dir>    Path to Item config directory [default: <base>/items].
+  -i --items=<dir>    Path to items config directory [default: <base>/items].
+  -m --modules=<dir>  Path to modules directory [default: <base>/modules].
   -u --ui=<dir>       Path to UI config directory [default: <base>/ui].
   -s --standalone     Run without connecting to other instances.
 """
 
 import os
 import sys
+import json
 import time
 import docopt
 import asyncio
 import logging
 import schedule
 import threading
-from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler
+from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler, _register_module, _set_config, modules
 
 class ShutdownWaiter:
     def __init__(self):
@@ -62,15 +64,28 @@ def init():
 
     # load configuration
     logging.basicConfig(level=max(0, 5-arguments["verbose"]))
+    try:
+        with open(arguments["config"]) as conf_file:
+            config = json.load(conf_file)
+            _set_config(config)
+    except (OSError, IOError) as e:
+        logging.warn("Could not load config file {}: {}".format(arguments["config"], e))
+
+    # load modules
+    logging.info("Loading modules from {}".format(arguments["modules"]))
+    for module in utils.load_dir(arguments["modules"]):
+        _register_module(module)
 
     # load items
     logging.info("Loading items from {}".format(arguments["items"]))
     utils.load_dir(arguments["items"])
 
-    # load bindings
     # load rules
     logging.info("Loading rules from {}".format(arguments["rules"]))
     utils.load_dir(arguments["rules"])
+
+    for module in modules.all(lambda m:hasattr(m, "ready")):
+        module.ready()
     # load ui
     # read database
     # correspond with other instances?
