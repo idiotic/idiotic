@@ -47,7 +47,6 @@ class EventFilter:
         self.checks_def = kwargs
 
         for k, v in kwargs.items():
-            log.debug("{}: Adding '{} = {}' to filter checks".format(self, k, v))
             # I'm very surprised I had to use a closure here. The only
             # other time I had to, I was doing some serious black
             # magic...
@@ -108,7 +107,6 @@ class EventFilter:
                 try:
                     cur = getattr(cur, key)
                 except AttributeError as e:
-                    log.warn("Unable to resolve path '{}' at '{}': {}".format(".".join(path), key, e))
                     return None
         return cur
 

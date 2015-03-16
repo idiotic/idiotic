@@ -73,7 +73,7 @@ class BaseItem:
     def _set_state_from_context(self, val, source="rule"):
         # We don't send an event if there has been literally no change
         if self._state == val:
-            log.verbose("Ignoring redundant state change for {}".format(self))
+            log.debug("Ignoring redundant state change for {}".format(self))
             return
 
         old = self._state
