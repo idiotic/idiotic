@@ -79,7 +79,8 @@ Want to control a light with a motion sensor to turn off after five
 minutes?
 
     @bind(Command(items.motion_sensor))
-    @augment(Delay(item=items.motion_sensor, command="OFF", period=300))
+    @augment(Delay(Command(items.motion_sensor, "OFF"), period=300),
+	               cancel=Command(items.motion_sensor, "ON"))
 	def rule(event):
 	    items.light.command(event.command)
 
