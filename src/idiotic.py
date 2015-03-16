@@ -94,8 +94,8 @@ if __name__ == '__main__':
     init()
 
     try:
-        while True:
-            time.sleep(5)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(run_scheduled_jobs())
     except KeyboardInterrupt:
         print("Shutting down")
         shutdown()

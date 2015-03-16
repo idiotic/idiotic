@@ -53,7 +53,7 @@ def run_scheduled_jobs():
             scheduler.run_pending()
         except:
             pass
-        yield from asyncio.sleep(scheduler.idle_seconds / 2)
+        yield from asyncio.sleep(1)
 
 def _scheduler_thread():
     while True:
