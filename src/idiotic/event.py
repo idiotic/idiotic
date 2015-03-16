@@ -15,7 +15,7 @@ class StateChangeEvent:
         self.canceled = True
 
     def __repr__(self):
-        return "StateChangeEvent {0.kind}, {0.old} -> {0.new} on {0.item} from {0.source}".format(self)
+        return "StateChangeEvent({0.kind}, {0.old} -> {0.new} on {0.item} from {0.source})".format(self)
 
 class CommandEvent:
     def __init__(self, item, command, source, kind):
@@ -27,6 +27,9 @@ class CommandEvent:
 
     def cancel(self):
         self.canceled = True
+
+    def __repr__(self):
+        return "CommandEvent({0.kind}, '{0.command}' on {0.item} from {0.source})".format(self)
 
 class EventFilter:
     def __init__(self, mode=None, filters=None, **kwargs):
@@ -40,6 +43,8 @@ class EventFilter:
             # filters is used in case we need to use a reserved word
             # as an argument... though that should probably be avioded
             kwargs.update(filters)
+
+        self.checks_def = kwargs
 
         for k, v in kwargs.items():
             log.debug("{}: Adding '{} = {}' to filter checks".format(self, k, v))
@@ -108,4 +113,8 @@ class EventFilter:
         return cur
 
     def __str__(self):
-        return "EventFilter ({} checks)".format(len(self.checks))
+        return "EventFilter({})".format(", ".join(self.checks_def))
+
+    def __repr__(self):
+        return "EventFilter({})".format(", ".join(
+            ("{}=<{}>".format(k.replace("__","."),repr(v)) for k,v in self.checks_def.items())))
