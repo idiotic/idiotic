@@ -78,9 +78,6 @@ def init():
     # Our non-daemon threads will wait on this
     waiter = ShutdownWaiter()
 
-    schedule_thread = threading.Thread(target=_scheduler_thread, daemon=True)
-    schedule_thread.start()
-
     # start running rules
     # start serving API
     # start serving UI
