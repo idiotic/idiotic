@@ -1,6 +1,6 @@
 import logging
 import idiotic
-from idiotic import event
+from idiotic import event, modules
 
 log = logging.getLogger("idiotic.item")
 
@@ -35,7 +35,7 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None):
+    def __init__(self, name, groups=None, friends=None, bindings=None):
         self.name = name
         self._state = None
         if friends is None:
@@ -49,6 +49,12 @@ class BaseItem:
             self.groups = set(groups)
 
         idiotic._register_item(self)
+
+        if bindings:
+            for module_name, args in bindings.items():
+                log.debug("Setting {} bindings on {}".format(module_name, self))
+                module = getattr(modules, module_name)
+                module.bind_item(self, **args)
 
     def bind_on_command(self, function, **kwargs):
         idiotic.dispatcher.bind(function, event.EventFilter(type=event.CommandEvent, item=self, **kwargs))
