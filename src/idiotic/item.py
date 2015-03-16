@@ -5,7 +5,7 @@ from idiotic import event
 log = logging.getLogger("idiotic.item")
 
 def command(func):
-    def decorator(*args, **kwargs):
+    def decorator(self, *args, **kwargs):
         # If we get passed a source (e.g., UI, Rule, Binding), consume
         # it so we don't break our child function
         if "source" in kwargs:
@@ -20,12 +20,12 @@ def command(func):
             command = func.__name__
 
         # Create an event and send it 
-        pre_event = event.CommandEvent(func.__self__, command, source)
+        pre_event = event.CommandEvent(self, command, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
 
         if not pre_event.canceled:
-            func(*args, **kwargs)
-            post_event = event.CommandEvent(func.__self__, command, source)
+            func(self, *args, **kwargs)
+            post_event = event.CommandEvent(self, command, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
     return decorator
 
