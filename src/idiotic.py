@@ -21,12 +21,13 @@ Options:
 
 import os
 import sys
-import docopt
-import logging
-import threading
-import schedule
 import time
-from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread
+import docopt
+import asyncio
+import logging
+import schedule
+import threading
+from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler
 
 class ShutdownWaiter:
     def __init__(self):
