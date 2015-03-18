@@ -100,7 +100,7 @@ def _register_item(item):
 def _join_url(*paths):
     return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))
 
-def _wrap_for_result(func, get_args, get_form, get_data, *args, **kwargs):
+def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
             if get_args is True:
@@ -117,6 +117,9 @@ def _wrap_for_result(func, get_args, get_form, get_data, *args, **kwargs):
                 kwargs["data"] = getattr(request, "data", "")
             elif get_data:
                 kwargs[get_data] = getattr(request, "data", "")
+
+            if not no_source:
+                kwargs["source"] = "api"
 
             res = func(*args, **kwargs)
         except Exception as e:
