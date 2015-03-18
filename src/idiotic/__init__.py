@@ -135,7 +135,7 @@ class _API:
 
     def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, **kwargs):
         log.info("Adding API endpoint for {}: {}".format(self.modname,
-                                                                   _join_url(self.path, path)))
+                                                         _join_url(self.path, path)))
         return api.add_url_rule(_join_url(self.path, path),
                                 "mod_{}_{}".format(self.modname,
                                                    func.__name__),
