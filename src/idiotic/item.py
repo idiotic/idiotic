@@ -106,11 +106,11 @@ class Switch(BaseItem):
     def off(self):
         self.state = False
 
-    def toggle(self):
+    def toggle(self, *args, **kwargs):
         if self.state:
-            self.off()
+            self.off(*args, **kwargs)
         else:
-            self.on()
+            self.on(*args, **kwargs)
 
 class Trigger(BaseItem):
     """An item with no state, but which may be activated repeatedly,
