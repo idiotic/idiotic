@@ -13,7 +13,7 @@ def load_dir(path):
     modules = []
     for f in files:
         try:
-            if f.endswith("~") or f.endswith("#"):
+            if f.startswith(".") or f.endswith("~") or f.endswith("#"):
                 continue
             logging.info("Loading file {}...".format(os.path.join(path, f)))
             name = os.path.splitext(f)[0]
