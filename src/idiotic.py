@@ -125,7 +125,7 @@ def run_everything(*things):
     while True:
         for c in things:
             yield from c()
-        yield from asyncio.sleep(.1)
+        yield from asyncio.sleep(.01)
 
 if __name__ == '__main__':
     init()
