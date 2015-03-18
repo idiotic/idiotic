@@ -226,16 +226,16 @@ when receives certain commands.
                     return
 
             if self.job:
-                if cancel is True:
+                if self.cancel is True:
                     self.cancel_job()
                     return func(event, *args, **kwargs)
-                elif cancel:
+                elif self.cancel:
                     for c in self.cancel:
                         if c.check(event):
                             self.cancel_job()
                             return func(event, *args, **kwargs)
 
-                if reset:
+                if self.reset:
                     for r in self.reset:
                         if r.check(event):
                             self.reschedule(func, event)
