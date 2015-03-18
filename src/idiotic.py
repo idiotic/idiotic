@@ -72,6 +72,10 @@ def init():
     try:
         with open(arguments["config"]) as conf_file:
             config = json.load(conf_file)
+            if "modules" in config:
+                config["modules"].update({"builtin": {"api_base": "/"}})
+            else:
+                config["modules"] = {"builtin": {"api_base": "/"}}
             _set_config(config)
     except (OSError, IOError) as e:
         log.warn("Could not load config file {}: {}".format(arguments["config"], e))

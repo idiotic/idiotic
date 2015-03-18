@@ -132,13 +132,14 @@ class _API:
 def _register_module(module):
     name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
-    if hasattr(module, "configure"):
-        print("Configuring module {}".format(name))
-        if "modules" in config and name in config["modules"]:
-            if "disable" in config["modules"][name] and config["modules"][name]["disable"]:
-                return
+    if config.get("modules", {}).get(name, {}).get("disable", False):
+        log.info("Module {} is disabled; skipping registration".format(name))
+        return
 
-            module.configure(config["modules"][name], _API(module, config["modules"][name].get("api_base", None)))
+    if hasattr(module, "configure"):
+        log.info("Configuring module {}".format(name))
+        log.info("Config: {}".format(config))
+        module.configure(config.get("modules", {}).get(name, {}), _API(module, config.get("modules", {}).get(name, {}).get("api_base", None)))
 
     global _modules
     _modules[name] = module
