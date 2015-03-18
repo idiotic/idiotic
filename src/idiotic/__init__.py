@@ -93,9 +93,9 @@ def _wrap_for_result(func, get_args, get_form, get_data, *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
             if get_args is True:
-                kwargs.update(getattr(request, "get", {}))
+                kwargs.update(getattr(request, "args", {}))
             elif get_args:
-                kwargs[get_args] = getattr(request, "get", {})
+                kwargs[get_args] = getattr(request, "args", {})
 
             if get_form is True:
                 kwargs.update(getattr(request, "form", {}))
