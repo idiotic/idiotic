@@ -109,7 +109,7 @@ def _wrap_for_result(func, get_args, get_form, get_data, *args, **kwargs):
 
             res = func(*args, **kwargs)
         except Exception as e:
-            log.info("Exception occurred from API: {}".format(e))
+            log.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
             return json.jsonify({"status": "error", "description": str(e)})
         return json.jsonify({"status": "success", "result": res})
     return wrapper
