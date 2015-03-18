@@ -1,7 +1,7 @@
 import schedule
 import time
 import asyncio
-from flask import Flask, json
+from flask import Flask, json, request
 from idiotic.dispatch import Dispatcher
 import logging
 
@@ -89,9 +89,24 @@ def _register_item(item):
 def _join_url(*paths):
     return '/' + '/'.join((p.strip('/') for p in paths))
 
-def _wrap_for_result(func, *args, **kwargs):
+def _wrap_for_result(func, get_args, get_form, get_data, *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
+            if get_args is True:
+                kwargs.update(getattr(request, "get", {}))
+            elif get_args:
+                kwargs[get_args] = getattr(request, "get", {})
+
+            if get_form is True:
+                kwargs.update(getattr(request, "form", {}))
+            elif get_form:
+                kwargs[get_form] = getattr(request, "form", {})
+
+            if get_data is True:
+                kwargs["data"] = getattr(request, "data", "")
+            elif get_data:
+                kwargs[get_data] = getattr(request, "data", "")
+
             res = func(*args, **kwargs)
         except Exception as e:
             log.info("Exception occurred from API: {}".format(e))
@@ -107,13 +122,13 @@ class _API:
             base = _join_url("/api/module", self.modname)
         self.path = base
 
-    def serve(self, func, path, *args, **kwargs):
+    def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, **kwargs):
         log.info("Adding API endpoint for {}: {}".format(self.modname,
                                                                    _join_url(self.path, path)))
         return api.add_url_rule(_join_url(self.path, path),
                                 "mod_{}_{}".format(self.modname,
                                                    func.__name__),
-                                _wrap_for_result(func))
+                                _wrap_for_result(func, get_args, get_form, get_data))
 def _register_module(module):
     name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
