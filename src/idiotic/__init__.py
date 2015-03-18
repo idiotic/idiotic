@@ -80,9 +80,7 @@ def _set_config(conf):
     config.update(conf)
 
 def _mangle_name(name):
-    # TODO regex replace things other than spaces
-    out = name.lower().replace(" ", "_") if name else ""
-    return out
+    return ''.join(filter(lambda x:x.isalnum() or x=='_', name.lower().replace(" ", "_"))) if name else ""
 
 def _register_item(item):
     global _items
