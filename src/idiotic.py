@@ -29,7 +29,10 @@ import asyncio
 import logging
 import schedule
 import threading
-from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler, _register_module, _set_config, modules
+import aiohttp.wsgi
+from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler, _register_module, _set_config, modules, api
+
+log = logging.getLogger("idiotic.main")
 
 class ShutdownWaiter:
     def __init__(self):
@@ -51,6 +54,7 @@ class ShutdownWaiter:
         return self.running
 
 waiter = None
+config = {}
 
 def init():
     global waiter
@@ -63,6 +67,7 @@ def init():
     arguments = {k: os.path.join(arguments["base"],v.replace("<base>/","")) if type(v) is str and "<base>" in v else v for k,v in arguments.items()}
 
     # load configuration
+    global config
     logging.basicConfig(level=max(0, 5-arguments["verbose"]))
     try:
         with open(arguments["config"]) as conf_file:
@@ -97,18 +102,36 @@ def init():
     # start serving API
     # start serving UI
 
+    print(list(items.all()))
+
+    items.test.state = True
+    items.test.state = 593
+
+    items.test.on()
+    items.test.off()
+
     # cleanup stuff!
 
 def shutdown():
     waiter.join_all()
     logging.shutdown()
 
+@asyncio.coroutine
+def run_everything(*things):
+    while True:
+        for c in things:
+            yield from c()
+        yield from asyncio.sleep(.1)
+
 if __name__ == '__main__':
     init()
 
     try:
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(run_scheduled_jobs())
+        api_loop = loop.run_until_complete(loop.create_server(lambda: aiohttp.wsgi.WSGIServerHttpProtocol(api, readpayload=True), config.get("api", {}).get("listen", "*"), config.get("api", {}).get("port", 5000)))
+        log.info("Serving API on {}".format(", ".join((str(x.getsockname()) for x in api_loop.sockets))))
+        print(dir(api_loop))
+        loop.run_until_complete(run_everything(run_scheduled_jobs, api_loop))
     except KeyboardInterrupt:
         print("Shutting down")
         shutdown()
