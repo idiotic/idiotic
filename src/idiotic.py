@@ -74,19 +74,19 @@ def init():
             config = json.load(conf_file)
             _set_config(config)
     except (OSError, IOError) as e:
-        logging.warn("Could not load config file {}: {}".format(arguments["config"], e))
+        log.warn("Could not load config file {}: {}".format(arguments["config"], e))
 
     # load modules
-    logging.info("Loading modules from {}".format(arguments["modules"]))
+    log.info("Loading modules from {}".format(arguments["modules"]))
     for module in utils.load_dir(arguments["modules"]):
         _register_module(module)
 
     # load items
-    logging.info("Loading items from {}".format(arguments["items"]))
+    log.info("Loading items from {}".format(arguments["items"]))
     utils.load_dir(arguments["items"])
 
     # load rules
-    logging.info("Loading rules from {}".format(arguments["rules"]))
+    log.info("Loading rules from {}".format(arguments["rules"]))
     utils.load_dir(arguments["rules"])
 
     for module in modules.all(lambda m:hasattr(m, "ready")):
