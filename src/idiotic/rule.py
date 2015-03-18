@@ -196,13 +196,7 @@ when receives certain commands.
         # This is a stupid hack, because schedule doesn't let you add seconds
         self.job = idiotic.scheduler.every().day.at(timestr)
         self.job.at_time = runtime
-
-        def do_once(func, event):
-            func(event)
-            self.job = None
-            return CancelJob
-
-        self.job.do(do_once, func, event)
+        self.job.do_once(func, event)
 
     def cancel_job(self):
         if self.job:
