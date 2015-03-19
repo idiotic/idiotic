@@ -35,7 +35,7 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None, bindings=None):
+    def __init__(self, name, groups=None, friends=None, bindings=None, update=None):
         self.name = name
         self._state = None
         if friends is None:
@@ -55,6 +55,21 @@ class BaseItem:
                 log.debug("Setting {} bindings on {}".format(module_name, self))
                 module = getattr(modules, module_name)
                 module.bind_item(self, **args)
+
+#        log.debug("Update: {}".format(update))
+        if update:
+            def wrap_update(item, attr, base_func):
+                if attr:
+                    setattr(item, attr, base_func(item))
+                else:
+                    base_func(item)
+
+            if isinstance(update, dict):
+                for key, updaters in update.items():
+                    for interval, func in updaters:
+                        interval.do(wrap_update, self, key, func)
+            elif isinstance(update, tuple):
+                update[0].do(wrap_update, self, None, update[1])
 
     def bind_on_command(self, function, **kwargs):
         idiotic.dispatcher.bind(function, event.EventFilter(type=event.CommandEvent, item=self, **kwargs))
