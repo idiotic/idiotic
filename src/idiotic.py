@@ -106,14 +106,6 @@ def init():
     # start serving API
     # start serving UI
 
-    print(list(items.all()))
-
-    items.test.state = True
-    items.test.state = 593
-
-    items.test.on()
-    items.test.off()
-
     # cleanup stuff!
 
 def shutdown():
