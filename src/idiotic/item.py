@@ -105,7 +105,7 @@ class BaseItem:
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
 
-class Switch(BaseItem):
+class Toggle(BaseItem):
     """An item which has two discrete states between which it may be
     toggled, and which is not affected by repeated identical commands.
 
