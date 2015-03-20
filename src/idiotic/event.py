@@ -96,7 +96,6 @@ class EventFilter:
             closure(k,v)
 
     def check(self, event):
-        log.debug("{}: Checking {}".format(self, event))
         res = self.mode(c(event) for c in self.checks)
         return res
 

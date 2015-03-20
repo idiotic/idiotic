@@ -97,6 +97,7 @@ class BaseItem:
             log.debug("Ignoring redundant state change for {}".format(self))
             return
 
+        log.info("{} changed state from {} -> {}".format(self, self._state, val))
         old = self._state
         pre_event = event.StateChangeEvent(self, old, val, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
