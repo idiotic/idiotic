@@ -20,6 +20,9 @@ class ItemProxy:
         else:
             raise NameError("Item {} does not exist.".format(name))
 
+    def __contains__(self, k):
+        return k in self.__items
+
 class ModuleProxy:
     def __init__(self, module_dict):
         self.__modules = module_dict
@@ -32,6 +35,9 @@ class ModuleProxy:
             return self.__modules[name]
         else:
             raise NameError("Module {} not found.".format(name))
+
+    def __contains__(self, k):
+        return k in self.__modules
 
 config = {}
 
@@ -154,6 +160,16 @@ def _register_module(module):
         log.info("Configuring module {}".format(name))
         log.info("Config: {}".format(config))
         module.configure(config.get("modules", {}).get(name, {}), _API(module, config.get("modules", {}).get(name, {}).get("api_base", None)))
+
+    global _modules
+    _modules[name] = module
+
+def _register_builtin_module(module):
+    name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
+
+    if hasattr(module, "configure"):
+        log.info("Configuring system module {}".format(name))
+        module.configure(config, config.get(name, {}), _API(module, "/"))
 
     global _modules
     _modules[name] = module
