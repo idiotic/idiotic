@@ -1,14 +1,24 @@
-ALL = "ALL"
+class RemoteItem:
+    def __init__(self, neighbor, name):
+        pass
+
+class RemoteModule:
+    def __init__(self, neighbor, name):
+        pass
+
+class Neighbor:
+    def __init__(self, config):
+        pass
 
 class TransportMethod:
-    NEIGHBOR_CLASS = None
-    MODULE_CLASS = None
-    ITEM_CLASS = None
+    NEIGHBOR_CLASS = RemoteItem
+    MODULE_CLASS = RemoteModule
+    ITEM_CLASS = Neighbor
 
-    def __init__(self, config):
+    def __init__(self, hostname, config):
         raise NotImplemented("Cannot use abstract transport")
 
-    def send(self, event, targets=ALL):
+    def send(self, event, targets=True):
         """Send an event to all or a subset of this node's neighbors.
 
         """
@@ -37,15 +47,3 @@ or discovered neighbors as needed.
         node.
 
         """
-
-class RemoteItem:
-    def __init__(self, neighbor, name):
-        pass
-
-class RemoteModule:
-    def __init__(self, neighbor, name):
-        pass
-
-class Neighbor:
-    def __init__(self, config):
-        pass
