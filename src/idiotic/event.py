@@ -17,6 +17,16 @@ class StateChangeEvent:
     def __repr__(self):
         return "StateChangeEvent({0.kind}, {0.old} -> {0.new} on {0.item} from {0.source})".format(self)
 
+    def pack(self):
+        return {'__class__': 'StateChangeEvent',
+                '__owner__': 'idiotic',
+                'item': self.item,
+                'old': self.old,
+                'new': self.new,
+                'source': self.source,
+                'kind': self.kind,
+                'canceled': self.canceled}
+
 class CommandEvent:
     def __init__(self, item, command, source, kind):
         self.item = item
@@ -30,6 +40,15 @@ class CommandEvent:
 
     def __repr__(self):
         return "CommandEvent({0.kind}, '{0.command}' on {0.item} from {0.source})".format(self)
+
+    def pack(self):
+        return {'__class__': 'CommandEvent',
+                '__owner__': 'idiotic',
+                'item': self.item,
+                'command': self.command,
+                'source': self.source,
+                'kind': self.kind,
+                'canceled': self.canceled}
 
 class EventFilter:
     def __init__(self, mode=None, filters=None, **kwargs):
