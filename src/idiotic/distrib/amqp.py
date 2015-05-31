@@ -95,6 +95,12 @@ class AMQPTransportMethod(base.TransportMethod):
                                    }).encode('UTF-8'),
                                    routing_key='discovery')
 
+    def run(self):
+        self.channel.start_consuming()
+
+    def stop(self):
+        self.channel.stop_consuming()
+
     def disconnect(self):
         self.connection.close()
 
@@ -131,6 +137,4 @@ class AMQPTransportMethod(base.TransportMethod):
     def neighbors(self):
         return list(self.neighbor_dict.keys())
 
-    def receive(self):
-        print("Receiving!")
-        self.channel.start_consuming()
+METHOD = AMQPTransportMethod
