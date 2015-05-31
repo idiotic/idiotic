@@ -25,12 +25,13 @@ import sys
 import json
 import time
 import docopt
+import socket
 import asyncio
 import logging
 import schedule
 import threading
 import aiohttp.wsgi
-from idiotic import utils, item, items, rule, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler, _register_module, _set_config, modules, api
+from idiotic import utils, item, items, rule, distrib, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler, _register_module, _register_builtin_module, _set_config, _start_distrib, modules, api
 
 log = logging.getLogger("idiotic.main")
 
@@ -53,11 +54,15 @@ class ShutdownWaiter:
     def __bool__(self):
         return self.running
 
+distrib_instance = None
 waiter = None
 config = {}
 
 def init():
     global waiter
+    # Our non-daemon threads will wait on this
+    waiter = ShutdownWaiter()
+
     # load command-line options
     arguments = docopt.docopt(__doc__, version="Current version")
 
@@ -76,6 +81,14 @@ def init():
                 config["modules"].update({"builtin": {"api_base": "/"}})
             else:
                 config["modules"] = {"builtin": {"api_base": "/"}}
+
+            if "distribution" in config:
+                if "method" not in config["distribution"]:
+                    log.warn("No method for distribution specified. Using AMQP.")
+                    config["method"] = "amqp"
+            else:
+                config["distribution"] = False
+
             _set_config(config)
     except (OSError, IOError) as e:
         log.warn("Could not load config file {}: {}".format(arguments["config"], e))
@@ -100,10 +113,36 @@ def init():
         module.ready()
     # load ui
     # read database
+
     # correspond with other instances?
+    if "distribution" in config and config["distribution"]:
+        log.info("Initializing distribution system...")
+        if "method" in config["distribution"]:
+            # Built-in methods go here
+            print(dir(distrib))
+            methods = {
+                "amqp": distrib.amqp,
+                "udp": distrib.udp,
+            }
+            log.debug("Searching for module {}...".format(config["distribution"]["method"]))
+            if config["distribution"]["method"] in methods:
+                distrib_module = methods[config["distribution"]["method"]]
+            else:
+                distrib_module = getattr(modules, config["distribution"]["method"], None)
+
+            if distrib_module and hasattr(distrib_module, "METHOD"):
+                distrib_class = getattr(distrib_module, "METHOD")
+                global distrib_instance
+                distrib_instance, thread = _start_distrib(distrib_class, name, config["distribution"])
+                waiter.threads.append(thread)
+            else:
+                log.error("Could not locate distribution method '{}' -- check spelling?".format(config["distribution"]["method"]))
+        else:
+            log.warn("No distribution method defined. Skipping.")
+    else:
+        log.info("Not setting up distribution.")
+
     # start running updates / bindings
-    # Our non-daemon threads will wait on this
-    waiter = ShutdownWaiter()
 
     # start running rules
     # start serving API
@@ -112,6 +151,9 @@ def init():
     # cleanup stuff!
 
 def shutdown():
+    if distrib_instance:
+        distrib_instance.stop()
+        distrib_instance.disconnect()
     waiter.join_all()
     logging.shutdown()
 

@@ -4,6 +4,7 @@ import asyncio
 from flask import Flask, json, request
 from idiotic.dispatch import Dispatcher
 import logging
+import threading
 
 log = logging.getLogger("idiotic.__init__")
 
@@ -30,11 +31,14 @@ class ModuleProxy:
     def all(self, mask=lambda _:True):
         return filter(mask, self.__modules.values())
 
-    def __getattr__(self, name):
+    def __getattr__(self, name, default=NameError):
         if name in self.__modules:
             return self.__modules[name]
         else:
-            raise NameError("Module {} not found.".format(name))
+            if default is NameError:
+                raise NameError("Module {} not found.".format(name))
+            else:
+                return default
 
     def __contains__(self, k):
         return k in self.__modules
@@ -52,6 +56,8 @@ modules = ModuleProxy(_modules)
 scheduler = schedule.Scheduler()
 
 dispatcher = Dispatcher()
+
+distribution = None
 
 api = Flask(__name__)
 
@@ -173,3 +179,12 @@ def _register_builtin_module(module):
 
     global _modules
     _modules[name] = module
+
+def _start_distrib(dist_cls, host, conf):
+    global distribution
+    distribution = dist_cls(host, conf)
+    distribution.connect()
+    thread = threading.Thread(target=distribution.run, daemon=True)
+    thread.start()
+
+    return distribution, thread
