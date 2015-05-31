@@ -134,11 +134,16 @@ class UDPTransportMethod(base.TransportMethod):
 
     def send(self, event, targets=True):
         if targets is True:
-            self.sender.sendto(struct.pack(HEADER_FORMAT + EVENT_FORMAT,
-                                           PACKET_HEAD, ID_EVENT,
-                                           event))
+            targets = [('<broadcast>', self.listen_port)]
         else:
-            log.error("Sending to individual targets is not yet supported.")
+            targets = [(self.neighbor_dict[n].host, self.neighbor_dict[n].port) for n in targets
+                       if n in self.neighbor_dict]
+
+        log.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
+
+        for target in targets:
+            self.sender.sendto(self._encode_packet(EVENT, event),
+                               target)
 
     def neighbors(self):
         return list(self.neighbor_dict.values())
