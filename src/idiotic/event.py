@@ -1,9 +1,64 @@
 import logging
+import json
 
 log = logging.getLogger("idiotic.event")
 
-class StateChangeEvent:
+def pack_event(event):
+    try:
+        return json.dumps(event.pack()).encode('UTF-8')
+    except AttributeError:
+        try:
+            return json.dumps(event.__dict__.update({
+                '__class__': type(event).__name__,
+                '__owner__': getattr(event, 'MODULE', 'unknown')
+            })).encode('UTF-8')
+        except AttributeError:
+            log.warn("Unable to pack event {} (type '{}') from module '{}'".format(
+                str(event), type(event).__name__,
+                getattr(event, 'MODULE', 'unknown')))
+            return json.dumps({'__class__': type(event).__name__}).encode('UTF-8')
+
+def unpack_event(data, modules):
+    obj = json.loads(data.decode('UTF-8'))
+    if '__owner__' in obj:
+        owner = obj['__owner__']
+        del obj['__owner__']
+
+    if '__class__' in obj:
+        clsname = obj['__class__']
+        del obj['__class__']
+
+    if owner == 'idiotic':
+        cls = eval(clsname)
+    else:
+        cls = getattr(getattr(modules, owner), clsname)
+
+    if cls is not None:
+        return cls.unpack(obj)
+
+class BaseEvent:
+    @classmethod
+    def unpack(cls, data):
+        self = cls.__new__(cls)
+        self.__dict__.update(data)
+        return self
+
+    def __init__(self):
+        self.canceled = False
+
+    def cancel(self):
+        self.canceled = True
+
+    def pack(self):
+        res = {'__class__': type(self).__name__,
+                '__owner__': getattr(self, 'MODULE', 'unknown')}
+        res.update(self.__dict__)
+        return json.dumps(res).encode('UTF-8')
+
+class StateChangeEvent(BaseEvent):
+    MODULE = 'idiotic'
     def __init__(self, item, old, new, source, kind):
+        super().__init__()
         self.item = item
         self.old = old
         self.new = new
@@ -11,23 +66,10 @@ class StateChangeEvent:
         self.kind = kind
         self.canceled = False
 
-    def cancel(self):
-        self.canceled = True
-
     def __repr__(self):
         return "StateChangeEvent({0.kind}, {0.old} -> {0.new} on {0.item} from {0.source})".format(self)
 
-    def pack(self):
-        return {'__class__': 'StateChangeEvent',
-                '__owner__': 'idiotic',
-                'item': self.item,
-                'old': self.old,
-                'new': self.new,
-                'source': self.source,
-                'kind': self.kind,
-                'canceled': self.canceled}
-
-class CommandEvent:
+class CommandEvent(BaseEvent):
     def __init__(self, item, command, source, kind):
         self.item = item
         self.command = command
@@ -40,15 +82,6 @@ class CommandEvent:
 
     def __repr__(self):
         return "CommandEvent({0.kind}, '{0.command}' on {0.item} from {0.source})".format(self)
-
-    def pack(self):
-        return {'__class__': 'CommandEvent',
-                '__owner__': 'idiotic',
-                'item': self.item,
-                'command': self.command,
-                'source': self.source,
-                'kind': self.kind,
-                'canceled': self.canceled}
 
 class EventFilter:
     def __init__(self, mode=None, filters=None, **kwargs):
