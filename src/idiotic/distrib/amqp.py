@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import string
-import base
+from . import base
 import json
 import pika
 
