@@ -19,14 +19,35 @@ class TransportMethod:
         raise NotImplemented("Cannot use abstract transport")
 
     def send(self, event, targets=True):
-        """Send an event to all or a subset of this node's neighbors.
+        """Send packed event data to all or a subset of this node's neighbors.
 
         """
 
-    def receive(self):
-        """Return a generator that returns incoming events, one-by-one."""
+    def receive(self, cb, cancel=False):
+        """Add a callback that will be called for all packed event data
+received. If 'cancel' is True, will instead cancel the passed
+callback.
+
+        """
+        if not hasattr(self, "callbacks"):
+            self.callbacks = set()
+
+        if cancel:
+            self.callbacks.remove(cb)
+        else:
+            self.callbacks.add(cb)
+
+    def run(self):
+        """Begin running any necessary loop for running the transport
+method.
+
+        """
+
+    def stop(self):
+        """Stops running any loops in preparation for shutdown."""
 
     def connect(self):
+
         """Connect to the main server, if applicable, and all configured or
 discovered neighbors as needed.
 
