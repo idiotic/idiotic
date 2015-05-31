@@ -55,6 +55,7 @@ class ShutdownWaiter:
         return self.running
 
 distrib_instance = None
+name = socket.gethostname()
 waiter = None
 config = {}
 
@@ -73,10 +74,15 @@ def init():
 
     # load configuration
     global config
+    global name
     logging.basicConfig(level=max(0, 5-arguments["verbose"]))
     try:
         with open(arguments["config"]) as conf_file:
             config = json.load(conf_file)
+
+            if "name" in config:
+                name = config["name"]
+
             if "modules" in config:
                 config["modules"].update({"builtin": {"api_base": "/"}})
             else:
