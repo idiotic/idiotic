@@ -61,6 +61,13 @@ class UDPTransportMethod(base.TransportMethod):
         self.incoming = queue.Queue()
         self.neighbor_dict = {}
 
+        for connection in config.get("connect", []):
+            if 'name' in connection and 'hostname' in connection:
+                self.neighbor_dict[connection['name']] = UDPNeighbor(connection['name'],
+                                                                     connection['host'],
+                                                                     connection.get('port',
+                                                                                    self.listen_port))
+
         self.running = False
 
     def _encode_packet(self, kind, *data):
@@ -93,6 +100,8 @@ class UDPTransportMethod(base.TransportMethod):
                            (target, port))
 
     def connect(self):
+        for neighbor in self.neighbor_dict.values():
+            self._send_discovery(neighbor.host, neighbor.port)
         self._send_discovery()
 
     def run(self):
