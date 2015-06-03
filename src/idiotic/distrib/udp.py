@@ -62,7 +62,7 @@ class UDPTransportMethod(base.TransportMethod):
         self.neighbor_dict = {}
 
         for connection in config.get("connect", []):
-            if 'name' in connection and 'hostname' in connection:
+            if 'name' in connection and 'host' in connection:
                 self.neighbor_dict[connection['name']] = UDPNeighbor(connection['name'],
                                                                      connection['host'],
                                                                      connection.get('port',
