@@ -58,7 +58,6 @@ class BaseItem:
                 module = getattr(modules, module_name)
                 module.bind_item(self, **args)
 
-#        log.debug("Update: {}".format(update))
         if update:
             def wrap_update(item, attr, base_func):
                 if attr:
