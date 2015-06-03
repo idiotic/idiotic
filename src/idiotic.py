@@ -31,7 +31,7 @@ import logging
 import schedule
 import threading
 import aiohttp.wsgi
-from idiotic import utils, item, items, rule, distrib, dispatcher, _scheduler_thread, run_scheduled_jobs, scheduler, _register_module, _register_builtin_module, _set_config, _start_distrib, modules, api
+from idiotic import utils, item, items, rule, distrib, dispatcher, run_scheduled_jobs, scheduler, _register_module, _register_builtin_module, _set_config, _start_distrib, modules, api, event
 
 log = logging.getLogger("idiotic.main")
 
