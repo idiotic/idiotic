@@ -88,13 +88,6 @@ def init():
             else:
                 config["modules"] = {"builtin": {"api_base": "/"}}
 
-            if "distribution" in config:
-                if "method" not in config["distribution"]:
-                    log.warn("No method for distribution specified. Using AMQP.")
-                    config["method"] = "amqp"
-            else:
-                config["distribution"] = False
-
             _set_config(config)
     except (OSError, IOError) as e:
         log.warn("Could not load config file {}: {}".format(arguments["config"], e))
