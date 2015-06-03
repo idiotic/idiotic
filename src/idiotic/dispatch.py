@@ -1,5 +1,5 @@
 from idiotic.event import EventFilter
-from asyncio import coroutine, Queue, sleep
+from asyncio import coroutine, Queue, sleep, QueueEmpty, QueueFull
 import logging
 import functools
 
@@ -22,15 +22,14 @@ class Dispatcher:
 
     def dispatch(self, event):
         for action in (a for a, f in self.bindings if f.check(event)):
-            log.debug("Doing {}".format(str(action)))
-
-            self.queue.put(functools.partial(action, event))
-            log.debug("Done")
+            log.debug("Dispatching {}".format(str(action)))
+            try:
+                self.queue.put_nowait(functools.partial(action, event))
+            except QueueFull:
+                log.error("The unbounded queue is full! Pretty weird, eh?")
 
     @coroutine
     def run(self):
         while True:
-            while self.queue.empty():
-                yield from asyncio.sleep(.01)
-
-            yield from self.queue.get()
+            func = yield from self.queue.get()
+            yield from coroutine(func)()
