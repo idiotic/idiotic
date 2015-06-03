@@ -84,19 +84,9 @@ def on_after_state_change(evt):
 def run_scheduled_jobs():
     while True:
         try:
-            scheduler.run_pending()
+            yield from scheduler.run_pending()
         except:
-            pass
-        yield from asyncio.sleep(1)
-
-def _scheduler_thread():
-    while True:
-        try:
-            scheduler.run_pending()
-        except:
-            pass
-        finally:
-            time.sleep(scheduler.idle_seconds / 2)
+            yield from asyncio.sleep(1)
 
 def _set_config(conf):
     global config

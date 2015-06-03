@@ -175,9 +175,10 @@ if __name__ == '__main__':
 
     try:
         loop = asyncio.get_event_loop()
-        api_loop = loop.run_until_complete(loop.create_server(lambda: aiohttp.wsgi.WSGIServerHttpProtocol(api, readpayload=True), config.get("api", {}).get("listen", "*"), config.get("api", {}).get("port", 5000)))
-        log.info("Serving API on {}".format(", ".join((str(x.getsockname()) for x in api_loop.sockets))))
-        loop.run_until_complete(run_everything(run_scheduled_jobs, api_loop))
+        server = loop.create_server(lambda: aiohttp.wsgi.WSGIServerHttpProtocol(api, readpayload=True), config.get("api", {}).get("listen", "*"), config.get("api", {}).get("port", 5000))
+        loop.run_until_complete(asyncio.gather(run_scheduled_jobs(),
+                                               server,
+                                               dispatcher.run()))
     except KeyboardInterrupt:
         log.info("Shutting down")
         shutdown()
