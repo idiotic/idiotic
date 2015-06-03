@@ -105,6 +105,7 @@ class UDPTransportMethod(base.TransportMethod):
         self._send_discovery()
 
     def run(self):
+        log.info("Starting UDP Distribution client.")
         self.running = True
         while self.running:
             try:
@@ -142,13 +143,12 @@ class UDPTransportMethod(base.TransportMethod):
         pass
 
     def send(self, event, targets=True):
+        log.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
         if targets is True:
             targets = [('<broadcast>', self.listen_port)]
         else:
             targets = [(self.neighbor_dict[n].host, self.neighbor_dict[n].port) for n in targets
                        if n in self.neighbor_dict]
-
-        log.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
 
         for target in targets:
             self.sender.sendto(self._encode_packet(EVENT, event),

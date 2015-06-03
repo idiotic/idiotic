@@ -19,6 +19,8 @@ def command(func):
         else:
             command = func.__name__
 
+        log.debug("@command({}) on {}".format(command, self))
+
         # Create an event and send it 
         pre_event = event.CommandEvent(self, command, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
@@ -72,6 +74,7 @@ class BaseItem:
                 update[0].do(wrap_update, self, None, update[1])
 
     def bind_on_command(self, function, **kwargs):
+        log.debug("Binding on command for {}".format(self))
         idiotic.dispatcher.bind(function, event.EventFilter(type=event.CommandEvent, item=self, **kwargs))
 
     def bind_on_change(self, function, **kwargs):
