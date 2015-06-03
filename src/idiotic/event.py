@@ -10,7 +10,8 @@ def pack_event(event):
         try:
             return json.dumps(event.__dict__.update({
                 '__class__': type(event).__name__,
-                '__owner__': getattr(event, 'MODULE', 'unknown')
+                '__owner__': getattr(event, 'MODULE', 'unknown'),
+                '_remote': True,
             })).encode('UTF-8')
         except AttributeError:
             log.warn("Unable to pack event {} (type '{}') from module '{}'".format(
