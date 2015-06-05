@@ -95,7 +95,8 @@ class UDPTransportMethod(base.TransportMethod):
     def _send_discovery(self, target='<broadcast>', port=None, response=False):
         if port is None:
             port = self.listen_port
-        log.info("Sending discovery message to ({}, {})", target, port)
+
+        log.info("Sending discovery message to ({}, {})".format(target, port))
         self.sender.sendto(self._encode_packet(RESPONSE if response else DISCOVERY,
                                                self.listen_port, self.hostname),
                            (target, port))
