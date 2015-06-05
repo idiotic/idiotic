@@ -32,4 +32,7 @@ class Dispatcher:
     def run(self):
         while True:
             func = yield from self.queue.get()
-            yield from coroutine(func)()
+            try:
+                yield from coroutine(func)()
+            except Exception as e:
+                log.error("Error while running {} from dispatch queue: {}".format(func, e))
