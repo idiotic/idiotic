@@ -21,8 +21,6 @@ FORMAT = {
 }
 
 HEADER_FORMAT = "!5sBI"
-EVENT_FORMAT = "s"
-DISCOVERY_FORMAT = "Hs"
 HEADER_LEN = struct.calcsize(HEADER_FORMAT)
 
 log = logging.getLogger("idiotic.distrib.udp")
