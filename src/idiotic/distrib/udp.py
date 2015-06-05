@@ -12,10 +12,12 @@ ID_DISCOVERY = 2
 
 EVENT = 1
 DISCOVERY = 2
+RESPONSE = 3
 
 FORMAT = {
     EVENT: "{}s",
     DISCOVERY: "H{}s",
+    RESPONSE: "H{}s",
 }
 
 HEADER_FORMAT = "!5sBI"
@@ -86,16 +88,16 @@ class UDPTransportMethod(base.TransportMethod):
 
         if kind == EVENT:
             tup = struct.unpack_from(FORMAT[EVENT].format(data_len), data, HEADER_LEN)
-        elif kind == DISCOVERY:
+        elif kind == DISCOVERY or kind == RESPONSE:
             port, host = struct.unpack_from(FORMAT[DISCOVERY].format(
                 data_len - struct.calcsize(FORMAT[DISCOVERY][:1])), data, HEADER_LEN)
             tup = port, host.decode('UTF-8')
         return kind, tup
 
-    def _send_discovery(self, target='<broadcast>', port=None):
+    def _send_discovery(self, target='<broadcast>', port=None, response=False):
         if port is None:
             port = self.listen_port
-        self.sender.sendto(self._encode_packet(DISCOVERY,
+        self.sender.sendto(self._encode_packet(RESPONSE if response else DISCOVERY,
                                                self.listen_port, self.hostname),
                            (target, port))
 
@@ -115,7 +117,7 @@ class UDPTransportMethod(base.TransportMethod):
                     kind, tup = self._decode_packet(data)
                 except ValueError:
                     log.error("Received invalid packet from {}: {}".format(addr, data))
-                if kind == DISCOVERY:
+                if kind == DISCOVERY or kind == RESPONSE:
                     log.debug("Received discovery packet")
 
                     port, host = tup
@@ -128,6 +130,8 @@ class UDPTransportMethod(base.TransportMethod):
                     else:
                         log.info("Found new neighbor {} at {}".format(host, addr))
                         self.neighbor_dict[host] = UDPNeighbor(host, addr, port)
+                    if kind != RESPONSE:
+                        self._send_discovery(addr, port, response=True)
                 elif kind == ID_EVENT:
                     log.debug("Received event packet")
 
