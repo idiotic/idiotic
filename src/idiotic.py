@@ -118,7 +118,6 @@ def init():
         log.info("Initializing distribution system...")
         if "method" in config["distribution"]:
             # Built-in methods go here
-            print(dir(distrib))
             methods = {
                 "amqp": distrib.amqp,
                 "udp": distrib.udp,
