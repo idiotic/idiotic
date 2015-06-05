@@ -120,6 +120,10 @@ class UDPTransportMethod(base.TransportMethod):
 
                     port, host = tup
 
+                    if host == self.name:
+                        # Skip our own packets because... well... we're already
+                        # connected to us...
+                        continue
                     if host in self.neighbor_dict:
                         log.debug("Updating existing neighbor {}".format(host))
                         self.neighbor_dict[host].name = host
