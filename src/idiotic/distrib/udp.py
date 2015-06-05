@@ -128,13 +128,15 @@ class UDPTransportMethod(base.TransportMethod):
                     if host in self.neighbor_dict:
                         log.debug("Updating existing neighbor {}".format(host))
                         self.neighbor_dict[host].name = host
-                        self.neighbor_dict[host].host = addr
+                        self.neighbor_dict[host].host = addr[0]
                         self.neighbor_dict[host].port = port
                     else:
                         log.info("Found new neighbor {} at {}".format(host, addr))
                         self.neighbor_dict[host] = UDPNeighbor(host, addr, port)
+
                     if kind != RESPONSE:
-                        self._send_discovery(addr, port, response=True)
+                        self._send_discovery(addr[0], port, response=True)
+
                 elif kind == ID_EVENT:
                     log.debug("Received event packet")
 
