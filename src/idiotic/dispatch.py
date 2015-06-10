@@ -35,4 +35,4 @@ class Dispatcher:
             try:
                 yield from coroutine(func)()
             except Exception as e:
-                log.error("Error while running {} from dispatch queue: {}".format(func, e))
+                log.exception("Error while running {} from dispatch queue:".format(func))

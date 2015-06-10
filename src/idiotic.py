@@ -90,7 +90,7 @@ def init():
 
             _set_config(config)
     except (OSError, IOError) as e:
-        log.warn("Could not load config file {}: {}".format(arguments["config"], e))
+        log.exception("Could not load config file {}:".format(arguments["config"]))
 
     # load modules
     log.info("Loading modules from {}".format(arguments["modules"]))
