@@ -1,3 +1,4 @@
+import functools
 import logging
 import json
 
@@ -176,6 +177,9 @@ class EventFilter:
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) == v)
                 elif op == "type_not":
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) != v)
+                elif op == "item":
+                    # hack so we can check that the 'item' of an event by name
+                    self.checks.append(functools.partial(self._item_check_hack, path, op, v))
                 else:
                     # By default just check for equality
                     path.append(op)
@@ -185,6 +189,22 @@ class EventFilter:
     def check(self, event):
         res = self.mode(c(event) for c in self.checks)
         return res
+
+    def _item_check_hack(self, path, op, v, e):
+        # we can't import item because that would be rather circular
+        # so instead, we can just check for the name attribute...
+        # this is pretty ugly though, hopefully there's a nice
+        # way around this eventually
+        path.append(op)
+        item = self.__resolve_path(e, path)
+        if hasattr(v, "name") and hasattr(item, "name"):
+            return v is item
+        elif isinstance(v, str) and hasattr(item, "name"):
+            return item.name == v
+        elif hasattr(v, "name") and isinstance(item, str):
+            return item == v.name
+        else:
+            return item == v
 
     def __resolve_path(self, e, path):
         cur = e
