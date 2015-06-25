@@ -137,6 +137,69 @@ class BaseItem:
                         and not k.startswith('__')]
         }
 
+
+class ItemProxy(BaseItem):
+    def __init__(self, typename, host, name, commands, attrs, methods):
+        self.typename = typename
+        self.host = host
+        self.name = name
+        self.commands = commands
+        self.attrs = attrs
+        self.methods = methods
+        self._state = None
+
+        dispatcher.bind(self.__cache_update, idiotic.event.EventFilter(
+            item=self.name, type=idiotic.event.StateChangeEvent))
+
+    def __pack__(self):
+        return {"typename": self.typename,
+                "host": self.host,
+                "name": self.name,
+                "commands": self.commands,
+                "attrs": self.attrs,
+                "methods": self.methods,
+        }
+
+    def __cache_update(self, e):
+        self._state = e.new
+
+    def _set_state_from_context(self, val, source="rule"):
+        if self._state == val:
+            log.debug("Ignoring redundant state change for {}".format(self))
+            return
+
+        log.info("signaling change state on {} from {} -> {}".format(
+            self, self._state, val))
+
+        dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, source))
+
+    def __getattr__(self, attr):
+        if attr in self.commands:
+            return functools.partial(dispatcher.dispatch,
+                                     idiotic.event.SendCommandEvent,
+                                     source = None)
+        elif attr in self.attrs:
+            if attr in self._cache:
+                return self._cache[attr]
+            else:
+                raise NotImplementedError("Remote items do not yet support attribute access")
+
+    def __setattr__(self, attr, val):
+        if attr in self.attrs:
+            dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, None))
+        else:
+            raise NameError("Item has no attribute {}".format(attr))
+
+    def __repr__(self):
+        return "proxy for " + self.typename + " '" + self.name + "' on " + self.host
+
+    def __eq__(self, other):
+        return (isinstance(other, BaseItem) and self.name == other.name) or \
+            isinstance(other, str) and other == self.name
+
+    def __req__(self, lhs):
+        return self.__eq__(lhs)
+
 class Toggle(BaseItem):
     """An item which has two discrete states between which it may be
     toggled, and which is not affected by repeated identical commands.
