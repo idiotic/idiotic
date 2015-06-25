@@ -140,7 +140,7 @@ class EventAugmentation:
         raise NotImplementedError("You must override EventAugmentation.wrap()")
 
 class Delay(EventAugmentation):
-    def __init__(self, binder, period=None, cancel=False, reset=True):
+    def __init__(self, binder, period=None, cancel=False, reset=True, consume=False):
         """Initialize a rule augmentation that delays the execution of a rule
 when receives certain commands.
 
@@ -164,6 +164,11 @@ when receives certain commands.
                   reset the timer. If set to an iterable of EventBinder,
                   will reset when any event it contains is matched. If an
                   EventBinder, will reset when an event matches it.
+        consume-- When to consume an event without passing it along to the
+                  rule. This is distinct from cancel in that it will send
+                  an event twice if it was delayed without being consumed.
+                  This will only apply to events which were also matched
+                  by binder or reset.
 
         Example:
         The most common use case for this augmentation is for preventing
@@ -185,6 +190,9 @@ when receives certain commands.
 
         if reset != True and reset != False:
             self.reset = [reset.get_filter()] if isinstance(reset, EventBinder) else [r.get_filter() for r in reset]
+
+        if consume != True and consume != False:
+            self.consume = [consume.get_filter()] if isinstance(consume, EventBinder) else [c.get_filter() for c in consume]
 
         self.period = period
         self.job = None
@@ -210,33 +218,58 @@ when receives certain commands.
 
     def wrap(self, func):
         def wrapper(event, *args, **kwargs):
+            # check if we should consume it
+            consume = False
+            if self.consume is True:
+                consume = self.consume
+            elif self.consume:
+                for c in self.consume:
+                    if c.check(event):
+                        consume = True
+                        break
+
+            # Check whether event should be delayed
             for f in self.filt:
                 if f.check(event):
+                    # yes it should be delayed
                     if self.job:
+                        # it was already scheduled
                         if self.reset is True:
+                            # we always reset
                             self.reschedule(func, event)
                     else:
+                        # it hasn't been scheduled yet
                         self.schedule(func, event)
-                    return
+                    if not consume:
+                        return func(event, *args, **kwargs)
+                    else:
+                        return
 
             if self.job:
+                # it's already scheduled so check if we should cancel
                 if self.cancel is True:
+                    # we always cancel
                     self.cancel_job()
-                    return func(event, *args, **kwargs)
+                    if not consume:
+                        return func(event, *args, **kwargs)
+
                 elif self.cancel:
                     for c in self.cancel:
                         if c.check(event):
                             self.cancel_job()
-                            return func(event, *args, **kwargs)
+                            if not consume:
+                                return func(event, *args, **kwargs)
 
                 if self.reset:
                     for r in self.reset:
                         if r.check(event):
                             self.reschedule(func, event)
-                            return func(event, *args, **kwargs)
+                            if not consume:
+                                return func(event, *args, **kwargs)
 
             # Don't forget to pass it through if we're not capturing it!
-            return func(event, *args, **kwargs)
+            if not consume:
+                return func(event, *args, **kwargs)
         return wrapper
 
 class DeDup(EventAugmentation):
