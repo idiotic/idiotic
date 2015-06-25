@@ -5,7 +5,7 @@ from idiotic import event, modules
 log = logging.getLogger("idiotic.item")
 
 def command(func):
-    def decorator(self, *args, **kwargs):
+    def command_decorator(self, *args, **kwargs):
         # If we get passed a source (e.g., UI, Rule, Binding), consume
         # it so we don't break our child function
         if "source" in kwargs:
@@ -29,7 +29,7 @@ def command(func):
             func(self, *args, **kwargs)
             post_event = event.CommandEvent(self, command, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
-    return decorator
+    return command_decorator
 
 class BaseItem:
     """The base class for an item which implements all the basic
