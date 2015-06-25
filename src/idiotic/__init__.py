@@ -8,7 +8,7 @@ import threading
 
 log = logging.getLogger("idiotic.__init__")
 
-class ItemProxy:
+class ItemsProxy:
     def __init__(self, item_dict):
         self.__items = item_dict
 
@@ -24,7 +24,7 @@ class ItemProxy:
     def __contains__(self, k):
         return k in self.__items
 
-class ModuleProxy:
+class ModulesProxy:
     def __init__(self, module_dict):
         self.__modules = module_dict
 
@@ -66,7 +66,7 @@ class ScenesProxy:
 config = {}
 
 _items = {}
-items = ItemProxy(_items)
+items = ItemsProxy(_items)
 
 _scenes = {}
 scenes = ScenesProxy(_scenes)
@@ -74,7 +74,7 @@ scenes = ScenesProxy(_scenes)
 _rules = {}
 
 _modules = {}
-modules = ModuleProxy(_modules)
+modules = ModulesProxy(_modules)
 
 scheduler = schedule.Scheduler()
 
