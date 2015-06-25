@@ -56,6 +56,17 @@ class BaseEvent:
         res.update(self.__dict__)
         return json.dumps(res).encode('UTF-8')
 
+class SendStateChangeEvent(BaseEvent):
+    def __init__(self, item, new, source):
+        super().__init__()
+        self.item = item
+        self.new = new
+        self.source = source
+        self.canceled = False
+
+    def cancel(self):
+        pass
+
 class StateChangeEvent(BaseEvent):
     MODULE = 'idiotic'
     def __init__(self, item, old, new, source, kind):
@@ -69,6 +80,16 @@ class StateChangeEvent(BaseEvent):
 
     def __repr__(self):
         return "StateChangeEvent({0.kind}, {0.old} -> {0.new} on {0.item} from {0.source})".format(self)
+
+class SendCommandEvent(BaseEvent):
+    def __init__(self, item, command, source="rule"):
+        self.item = item
+        self.command = command
+        self.source = source
+        self.canceled = False
+
+    def cancel(self):
+        pass
 
 class CommandEvent(BaseEvent):
     def __init__(self, item, command, source, kind):
