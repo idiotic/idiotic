@@ -108,6 +108,19 @@ class BaseItem:
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
 
+    def __pack__(self):
+        return {
+            "typename": type(self).__name__,
+            "host": None,
+            "name": self.name,
+            "commands": [k for k, v in self.__dict__.keys() if callable(v)
+                         and v.__name__ == "command_decorator"],
+            "attrs": [k for k, v in self.__dict__.keys() if not callable(v)
+                      and not k.startswith('__')],
+            "methods": [k for k, v in self.__dict__.keys() if callable(v)
+                        and not k.startswith('__')]
+        }
+
 class Toggle(BaseItem):
     """An item which has two discrete states between which it may be
     toggled, and which is not affected by repeated identical commands.
