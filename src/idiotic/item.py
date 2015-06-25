@@ -21,7 +21,11 @@ def command(func):
 
         log.debug("@command({}) on {}".format(command, self))
 
-        # Create an event and send it 
+        if not self.enabled:
+            log.info("Ignoring command {} on disabled item {}".format(command, self))
+            return
+
+        # Create an event and send it
         pre_event = event.CommandEvent(self, command, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
 
@@ -49,6 +53,8 @@ class BaseItem:
             self.groups = set()
         else:
             self.groups = set(groups)
+
+        self.enabled = True
 
         idiotic._register_item(self)
 
@@ -85,6 +91,12 @@ class BaseItem:
     def __repr__(self):
         return type(self).__name__ + " '" + self.name + "' on local"
 
+    def disable(self):
+        self.enabled = False
+
+    def enable(self):
+        self.enabled = True
+
     @property
     def state(self):
         return self._state
@@ -94,6 +106,10 @@ class BaseItem:
         self._set_state_from_context(state)
 
     def _set_state_from_context(self, val, source="rule"):
+        if not self.enabled:
+            log.info("Ignoring state change on disabled item {}".format(self))
+            return
+
         # We don't send an event if there has been literally no change
         if self._state == val:
             log.debug("Ignoring redundant state change for {}".format(self))
