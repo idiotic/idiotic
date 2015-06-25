@@ -116,7 +116,7 @@ class SceneEvent(BaseEvent):
         self.canceled = True
 
     def __repr__(self):
-        return "SceneEvent({0.kind} {1} scene '{0.scene}'".format(self, "enter" if self.state else "leave")
+        return "SceneEvent({0.kind} {1} {0.scene}".format(self, "enter" if self.state else "leave")
 
 class EventFilter:
     def __init__(self, mode=None, filters=None, **kwargs):
