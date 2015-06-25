@@ -129,7 +129,7 @@ class Schedule(EventBinder):
         self.schedule = schedule
 
     def bind(self, callback):
-        self.schedule.do(callback)
+        self.schedule.do(lambda: callback(None))
         #idiotic.scheduler.bind_to_schedule(schedule, callback)
 
     def get_filter(self):
