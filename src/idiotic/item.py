@@ -1,6 +1,6 @@
 import logging
-import idiotic
 from idiotic import event, modules
+import idiotic
 
 log = logging.getLogger("idiotic.item")
 
@@ -324,7 +324,6 @@ class Group(BaseItem):
             try:
                 self.relay_commands = set(commands)
             except TypeError:
-                # 
                 self.relay_commands = _BagOfHolding()
         else:
             self.relay_commands = _Sieve()
@@ -337,7 +336,7 @@ class Group(BaseItem):
             elif callable(command_send):
                 self.send_commands = _ImposterDict(command_send)
             elif command_send is not None:
-                self.send_commansd = dict(command_send)
+                self.send_commands = dict(command_send)
 
         @property
         def state(self):
