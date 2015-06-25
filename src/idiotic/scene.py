@@ -35,16 +35,27 @@ class Scene:
         idiotic.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self.__active = val
+
+            if val:
+                self.entered()
+            else:
+                self.exited()
+
             post_event = event.SceneEvent(self, val, "after")
             idiotic.dispatcher.dispatch(post_event)
-            return True
-        return False
+        return val
 
     def enter(self):
         return self._switch(True)
 
     def exit(self):
         return self._switch(False)
+
+    def entered(self):
+        pass
+
+    def exited(self):
+        pass
 
     @property
     def active(self):
