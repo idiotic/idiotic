@@ -84,6 +84,19 @@ class CommandEvent(BaseEvent):
     def __repr__(self):
         return "CommandEvent({0.kind}, '{0.command}' on {0.item} from {0.source})".format(self)
 
+class SceneEvent(BaseEvent):
+    def __init__(self, scene, state, kind):
+        self.scene = scene
+        self.state = state
+        self.kind = kind
+        self.canceled = False
+
+    def cancel(self):
+        self.canceled = True
+
+    def __repr__(self):
+        return "SceneEvent({0.kind} {1} scene '{0.scene}'".format(self, "enter" if self.state else "leave")
+
 class EventFilter:
     def __init__(self, mode=None, filters=None, **kwargs):
         self.checks = []

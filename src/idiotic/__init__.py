@@ -43,10 +43,33 @@ class ModuleProxy:
     def __contains__(self, k):
         return k in self.__modules
 
+class ScenesProxy:
+    def __init__(self, scene_dict):
+        self.__scenes = scene_dict
+
+    def all(self, mask=lambda _:True):
+        return filter(mask, self.__scenes.values())
+
+    def __getattr__(self, name, default=NameError):
+        if name in self.__scenes:
+            return self.__scenes[name]
+        else:
+            if default is NameError:
+                raise NameError("Scene {} not found.".format(name))
+            else:
+                return default
+
+    def __contains__(self, k):
+        return k in self.__scenes
+
+
 config = {}
 
 _items = {}
 items = ItemProxy(_items)
+
+_scenes = {}
+scenes = ScenesProxy(_scenes)
 
 _rules = {}
 
@@ -98,6 +121,10 @@ def _mangle_name(name):
 def _register_item(item):
     global _items
     _items[_mangle_name(item.name)] = item
+
+def _register_scene(name, scene):
+    global _scenes
+    _scenes[_mangle_name(name)] = scene
 
 def _join_url(*paths):
     return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))
