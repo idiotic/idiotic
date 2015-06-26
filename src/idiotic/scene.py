@@ -17,12 +17,10 @@ class SceneType(type):
 
     def __init__(self, name, bases, attrs):
         super(SceneType, self).__init__(name, bases, attrs)
+        if name != "Scene":
+            idiotic._register_scene(self.NAME, self())
 
-        idiotic._register_scene(self.NAME, self())
-
-class Scene:
-    __metaclass__ = SceneType
-
+class Scene(metaclass=SceneType):
     def __init__(self):
         self.__active = False
 
