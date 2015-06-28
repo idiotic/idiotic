@@ -1,4 +1,4 @@
-from . import amqp, udp
+from . import udp
 from . import base
 
-__ALL__ = [amqp, base, udp]
+__ALL__ = [base, udp]

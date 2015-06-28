@@ -119,7 +119,6 @@ def init():
         if "method" in config["distribution"]:
             # Built-in methods go here
             methods = {
-                "amqp": distrib.amqp,
                 "udp": distrib.udp,
             }
             log.debug("Searching for module {}...".format(config["distribution"]["method"]))
