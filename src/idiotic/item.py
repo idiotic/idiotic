@@ -41,9 +41,15 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None, bindings=None, update=None):
+    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None):
         self.name = name
         self._state = None
+
+        if tags is None:
+            self.tags = set()
+        else:
+            self.tags = set(tags)
+
         if friends is None:
             self.friends = {}
         else:
@@ -96,6 +102,15 @@ class BaseItem:
 
     def enable(self):
         self.enabled = True
+
+    def has_tag(self, tag):
+        return tag and tag.lower() in self.tags
+
+    def add_tag(self, tag):
+        self.tags.add(tag)
+
+    def remove_tag(self, tag):
+        self.tags.remove(tag)
 
     @property
     def state(self):
