@@ -177,7 +177,7 @@ class EventFilter:
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) == v)
                 elif op == "type_not":
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) != v)
-                elif op == "item":
+                elif False and op == "item":
                     # hack so we can check that the 'item' of an event by name
                     self.checks.append(functools.partial(self._item_check_hack, path, op, v))
                 else:
