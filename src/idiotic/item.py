@@ -263,6 +263,50 @@ class Number(BaseItem):
         except (ValueError, TypeError) as e:
             log.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
 
+class Motor(BaseItem):
+    """An item which can move forward, reverse, and stop."""
+
+    # Options for the current state.
+    MOVING_FORWARD = "MOVING_FORWARD"
+    MOVING_REVERSE = "MOVING_REVERSE"
+    STOPPED = "STOPPED"
+    STOPPED_START = "STOPPED_START"
+    STOPPED_END = "STOPPED_END"
+
+    STATES = (MOVING_FORWARD,
+              MOVING_REVERSE,
+              STOPPED)
+
+    STATES_CONSTRAINED = STATES + (STOPPED_START,
+              STOPPED_END)
+
+    def __init__(self, *args, constrained=False, timeout=None, **kwargs):
+        self.constrained = constrained
+        self.timeout = timeout
+        super().__init__(self, *args, **kwargs)
+
+    @command
+    def forward(self):
+        if self.state != Motor.STOPPED_END or not self.constrained:
+            self.state = Motor.MOVING_FORWARD
+            if self.timeout:
+                raise NotImplemented("timeout is not implemented. probably should do it with asyncio, or implement timers")
+        else:
+            log.notice("Not moving {} forward; already at end stop".format(self))
+
+    @command
+    def reverse(self):
+        if self.state != Motor.STOPPED_START or not self.constrained:
+            self.state = Motor.MOVING_REVERSE
+            if self.timeout:
+                raise NotImplemented("timeout is not implemented. probably should do it with asyncio, or implement timers")
+        else:
+            log.notice("Not moving {} reverse; already at start stop".format(self))
+
+    @command
+    def stop(self):
+        self.state = Motor.STOPPED
+
 class _BagOfHolding:
     def __contains__(self, arg):
         return True
