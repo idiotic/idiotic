@@ -283,7 +283,7 @@ class Motor(BaseItem):
     def __init__(self, *args, constrained=False, timeout=None, **kwargs):
         self.constrained = constrained
         self.timeout = timeout
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @command
     def forward(self):
