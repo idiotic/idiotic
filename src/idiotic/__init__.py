@@ -107,7 +107,10 @@ def on_after_state_change(evt):
 def run_scheduled_jobs():
     while True:
         try:
-            yield from scheduler.run_pending()
+            if [job for job in scheduler.jobs if job.should_run]:
+                yield from scheduler.run_pending()
+            else:
+                yield from asyncio.sleep(1)
         except:
             log.exception("Exception in scheduler.run_pending()")
             yield from asyncio.sleep(1)
