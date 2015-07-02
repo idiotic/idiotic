@@ -69,9 +69,10 @@ class BaseItem:
                 log.debug("Setting {} bindings on {}".format(module_name, self))
                 try:
                     module = getattr(modules, module_name)
-                    module.bind_item(self, **args)
                 except NameError:
                     log.warning("Module '{}' not found -- skipping".format(module_name))
+                else:
+                    module.bind_item(self, **args)
 
         if update:
             def wrap_update(item, attr, base_func):
