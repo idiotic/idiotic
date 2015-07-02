@@ -123,6 +123,12 @@ class BaseItem:
     def state(self, state):
         self._set_state_from_context(state)
 
+    def command(self, name, *args, **kwargs):
+        if hasattr(self, name) and callable(getattr(self, name)):
+            return getattr(self, name)(*args, **kwargs)
+        else:
+            raise ValueError("Command {} on item {} does not exist or is not a command".format(name, self))
+
     def _set_state_from_context(self, val, source="rule"):
         if not self.enabled:
             log.info("Ignoring state change on disabled item {}".format(self))
