@@ -187,16 +187,21 @@ when receives certain commands.
 
         if cancel != True and cancel != False:
             self.cancel = [cancel.get_filter()] if isinstance(cancel, EventBinder) else [c.get_filter() for c in cancel]
+        else:
+            self.cancel = cancel
 
         if reset != True and reset != False:
             self.reset = [reset.get_filter()] if isinstance(reset, EventBinder) else [r.get_filter() for r in reset]
+        else:
+            self.reset = reset
 
         if consume != True and consume != False:
             self.consume = [consume.get_filter()] if isinstance(consume, EventBinder) else [c.get_filter() for c in consume]
+        else:
+            self.consume = consume
 
         self.period = period
         self.job = None
-
 
     def schedule(self, func, event):
         runtime = (datetime.datetime.now() + datetime.timedelta(seconds=self.period)).time()
