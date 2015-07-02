@@ -255,7 +255,7 @@ class Trigger(BaseItem):
         super().__init__(*args, **kwargs)
 
     @command
-    def activate(self):
+    def trigger(self):
         pass
 
 class Number(BaseItem):
