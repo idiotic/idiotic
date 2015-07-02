@@ -109,6 +109,7 @@ def run_scheduled_jobs():
         try:
             yield from scheduler.run_pending()
         except:
+            log.exception("Exception in scheduler.run_pending()")
             yield from asyncio.sleep(1)
 
 def _set_config(conf):
