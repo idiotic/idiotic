@@ -63,6 +63,10 @@ class Scene(metaclass=SceneType):
     def active(self, val):
         return self._switch(bool(val))
 
+    @property
+    def name(self):
+        return type(self).__name__
+
     def __bool__(self):
         return self.__active
 
