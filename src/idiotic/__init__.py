@@ -111,8 +111,10 @@ def on_after_state_change(evt):
 def run_scheduled_jobs():
     while True:
         try:
-            if [job for job in scheduler.jobs if job.should_run]:
-                scheduler.run_pending()
+            runnable_jobs = sorted((job for job in scheduler.jobs if job.should_run))
+            if len(runnable_jobs):
+                for job in runnable_jobs:
+                    yield from asyncio.coroutine(scheduler._run_job)(job)
             else:
                 yield from asyncio.sleep(1)
         except:
