@@ -108,7 +108,7 @@ def run_scheduled_jobs():
     while True:
         try:
             if [job for job in scheduler.jobs if job.should_run]:
-                yield from scheduler.run_pending()
+                scheduler.run_pending()
             else:
                 yield from asyncio.sleep(1)
         except:
