@@ -12,6 +12,10 @@ class ItemsProxy:
     def __init__(self, item_dict):
         self.__items = item_dict
 
+    def with_tags(self, tags):
+        ts = set(tags)
+        return self.all(mask=lambda i:ts.issubset(i.tags))
+
     def all(self, mask=lambda _:True):
         return filter(mask, self.__items.values())
 
