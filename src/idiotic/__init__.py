@@ -1,7 +1,7 @@
 import schedule
 import time
 import asyncio
-from flask import Flask, json, request
+from flask import Flask, json, request, Response
 from idiotic.dispatch import Dispatcher
 import logging
 import threading
@@ -133,7 +133,7 @@ def _register_scene(name, scene):
 def _join_url(*paths):
     return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))
 
-def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, *args, **kwargs):
+def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
             if get_args is True:
@@ -158,7 +158,10 @@ def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, *args,
         except Exception as e:
             log.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
             return json.jsonify({"status": "error", "description": str(e)})
-        return json.jsonify({"status": "success", "result": res})
+        if content_type is None:
+            return json.jsonify({"status": "success", "result": res})
+        else:
+            return Response(res, mimetype=content_type)
     return wrapper
 
 class _API:
@@ -169,9 +172,12 @@ class _API:
             base = _join_url("/api/module", self.modname)
         self.path = base
 
-    def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, **kwargs):
-        log.info("Adding API endpoint for {}: {}".format(self.modname,
-                                                         _join_url(self.path, path)))
+    def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, content_type=None, **kwargs):
+        log.info("Adding API endpoint for {}: {} (content type {})".format(
+            self.modname,
+            _join_url(self.path, path),
+            content_type
+        ))
         return api.add_url_rule(_join_url(self.path, path),
                                 "mod_{}_{}".format(self.modname,
                                                    getattr(func, "__name__", "<unknown>")),
