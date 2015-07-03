@@ -94,11 +94,11 @@ def init():
 
     # load modules
     log.info("Loading modules from {}".format(arguments["modules"]))
-    for module in utils.load_dir(arguments["modules"]):
+    for module, assets in utils.load_dir(arguments["modules"], True):
         if module.__name__.startswith("_"):
-            _register_builtin_module(module)
+            _register_builtin_module(module, assets)
         else:
-            _register_module(module)
+            _register_module(module, assets)
 
     # load items
     log.info("Loading items from {}".format(arguments["items"]))

@@ -174,9 +174,9 @@ class _API:
                                                          _join_url(self.path, path)))
         return api.add_url_rule(_join_url(self.path, path),
                                 "mod_{}_{}".format(self.modname,
-                                                   func.__name__),
-                                _wrap_for_result(func, get_args, get_form, get_data))
-def _register_module(module):
+                                                   getattr(func, "__name__", "<unknown>")),
+                                _wrap_for_result(func, get_args, get_form, get_data, content_type=content_type))
+def _register_module(module, assets=None):
     name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if config.get("modules", {}).get(name, {}).get("disable", False):
@@ -186,17 +186,22 @@ def _register_module(module):
     if hasattr(module, "configure"):
         log.info("Configuring module {}".format(name))
         log.info("Config: {}".format(config))
-        module.configure(config.get("modules", {}).get(name, {}), _API(module, config.get("modules", {}).get(name, {}).get("api_base", None)))
+        module.configure(config.get("modules", {}).get(name, {}),
+                         _API(module, config.get("modules", {}).get(name, {}).get("api_base", None)),
+                         assets)
 
     global _modules
     _modules[name] = module
 
-def _register_builtin_module(module):
+def _register_builtin_module(module, assets=None):
     name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if hasattr(module, "configure"):
         log.info("Configuring system module {}".format(name))
-        module.configure(config, config.get(name, {}), _API(module, "/"))
+        module.configure(config,
+                         config.get(name, {}),
+                         _API(module, "/"),
+                         assets)
 
     global _modules
     _modules[name] = module
