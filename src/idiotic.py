@@ -16,7 +16,6 @@ Options:
   -r --rules=<dir>    Path to rules config directory [default: <base>/rules].
   -i --items=<dir>    Path to items config directory [default: <base>/items].
   -m --modules=<dir>  Path to modules directory [default: <base>/modules].
-  -u --ui=<dir>       Path to UI config directory [default: <base>/ui].
   -s --standalone     Run without connecting to other instances.
 """
 
