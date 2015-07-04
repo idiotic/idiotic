@@ -142,15 +142,17 @@ def _join_url(*paths):
 def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
+            clean_get_args = {k: v[0] for k, v in getattr(request, "args", {}).items()}
             if get_args is True:
-                kwargs.update(getattr(request, "args", {}))
+                kwargs.update(clean_get_args)
             elif get_args:
-                kwargs[get_args] = getattr(request, "args", {})
+                kwargs[get_args] = clean_get_args
 
+            clean_form = {k: v[0] for k, v in getattr(request, "form", {}).items()}
             if get_form is True:
-                kwargs.update(getattr(request, "form", {}))
+                kwargs.update(clean_form)
             elif get_form:
-                kwargs[get_form] = getattr(request, "form", {})
+                kwargs[get_form] = clean_form
 
             if get_data is True:
                 kwargs["data"] = getattr(request, "data", "")
