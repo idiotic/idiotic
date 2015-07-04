@@ -4,13 +4,13 @@
 Usage:
   idiotic.py --help
   idiotic.py --version
-  idiotic.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--modules=<dir>] [--ui=<dir>]] [-v | -vv | -vvv | -vvvv | -vvvvv] [-s]
-  idiotic.py <test>
+  idiotic.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--modules=<dir>]] [-v | -vv | -q | -qq] [-s]
 
 Options:
   -h --help           Show this text.
      --version        Print the version
   -v --verbose        Set verbosity.
+  -q --quiet          Suppress output. Use -qq to suppress even errors.
   -b --base=<dir>     Path to idiotic config base directory [default: /etc/idiotic].
   -c --config=<file>  Path to idiotic config file [default: <base>/conf.json].
   -r --rules=<dir>    Path to rules config directory [default: <base>/rules].
@@ -75,7 +75,21 @@ def init():
     # load configuration
     global config
     global name
-    logging.basicConfig(level=max(0, 5-arguments["verbose"]))
+
+    verbose = arguments.get("verbose", 0)
+    quiet = arguments.get("quiet", 0)
+    level = logging.INFO
+
+    if verbose == 1:
+        level = logging.DEBUG
+    elif verbose == 2:
+        level = logging.DEBUG
+    elif quiet == 1:
+        level = logging.ERROR
+    elif quiet == 2:
+        level = logging.CRITICAL + 1
+
+    logging.basicConfig(level=level)
     try:
         with open(arguments["config"]) as conf_file:
             config = json.load(conf_file)
