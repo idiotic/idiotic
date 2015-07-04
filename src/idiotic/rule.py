@@ -264,7 +264,12 @@ when receives certain commands.
                             if not consume:
                                 return func(event, *args, **kwargs)
 
-                if self.reset:
+                if self.reset is True:
+                    self.reschedule(func, event)
+                    if not consume:
+                        return func(event, *args, **kwargs)
+
+                elif self.reset:
                     for r in self.reset:
                         if r.check(event):
                             self.reschedule(func, event)
