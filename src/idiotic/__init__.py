@@ -6,7 +6,7 @@ from idiotic.dispatch import Dispatcher
 import logging
 import threading
 
-log = logging.getLogger("idiotic.__init__")
+log = logging.getLogger("idiotic.init")
 
 class ItemsProxy:
     def __init__(self, item_dict):
@@ -197,7 +197,6 @@ def _register_module(module, assets=None):
 
     if hasattr(module, "configure"):
         log.info("Configuring module {}".format(name))
-        log.info("Config: {}".format(config))
         module.configure(config.get("modules", {}).get(name, {}),
                          _API(module, config.get("modules", {}).get(name, {}).get("api_base", None)),
                          assets)
