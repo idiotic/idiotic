@@ -1,3 +1,4 @@
+import asyncio
 import idiotic
 import logging
 import datetime
@@ -207,20 +208,16 @@ when receives certain commands.
 
     def schedule(self, func, event):
         runtime = (datetime.datetime.now() + datetime.timedelta(seconds=self.period)).time()
-        timestr = "{:%H:%M}".format(runtime)
-        # This is a stupid hack, because schedule doesn't let you add seconds
-        self.job = idiotic.scheduler.every().day.at(timestr)
-        self.job.at_time = runtime
-        self.job.do_once(func, event)
+        loop = asyncio.get_event_loop()
+        self.job = loop.call_later(self.period, func, event)
 
     def cancel_job(self):
         if self.job:
-            idiotic.scheduler.cancel_job(self.job)
+            self.job.cancel()
             self.job = None
 
     def reschedule(self, func, event):
-        if self.job:
-            self.cancel_job()
+        self.cancel_job()
         self.schedule(func, event)
 
     def wrap(self, func):
