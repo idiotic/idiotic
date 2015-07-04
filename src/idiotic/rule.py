@@ -140,7 +140,7 @@ class EventAugmentation:
         raise NotImplementedError("You must override EventAugmentation.wrap()")
 
 class Delay(EventAugmentation):
-    def __init__(self, binder, period=None, cancel=False, reset=True, consume=False):
+    def __init__(self, binder, period=None, cancel=False, reset=True, consume=None):
         """Initialize a rule augmentation that delays the execution of a rule
 when receives certain commands.
 
@@ -195,7 +195,9 @@ when receives certain commands.
         else:
             self.reset = reset
 
-        if consume != True and consume != False:
+        if consume is None:
+            self.consume = self.filt
+        elif consume != True and consume != False:
             self.consume = [consume.get_filter()] if isinstance(consume, EventBinder) else [c.get_filter() for c in consume]
         else:
             self.consume = consume
