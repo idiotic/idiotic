@@ -16,7 +16,7 @@ def configure(global_config, config, api, assets):
     api.serve(item_enable, '/api/item/<name>/enable')
     api.serve(item_disable, '/api/item/<name>/disable')
 
-def scene_command(name, command):
+def scene_command(name, command, *_, **__):
     try:
         scene = getattr(scenes, _mangle_name(name))
         if command == "enter":
