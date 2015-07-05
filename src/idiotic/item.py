@@ -1,6 +1,6 @@
 import logging
-from idiotic import event, modules
 import idiotic
+from idiotic import event, modules, utils
 
 log = logging.getLogger("idiotic.item")
 
@@ -31,6 +31,10 @@ def command(func):
 
         if not pre_event.canceled:
             func(self, *args, **kwargs)
+
+            if hasattr(self, "command_history"):
+                self.command_history.record(command)
+
             post_event = event.CommandEvent(self, command, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
     return command_decorator
@@ -61,6 +65,9 @@ class BaseItem:
             self.groups = set(groups)
 
         self.enabled = True
+
+        self.command_history = utils.History()
+        self.state_history = utils.History()
 
         idiotic._register_item(self)
 
@@ -146,6 +153,10 @@ class BaseItem:
         idiotic.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self._state = val
+
+            if hasattr(self, "state_history"):
+                self.state_history.record(self._state)
+
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
 
