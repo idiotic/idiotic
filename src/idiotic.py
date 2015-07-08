@@ -30,7 +30,7 @@ import logging
 import schedule
 import threading
 import aiohttp.wsgi
-from idiotic import utils, item, items, rule, distrib, dispatcher, run_scheduled_jobs, scheduler, _register_module, _register_builtin_module, _set_config, _start_distrib, modules, api, event
+from idiotic import utils, item, items, rule, distrib, dispatcher, run_scheduled_jobs, scheduler, _register_module, _register_builtin_module, _set_config, _start_distrib, _start_persistence, _stop_persistence, modules, api, event
 
 log = logging.getLogger("idiotic.main")
 
@@ -154,7 +154,21 @@ def init():
     else:
         log.info("Not setting up distribution.")
 
-    # start running updates / bindings
+    # connect to persistence engine
+    if "persistence" in config and config["persistence"]:
+        log.info("Connecting to persistence engine...")
+        if not getattr(config["persistence"], "disabled", False):
+            if "method" in config["persistence"]:
+                try:
+                    _start_persistence(config["persistence"]["method"], config["persistence"])
+                except NameError:
+                    log.error("Could not locate persistence engine '{}' -- check spelling?".format(config["persistence"]["method"]))
+            else:
+                log.warn("Persistence engine not specified. Skipping.")
+        else:
+            log.warn("Persistence is disabled.")
+    else:
+        log.info("Not setting up persistence.")
 
     # start running rules
     # start serving API
@@ -166,6 +180,9 @@ def shutdown():
     if distrib_instance:
         distrib_instance.stop()
         distrib_instance.disconnect()
+
+    _stop_persistence()
+
     waiter.join_all()
     logging.shutdown()
 

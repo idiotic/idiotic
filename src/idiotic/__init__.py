@@ -80,9 +80,13 @@ _rules = {}
 _modules = {}
 modules = ModulesProxy(_modules)
 
+_persistences = {}
+
 scheduler = schedule.Scheduler()
 
 dispatcher = Dispatcher()
+
+persist_instance = None
 
 distribution = None
 
@@ -135,6 +139,10 @@ def _register_item(item):
 def _register_scene(name, scene):
     global _scenes
     _scenes[_mangle_name(name)] = scene
+
+def _register_persistence(name, cls):
+    global _persistences
+    _persistences[_mange_name(name)] = cls
 
 def _join_url(*paths):
     return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))
@@ -227,3 +235,13 @@ def _start_distrib(dist_cls, host, conf):
     thread.start()
 
     return distribution, thread
+
+def _start_persistence(pers_cls, conf):
+    global persist_instance
+    persist_instance = pers_cls(conf)
+    persist_instance.connect()
+
+def _stop_persistence():
+    if persist_instance:
+        persist_instance.sync()
+        persist_instance.disconnect()

@@ -1,6 +1,6 @@
 import logging
 import idiotic
-from idiotic import event, modules, utils
+from idiotic import event, modules, utils, persist_instance
 
 log = logging.getLogger("idiotic.item")
 
@@ -34,6 +34,11 @@ def command(func):
 
             if hasattr(self, "command_history"):
                 self.command_history.record(command)
+
+            if persist_instance:
+                persist_instance.append_item_history(self, datetime.datetime.now(),
+                                                     command, kind="command",
+                                                     extra={"args": args, "kwargs": kwargs} if args or kwargs else None)
 
             post_event = event.CommandEvent(self, command, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
@@ -156,6 +161,10 @@ class BaseItem:
 
             if hasattr(self, "state_history"):
                 self.state_history.record(self._state)
+
+            if persist_instance:
+                persist_instance.append_item_history(self, datetime.datetime.now(),
+                                                     val, kind="state")
 
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
