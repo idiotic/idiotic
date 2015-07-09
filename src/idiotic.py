@@ -138,7 +138,7 @@ def init():
             if config["distribution"]["method"] in methods:
                 distrib_module = methods[config["distribution"]["method"]]
             else:
-                distrib_module = getattr(modules, config["distribution"]["method"], None)
+                distrib_module = modules.get(config["distribution"]["method"], None)
 
             if distrib_module and hasattr(distrib_module, "METHOD"):
                 distrib_class = getattr(distrib_module, "METHOD")

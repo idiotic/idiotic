@@ -25,7 +25,7 @@ class AttrDict:
             raise NameError("Could not find locate {}".format(key))
 
     def __getitem__(self, index):
-        return getattr(self, _mangle_name(index))
+        return getattr(self, mangle_name(index))
 
     def __contains__(self, key):
         return key in self.__values
@@ -138,6 +138,9 @@ class Filter:
     def __repr__(self):
         return "Filter({})".format(", ".join(
             ("{}=<{}>".format(k.replace("__","."),repr(v)) for k,v in self.checks_def.items())))
+
+def mangle_name(name):
+    return ''.join(filter(lambda x:x.isalnum() or x=='_', name.lower().replace(" ", "_"))) if name else ""
 
 def load_dir(path, include_assets=False):
     sys.path.insert(0, os.path.abspath("."))

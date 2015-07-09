@@ -3,7 +3,7 @@ import time
 import asyncio
 from flask import Flask, json, request, Response
 from idiotic.dispatch import Dispatcher
-from idiotic.utils import AttrDict, TaggedDict
+from idiotic.utils import AttrDict, TaggedDict, mangle_name
 import logging
 import threading
 
@@ -68,9 +68,6 @@ def _set_config(conf):
     global config
     config.update(conf)
 
-def _mangle_name(name):
-    return ''.join(filter(lambda x:x.isalnum() or x=='_', name.lower().replace(" ", "_"))) if name else ""
-
 def _register_item(item):
     items._set(item.name, item)
 
@@ -119,23 +116,23 @@ def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, conten
 class _API:
     def __init__(self, module, base=None):
         self.module = module
-        self.modname = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
+        self.modname = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
         if not base:
-            base = _join_url("/api/module", self.modname)
+            base = join_url("/api/module", self.modname)
         self.path = base
 
     def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, content_type=None, **kwargs):
         log.info("Adding API endpoint for {}: {} (content type {})".format(
             self.modname,
-            _join_url(self.path, path),
+            join_url(self.path, path),
             content_type
         ))
-        return api.add_url_rule(_join_url(self.path, path),
+        return api.add_url_rule(join_url(self.path, path),
                                 "mod_{}_{}".format(self.modname,
                                                    getattr(func, "__name__", "<unknown>")),
                                 _wrap_for_result(func, get_args, get_form, get_data, content_type=content_type))
 def _register_module(module, assets=None):
-    name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
+    name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if config.get("modules", {}).get(name, {}).get("disable", False):
         log.info("Module {} is disabled; skipping registration".format(name))
@@ -151,7 +148,7 @@ def _register_module(module, assets=None):
     _modules[name] = module
 
 def _register_builtin_module(module, assets=None):
-    name = _mangle_name(getattr(module, "MODULE_NAME", module.__name__))
+    name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if hasattr(module, "configure"):
         log.info("Configuring system module {}".format(name))
