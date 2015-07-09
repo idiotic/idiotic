@@ -102,10 +102,10 @@ class BaseItem:
 
     def bind_on_command(self, function, **kwargs):
         log.debug("Binding on command for {}".format(self))
-        idiotic.dispatcher.bind(function, event.EventFilter(type=event.CommandEvent, item=self, **kwargs))
+        idiotic.dispatcher.bind(function, utils.Filter(type=event.CommandEvent, item=self, **kwargs))
 
     def bind_on_change(self, function, **kwargs):
-        idiotic.dispatcher.bind(function, event.EventFilter(type=event.StateChangeEvent, item=self, **kwargs))
+        idiotic.dispatcher.bind(function, utils.Filter(type=event.StateChangeEvent, item=self, **kwargs))
 
     def __str__(self):
         return type(self).__name__ + " '" + self.name + "'"
@@ -193,7 +193,7 @@ class ItemProxy(BaseItem):
         self.methods = methods
         self._state = None
 
-        dispatcher.bind(self.__cache_update, idiotic.event.EventFilter(
+        dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
             item=self.name, type=idiotic.event.StateChangeEvent))
 
     def __pack__(self):

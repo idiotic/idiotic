@@ -145,7 +145,7 @@ def init():
                 global distrib_instance
                 distrib_instance, thread = _start_distrib(distrib_class, name, config["distribution"])
                 waiter.threads.append(thread)
-                dispatcher.bind(lambda e:distrib_instance.send(event.pack_event(e)), event.EventFilter(not_hasattr='_remote'))
+                dispatcher.bind(lambda e:distrib_instance.send(event.pack_event(e)), utils.Filter(not_hasattr='_remote'))
                 distrib_instance.receive(lambda e:dispatcher.dispatch(event.unpack_event(e, modules)))
             else:
                 log.error("Could not locate distribution method '{}' -- check spelling?".format(config["distribution"]["method"]))

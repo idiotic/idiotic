@@ -1,4 +1,4 @@
-from idiotic.event import EventFilter
+from idiotic.utils import Filter
 from asyncio import coroutine, Queue, sleep, QueueEmpty, QueueFull
 import logging
 import functools
@@ -10,8 +10,8 @@ class Dispatcher:
         self.bindings = []
         self.queue = Queue()
 
-    def bind(self, action, filt=EventFilter()):
-        # The default event filter will always return True
+    def bind(self, action, filt=Filter()):
+        # The default filter will always return True
         self.bindings.append( (action, filt) )
 
     def unbind(self, action):

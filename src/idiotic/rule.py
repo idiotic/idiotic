@@ -80,7 +80,7 @@ class Command(EventBinder):
             kw["command__in"] = self.commands
             kw["kind"] = self.time
 
-        return idiotic.event.EventFilter(type=idiotic.event.CommandEvent, **kw)
+        return idiotic.utils.Filter(type=idiotic.event.CommandEvent, **kw)
 
     def bind(self, callback):
         if self.commands is None and self.time == "both":
@@ -107,7 +107,7 @@ class Change(EventBinder):
             kw['new'] = self.new
         if self.time != "both":
             kw['kind'] = self.time
-        return idiotic.event.eventFilter(type=idiotic.event.StateChangeEvent, item=self.item, **kw)
+        return idiotic.utils.Filter(type=idiotic.event.StateChangeEvent, item=self.item, **kw)
 
     def bind(self, callback):
         kw = {}
