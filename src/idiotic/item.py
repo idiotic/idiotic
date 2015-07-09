@@ -1,6 +1,6 @@
 import logging
 import idiotic
-from idiotic import event, modules, history, persist_instance
+from idiotic import event, modules, history, persist_instance, utils
 
 log = logging.getLogger("idiotic.item")
 
