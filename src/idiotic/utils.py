@@ -14,9 +14,9 @@ class AttrDict:
 
     def all(self, filt=None):
         if isinstance(filt, Filter):
-            return filter(self.__values.values(), filt.check)
+            return filter(filt.check, self.__values.values())
         elif callable(filt):
-            return filter(self.__values.values(), filt)
+            return filter(filt, self.__values.values())
         else:
             return self.__values.values()
 
