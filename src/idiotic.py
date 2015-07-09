@@ -157,7 +157,7 @@ def init():
     # connect to persistence engine
     if "persistence" in config and config["persistence"]:
         log.info("Connecting to persistence engine...")
-        if not getattr(config["persistence"], "disabled", False):
+        if not config["persistence"].get("disabled", False):
             if "method" in config["persistence"]:
                 try:
                     _start_persistence(config["persistence"]["method"], config["persistence"])
