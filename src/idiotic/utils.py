@@ -10,7 +10,7 @@ class AttrDict:
         self.__values = dict(values)
 
     def _set(self, key, value):
-        self.__values[key] = value
+        self.__values[mangle_name(key)] = value
 
     def all(self, filt=None):
         if isinstance(filt, Filter):
@@ -21,13 +21,14 @@ class AttrDict:
             return self.__values.values()
 
     def __getattr__(self, key):
-        if key in self.__values:
-            return self.__values[key]
+        mangled = mangle_name(key)
+        if mangled in self.__values:
+            return self.__values[mangled]
         else:
             raise NameError("Could not find locate {}".format(key))
 
     def __getitem__(self, index):
-        return getattr(self, mangle_name(index))
+        return getattr(self, index)
 
     def __contains__(self, key):
         return key in self.__values
