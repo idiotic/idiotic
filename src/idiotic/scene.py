@@ -1,4 +1,4 @@
-from idiotic import event, utils
+from idiotic import event, history
 import idiotic
 import logging
 
@@ -23,7 +23,7 @@ class SceneType(type):
 class Scene(metaclass=SceneType):
     def __init__(self):
         self.__active = False
-        self.history = utils.History()
+        self.history = history.History()
 
     def _switch(self, val):
         if self.__active == val:

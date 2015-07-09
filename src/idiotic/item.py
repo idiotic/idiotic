@@ -1,6 +1,6 @@
 import logging
 import idiotic
-from idiotic import event, modules, utils, persist_instance
+from idiotic import event, modules, history, persist_instance
 
 log = logging.getLogger("idiotic.item")
 
@@ -71,8 +71,8 @@ class BaseItem:
 
         self.enabled = True
 
-        self.command_history = utils.History()
-        self.state_history = utils.History()
+        self.command_history = history.History()
+        self.state_history = history.History()
 
         idiotic._register_item(self)
 
