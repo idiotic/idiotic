@@ -3,7 +3,7 @@ import time
 import asyncio
 from flask import Flask, json, request, Response
 from idiotic.dispatch import Dispatcher
-from idiotic.utils import AttrDict, TaggedDict, mangle_name
+from idiotic.utils import AttrDict, TaggedDict, mangle_name, join_url
 import logging
 import threading
 
@@ -76,9 +76,6 @@ def _register_scene(name, scene):
 
 def _register_persistence(name, cls):
     _persistences._set(name, cls)
-
-def _join_url(*paths):
-    return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))
 
 def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, *args, **kwargs):
     def wrapper(*args, **kwargs):

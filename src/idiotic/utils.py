@@ -139,6 +139,9 @@ class Filter:
         return "Filter({})".format(", ".join(
             ("{}=<{}>".format(k.replace("__","."),repr(v)) for k,v in self.checks_def.items())))
 
+def join_url(*paths):
+    return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))
+
 def mangle_name(name):
     return ''.join(filter(lambda x:x.isalnum() or x=='_', name.lower().replace(" ", "_"))) if name else ""
 
