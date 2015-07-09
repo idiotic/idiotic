@@ -1,4 +1,5 @@
 from .api import _APIWrapper, join_url
+from .etc import mangle_name
 import logging
 import imp
 import sys
@@ -142,9 +143,6 @@ class Filter:
     def __repr__(self):
         return "Filter({})".format(", ".join(
             ("{}=<{}>".format(k.replace("__","."),repr(v)) for k,v in self.checks_def.items())))
-
-def mangle_name(name):
-    return ''.join(filter(lambda x:x.isalnum() or x=='_', name.lower().replace(" ", "_"))) if name else ""
 
 def load_dir(path, include_assets=False):
     sys.path.insert(0, os.path.abspath("."))

@@ -1,3 +1,8 @@
+from .etc import mangle_name
+import logging
+
+log = logging.getLogger("idiotic.utils.api")
+
 class _APIWrapper:
     def __init__(self, api, module, base=None):
         self.__api = api
