@@ -90,8 +90,7 @@ def _register_module(module, assets=None):
                          utils._APIWrapper(api, module, config.get("modules", {}).get(name, {}).get("api_base", None)),
                          assets)
 
-    global _modules
-    _modules[name] = module
+    modules._set(name, module)
 
 def _register_builtin_module(module, assets=None):
     name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
@@ -103,8 +102,7 @@ def _register_builtin_module(module, assets=None):
                          utils._APIWrapper(api, module, "/"),
                          assets)
 
-    global _modules
-    _modules[name] = module
+    modules._set(name, module)
 
 def _start_distrib(dist_cls, host, conf):
     global distribution
