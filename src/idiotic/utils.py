@@ -4,8 +4,36 @@ import sys
 import os
 
 class AttrDict:
-    def __init__(self, values):
+    def __init__(self, values={}):
         self.__values = dict(values)
+
+    def _set(self, key, value):
+        self.__values[key] = value
+
+    def all(self, filt=None):
+        if isinstance(filt, Filter):
+            return filter(self.__values.values(), filt.check)
+        elif callable(filt):
+            return filter(self.__values.values(), filt)
+        else:
+            return self.__values.values()
+
+    def __getattr__(self, key):
+        if key in self.__values:
+            return self.__values[key]
+        else:
+            raise NameError("Could not find locate {}".format(key))
+
+    def __getitem__(self, index):
+        return getattr(self, _mangle_name(index))
+
+    def __contains__(self, key):
+        return key in self.__values
+
+class TaggedDict(AttrDict):
+    def with_tags(self, tags):
+        ts=set(tags)
+        return self.all(mask=lambda i:ts.issubset(i.tags))
 
 class Filter:
     def __init__(self, mode=None, filters=None, **kwargs):

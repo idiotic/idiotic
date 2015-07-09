@@ -80,7 +80,7 @@ class BaseItem:
             for module_name, args in bindings.items():
                 log.debug("Setting {} bindings on {}".format(module_name, self))
                 try:
-                    module = getattr(modules, module_name)
+                    module = modules[module_name]
                 except NameError:
                     log.warning("Module '{}' not found -- skipping".format(module_name))
                 else:

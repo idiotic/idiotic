@@ -3,84 +3,23 @@ import time
 import asyncio
 from flask import Flask, json, request, Response
 from idiotic.dispatch import Dispatcher
+from idiotic.utils import AttrDict, TaggedDict
 import logging
 import threading
 
 log = logging.getLogger("idiotic.init")
 
-class ItemsProxy:
-    def __init__(self, item_dict):
-        self.__items = item_dict
-
-    def with_tags(self, tags):
-        ts = set(tags)
-        return self.all(mask=lambda i:ts.issubset(i.tags))
-
-    def all(self, mask=lambda _:True):
-        return filter(mask, self.__items.values())
-
-    def __getattr__(self, name):
-        if name in self.__items:
-            return self.__items[name]
-        else:
-            raise NameError("Item {} does not exist.".format(name))
-
-    def __contains__(self, k):
-        return k in self.__items
-
-class ModulesProxy:
-    def __init__(self, module_dict):
-        self.__modules = module_dict
-
-    def all(self, mask=lambda _:True):
-        return filter(mask, self.__modules.values())
-
-    def __getattr__(self, name, default=NameError):
-        if name in self.__modules:
-            return self.__modules[name]
-        else:
-            if default is NameError:
-                raise NameError("Module {} not found.".format(name))
-            else:
-                return default
-
-    def __contains__(self, k):
-        return k in self.__modules
-
-class ScenesProxy:
-    def __init__(self, scene_dict):
-        self.__scenes = scene_dict
-
-    def all(self, mask=lambda _:True):
-        return filter(mask, self.__scenes.values())
-
-    def __getattr__(self, name, default=NameError):
-        if name in self.__scenes:
-            return self.__scenes[name]
-        else:
-            if default is NameError:
-                raise NameError("Scene {} not found.".format(name))
-            else:
-                return default
-
-    def __contains__(self, k):
-        return k in self.__scenes
-
-
 config = {}
 
-_items = {}
-items = ItemsProxy(_items)
+items = TaggedDict()
 
-_scenes = {}
-scenes = ScenesProxy(_scenes)
+scenes = TaggedDict()
+
+modules = AttrDict()
+
+_persistences = AttrDict()
 
 _rules = {}
-
-_modules = {}
-modules = ModulesProxy(_modules)
-
-_persistences = {}
 
 scheduler = schedule.Scheduler()
 
@@ -133,16 +72,13 @@ def _mangle_name(name):
     return ''.join(filter(lambda x:x.isalnum() or x=='_', name.lower().replace(" ", "_"))) if name else ""
 
 def _register_item(item):
-    global _items
-    _items[_mangle_name(item.name)] = item
+    items._set(item.name, item)
 
 def _register_scene(name, scene):
-    global _scenes
-    _scenes[_mangle_name(name)] = scene
+    scenes._set(name, scene)
 
 def _register_persistence(name, cls):
-    global _persistences
-    _persistences[_mange_name(name)] = cls
+    _persistences._set(name, cls)
 
 def _join_url(*paths):
     return '/' + '/'.join((p.strip('/') for p in paths if p != '/'))

@@ -33,7 +33,7 @@ def unpack_event(data, modules):
     if owner == 'idiotic':
         cls = eval(clsname)
     else:
-        cls = getattr(getattr(modules, owner), clsname)
+        cls = getattr(modules[owner], clsname)
 
     if cls is not None:
         return cls.unpack(obj)
