@@ -30,7 +30,9 @@ import logging
 import schedule
 import threading
 import aiohttp.wsgi
-from idiotic import utils, item, items, rule, distrib, dispatcher, run_scheduled_jobs, scheduler, _register_module, _register_builtin_module, _set_config, _start_distrib, _start_persistence, _stop_persistence, modules, api, event
+import idiotic
+from idiotic import utils, item, rule, distrib, event
+from idiotic import items, dispatcher, modules, api
 
 log = logging.getLogger("idiotic.main")
 
@@ -101,7 +103,7 @@ def init():
             else:
                 config["modules"] = {"builtin": {"api_base": "/"}}
 
-            _set_config(config)
+            idiotic._set_config(config)
     except (OSError, IOError) as e:
         log.exception("Could not load config file {}:".format(arguments["config"]))
 
@@ -109,9 +111,9 @@ def init():
     log.info("Loading modules from {}".format(arguments["modules"]))
     for module, assets in utils.load_dir(arguments["modules"], True):
         if module.__name__.startswith("_"):
-            _register_builtin_module(module, assets)
+            idiotic._register_builtin_module(module, assets)
         else:
-            _register_module(module, assets)
+            idiotic._register_module(module, assets)
 
     # load items
     log.info("Loading items from {}".format(arguments["items"]))
@@ -143,7 +145,7 @@ def init():
             if distrib_module and hasattr(distrib_module, "METHOD"):
                 distrib_class = getattr(distrib_module, "METHOD")
                 global distrib_instance
-                distrib_instance, thread = _start_distrib(distrib_class, name, config["distribution"])
+                distrib_instance, thread = idiotic._start_distrib(distrib_class, name, config["distribution"])
                 waiter.threads.append(thread)
                 dispatcher.bind(lambda e:distrib_instance.send(event.pack_event(e)), utils.Filter(not_hasattr='_remote'))
                 distrib_instance.receive(lambda e:dispatcher.dispatch(event.unpack_event(e, modules)))
@@ -160,7 +162,7 @@ def init():
         if not config["persistence"].get("disabled", False):
             if "method" in config["persistence"]:
                 try:
-                    _start_persistence(config["persistence"]["method"], config["persistence"])
+                    idiotic._start_persistence(config["persistence"]["method"], config["persistence"])
                 except NameError:
                     log.error("Could not locate persistence engine '{}' -- check spelling?".format(config["persistence"]["method"]))
             else:
@@ -181,7 +183,7 @@ def shutdown():
         distrib_instance.stop()
         distrib_instance.disconnect()
 
-    _stop_persistence()
+    idiotic._stop_persistence()
 
     waiter.join_all()
     logging.shutdown()
@@ -199,7 +201,7 @@ if __name__ == '__main__':
     try:
         loop = asyncio.get_event_loop()
         server = loop.create_server(lambda: aiohttp.wsgi.WSGIServerHttpProtocol(api, readpayload=True), config.get("api", {}).get("listen", "*"), config.get("api", {}).get("port", 5000))
-        loop.run_until_complete(asyncio.gather(run_scheduled_jobs(),
+        loop.run_until_complete(asyncio.gather(idiotic.run_scheduled_jobs(),
                                                server,
                                                dispatcher.run()))
     except KeyboardInterrupt:
