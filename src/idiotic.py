@@ -33,7 +33,7 @@ import idiotic
 from idiotic import utils, item, rule, distrib, event
 from idiotic import items, dispatcher, modules, api
 
-log = logging.getLogger("idiotic.main")
+LOG = logging.getLogger("idiotic.main")
 
 distrib_instance = None
 name = socket.gethostname()
@@ -84,7 +84,7 @@ def init():
         log.exception("Could not load config file {}:".format(arguments["config"]))
 
     # load modules
-    log.info("Loading modules from {}".format(arguments["modules"]))
+    LOG.info("Loading modules from {}".format(arguments["modules"]))
     for module, assets in utils.load_dir(arguments["modules"], True):
         if module.__name__.startswith("_"):
             idiotic._register_builtin_module(module, assets)
@@ -92,11 +92,11 @@ def init():
             idiotic._register_module(module, assets)
 
     # load items
-    log.info("Loading items from {}".format(arguments["items"]))
+    LOG.info("Loading items from {}".format(arguments["items"]))
     utils.load_dir(arguments["items"])
 
     # load rules
-    log.info("Loading rules from {}".format(arguments["rules"]))
+    LOG.info("Loading rules from {}".format(arguments["rules"]))
     utils.load_dir(arguments["rules"])
 
     for module in modules.all(lambda m:hasattr(m, "ready")):
@@ -106,13 +106,13 @@ def init():
 
     # correspond with other instances?
     if "distribution" in config and config["distribution"]:
-        log.info("Initializing distribution system...")
+        LOG.info("Initializing distribution system...")
         if "method" in config["distribution"]:
             # Built-in methods go here
             methods = {
                 "udp": distrib.udp,
             }
-            log.debug("Searching for module {}...".format(config["distribution"]["method"]))
+            LOG.debug("Searching for module {}...".format(config["distribution"]["method"]))
             if config["distribution"]["method"] in methods:
                 distrib_module = methods[config["distribution"]["method"]]
             else:
@@ -125,27 +125,27 @@ def init():
                 dispatcher.bind(lambda e:distrib_instance.send(event.pack_event(e)), utils.Filter(not_hasattr='_remote'))
                 distrib_instance.receive(lambda e:dispatcher.dispatch(event.unpack_event(e, modules)))
             else:
-                log.error("Could not locate distribution method '{}' -- check spelling?".format(config["distribution"]["method"]))
+                LOG.error("Could not locate distribution method '{}' -- check spelling?".format(config["distribution"]["method"]))
         else:
-            log.warn("No distribution method defined. Skipping.")
+            LOG.warn("No distribution method defined. Skipping.")
     else:
-        log.info("Not setting up distribution.")
+        LOG.info("Not setting up distribution.")
 
     # connect to persistence engine
     if "persistence" in config and config["persistence"]:
-        log.info("Connecting to persistence engine...")
+        LOG.info("Connecting to persistence engine...")
         if not config["persistence"].get("disabled", False):
             if "method" in config["persistence"]:
                 try:
                     idiotic._start_persistence(config["persistence"]["method"], config["persistence"])
                 except NameError:
-                    log.error("Could not locate persistence engine '{}' -- check spelling?".format(config["persistence"]["method"]))
+                    LOG.error("Could not locate persistence engine '{}' -- check spelling?".format(config["persistence"]["method"]))
             else:
-                log.warn("Persistence engine not specified. Skipping.")
+                LOG.warn("Persistence engine not specified. Skipping.")
         else:
-            log.warn("Persistence is disabled.")
+            LOG.warn("Persistence is disabled.")
     else:
-        log.info("Not setting up persistence.")
+        LOG.info("Not setting up persistence.")
 
     # start running rules
     # start serving API
@@ -180,5 +180,5 @@ if __name__ == '__main__':
                                                server,
                                                dispatcher.run()))
     except KeyboardInterrupt:
-        log.info("Shutting down")
+        LOG.info("Shutting down")
         shutdown()

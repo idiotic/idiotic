@@ -3,7 +3,7 @@ from asyncio import coroutine, Queue, sleep, QueueEmpty, QueueFull
 import logging
 import functools
 
-log = logging.getLogger("idiotic.dispatch")
+LOG = logging.getLogger("idiotic.dispatch")
 
 class Dispatcher:
     def __init__(self):
@@ -22,11 +22,11 @@ class Dispatcher:
 
     def dispatch(self, event):
         for action in (a for a, f in self.bindings if f.check(event)):
-            log.debug("Dispatching {}".format(str(action)))
+            LOG.debug("Dispatching {}".format(str(action)))
             try:
                 self.queue.put_nowait(functools.partial(action, event))
             except QueueFull:
-                log.error("The unbounded queue is full! Pretty weird, eh?")
+                LOG.error("The unbounded queue is full! Pretty weird, eh?")
 
     @coroutine
     def run(self):
@@ -35,4 +35,4 @@ class Dispatcher:
             try:
                 yield from coroutine(func)()
             except Exception as e:
-                log.exception("Error while running {} from dispatch queue:".format(func))
+                LOG.exception("Error while running {} from dispatch queue:".format(func))

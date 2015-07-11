@@ -3,7 +3,7 @@ import idiotic
 import logging
 import datetime
 from schedule import CancelJob
-log = logging.getLogger("idiotic.rule")
+LOG = logging.getLogger("idiotic.rule")
 
 def bind(func=None, *events):
     if len(events) == 0:
@@ -287,7 +287,7 @@ class DeDup(EventAugmentation):
         period. NYI
 
         """
-        log.warn("EventAugmentation DeDup: NOT YET IMPLEMENTED")
+        LOG.warn("EventAugmentation DeDup: NOT YET IMPLEMENTED")
 
     def bind(self, func, *args, **kwargs):
         pass

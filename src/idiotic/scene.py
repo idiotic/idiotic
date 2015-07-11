@@ -2,7 +2,7 @@ from idiotic import event, history
 import idiotic
 import logging
 
-log = logging.getLogger("idiotic.scene")
+LOG = logging.getLogger("idiotic.scene")
 
 class SceneType(type):
     def __new__(cls, name, bases, attrs):
@@ -27,7 +27,7 @@ class Scene(metaclass=SceneType):
 
     def _switch(self, val):
         if self.__active == val:
-            log.debug("Ignoring redundant scene activation for {}".format(self))
+            LOG.debug("Ignoring redundant scene activation for {}".format(self))
             return val
 
         pre_event = event.SceneEvent(self, val, "before")

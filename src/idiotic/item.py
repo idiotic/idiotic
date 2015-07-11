@@ -2,7 +2,7 @@ import logging
 import idiotic
 from idiotic import event, modules, history, persist_instance, utils
 
-log = logging.getLogger("idiotic.item")
+LOG = logging.getLogger("idiotic.item")
 
 def command(func):
     def command_decorator(self, *args, **kwargs):
@@ -19,10 +19,10 @@ def command(func):
         else:
             command = func.__name__
 
-        log.debug("@command({}) on {}".format(command, self))
+        LOG.debug("@command({}) on {}".format(command, self))
 
         if not self.enabled:
-            log.info("Ignoring command {} on disabled item {}".format(command, self))
+            LOG.info("Ignoring command {} on disabled item {}".format(command, self))
             return
 
         # Create an event and send it
@@ -78,11 +78,11 @@ class BaseItem:
 
         if bindings:
             for module_name, args in bindings.items():
-                log.debug("Setting {} bindings on {}".format(module_name, self))
+                LOG.debug("Setting {} bindings on {}".format(module_name, self))
                 try:
                     module = modules[module_name]
                 except NameError:
-                    log.warning("Module '{}' not found -- skipping".format(module_name))
+                    LOG.warning("Module '{}' not found -- skipping".format(module_name))
                 else:
                     module.bind_item(self, **args)
 
@@ -101,7 +101,7 @@ class BaseItem:
                 update[0].do(wrap_update, self, None, update[1])
 
     def bind_on_command(self, function, **kwargs):
-        log.debug("Binding on command for {}".format(self))
+        LOG.debug("Binding on command for {}".format(self))
         idiotic.dispatcher.bind(function, utils.Filter(type=event.CommandEvent, item=self, **kwargs))
 
     def bind_on_change(self, function, **kwargs):
@@ -144,15 +144,15 @@ class BaseItem:
 
     def _set_state_from_context(self, val, source="rule"):
         if not self.enabled:
-            log.info("Ignoring state change on disabled item {}".format(self))
+            LOG.info("Ignoring state change on disabled item {}".format(self))
             return
 
         # We don't send an event if there has been literally no change
         if self._state == val:
-            log.debug("Ignoring redundant state change for {}".format(self))
+            LOG.debug("Ignoring redundant state change for {}".format(self))
             return
 
-        log.info("{} changed state from {} -> {}".format(self, self._state, val))
+        LOG.info("{} changed state from {} -> {}".format(self, self._state, val))
         old = self._state
         pre_event = event.StateChangeEvent(self, old, val, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
@@ -210,10 +210,10 @@ class ItemProxy(BaseItem):
 
     def _set_state_from_context(self, val, source="rule"):
         if self._state == val:
-            log.debug("Ignoring redundant state change for {}".format(self))
+            LOG.debug("Ignoring redundant state change for {}".format(self))
             return
 
-        log.info("signaling change state on {} from {} -> {}".format(
+        LOG.info("signaling change state on {} from {} -> {}".format(
             self, self._state, val))
 
         dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, source))
@@ -291,7 +291,7 @@ class Number(BaseItem):
         try:
             self.state = self.kind(val)
         except (ValueError, TypeError) as e:
-            log.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
+            LOG.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
 
 class Motor(BaseItem):
     """An item which can move forward, reverse, and stop."""
@@ -322,7 +322,7 @@ class Motor(BaseItem):
             if self.timeout:
                 raise NotImplemented("timeout is not implemented. probably should do it with asyncio, or implement timers")
         else:
-            log.notice("Not moving {} forward; already at end stop".format(self))
+            LOG.notice("Not moving {} forward; already at end stop".format(self))
 
     @command
     def reverse(self):
@@ -331,7 +331,7 @@ class Motor(BaseItem):
             if self.timeout:
                 raise NotImplemented("timeout is not implemented. probably should do it with asyncio, or implement timers")
         else:
-            log.notice("Not moving {} reverse; already at start stop".format(self))
+            LOG.notice("Not moving {} reverse; already at start stop".format(self))
 
     @command
     def stop(self):

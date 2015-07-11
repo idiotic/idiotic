@@ -5,7 +5,7 @@ import imp
 import sys
 import os
 
-log = logging.getLogger("idiotic.utils")
+LOG = logging.getLogger("idiotic.utils")
 
 class AttrDict:
     def __init__(self, values={}):
@@ -152,13 +152,13 @@ def load_dir(path, include_assets=False):
             if f.startswith(".") or f.endswith("~") or f.endswith("#") or f.startswith("__"):
                 continue
 
-            log.info("Loading file {}...".format(os.path.join(path, f)))
+            LOG.info("Loading file {}...".format(os.path.join(path, f)))
             name = os.path.splitext(f)[0]
 
             try:
                 modules.append((imp.load_source(name, os.path.join(path, f)), None))
             except IsADirectoryError:
-                log.info("Attempting to load directory {} as a module...".format(
+                LOG.info("Attempting to load directory {} as a module...".format(
                     os.path.join(path, f)))
 
                 try:
@@ -170,10 +170,10 @@ def load_dir(path, include_assets=False):
 
                     modules.append((mod, assets))
                 except FileNotFoundError:
-                    log.error("Unable to load module {}: {} does not exist".format(
+                    LOG.error("Unable to load module {}: {} does not exist".format(
                         name, os.path.join(path, f, '__init__.py')))
         except Exception as e:
-            log.exception("Exception encountered while loading {}".format(os.path.join(path, f)))
+            LOG.exception("Exception encountered while loading {}".format(os.path.join(path, f)))
 
     return modules
 

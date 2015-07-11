@@ -1,7 +1,7 @@
 from .etc import mangle_name
 import logging
 
-log = logging.getLogger("idiotic.utils.api")
+LOG = logging.getLogger("idiotic.utils.api")
 
 class _APIWrapper:
     def __init__(self, api, module, base=None):
@@ -13,7 +13,7 @@ class _APIWrapper:
         self.path = base
 
     def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, content_type=None, **kwargs):
-        log.info("Adding API endpoint for {}: {} (content type {})".format(
+        LOG.info("Adding API endpoint for {}: {} (content type {})".format(
             self.modname,
             join_url(self.path, path),
             content_type
@@ -48,7 +48,7 @@ def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, conten
 
             res = func(*args, **kwargs)
         except Exception as e:
-            log.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
+            LOG.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
             return json.jsonify({"status": "error", "description": str(e)})
         if content_type is None:
             return json.jsonify({"status": "success", "result": res})

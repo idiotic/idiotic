@@ -23,7 +23,7 @@ FORMAT = {
 HEADER_FORMAT = "!5sBI"
 HEADER_LEN = struct.calcsize(HEADER_FORMAT)
 
-log = logging.getLogger("idiotic.distrib.udp")
+LOG = logging.getLogger("idiotic.distrib.udp")
 
 class UDPItem(base.RemoteItem):
     pass
@@ -96,7 +96,7 @@ class UDPTransportMethod(base.TransportMethod):
         if port is None:
             port = self.listen_port
 
-        log.info("Sending discovery message to ({}, {})".format(target, port))
+        LOG.info("Sending discovery message to ({}, {})".format(target, port))
         self.sender.sendto(self._encode_packet(RESPONSE if response else DISCOVERY,
                                                self.listen_port, self.hostname),
                            (target, port))
@@ -107,18 +107,18 @@ class UDPTransportMethod(base.TransportMethod):
         self._send_discovery()
 
     def run(self):
-        log.info("Starting UDP Distribution client.")
+        LOG.info("Starting UDP Distribution client.")
         self.running = True
         while self.running:
             try:
                 data, addr = self.listener.recvfrom(2048)
-                log.debug("Received '{}' from {}".format(data, addr))
+                LOG.debug("Received '{}' from {}".format(data, addr))
                 try:
                     kind, tup = self._decode_packet(data)
                 except ValueError:
-                    log.error("Received invalid packet from {}: {}".format(addr, data))
+                    LOG.error("Received invalid packet from {}: {}".format(addr, data))
                 if kind == DISCOVERY or kind == RESPONSE:
-                    log.debug("Received discovery packet")
+                    LOG.debug("Received discovery packet")
 
                     port, host = tup
 
@@ -127,22 +127,22 @@ class UDPTransportMethod(base.TransportMethod):
                         # connected to us...
                         continue
                     if host in self.neighbor_dict:
-                        log.debug("Updating existing neighbor {}".format(host))
+                        LOG.debug("Updating existing neighbor {}".format(host))
                         self.neighbor_dict[host].name = host
                         self.neighbor_dict[host].host = addr[0]
                         self.neighbor_dict[host].port = port
                     else:
-                        log.info("Found new neighbor {} at {}".format(host, addr))
+                        LOG.info("Found new neighbor {} at {}".format(host, addr))
                         self.neighbor_dict[host] = UDPNeighbor(host, addr, port)
 
                     if kind != RESPONSE:
                         self._send_discovery(addr[0], port, response=True)
 
                 elif kind == ID_EVENT:
-                    log.debug("Received event packet")
+                    LOG.debug("Received event packet")
 
                 else:
-                    log.debug("Bad header: {}".format(header))
+                    LOG.debug("Bad header: {}".format(header))
             except socket.timeout:
                 continue
 
@@ -153,7 +153,7 @@ class UDPTransportMethod(base.TransportMethod):
         pass
 
     def send(self, event, targets=True):
-        log.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
+        LOG.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
         if targets is True:
             targets = [('<broadcast>', self.listen_port)]
         else:

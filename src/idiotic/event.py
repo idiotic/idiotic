@@ -2,7 +2,7 @@ import functools
 import logging
 import json
 
-log = logging.getLogger("idiotic.event")
+LOG = logging.getLogger("idiotic.event")
 
 def pack_event(event):
     try:
@@ -15,7 +15,7 @@ def pack_event(event):
                 '_remote': True,
             })).encode('UTF-8')
         except AttributeError:
-            log.warn("Unable to pack event {} (type '{}') from module '{}'".format(
+            LOG.warn("Unable to pack event {} (type '{}') from module '{}'".format(
                 str(event), type(event).__name__,
                 getattr(event, 'MODULE', 'unknown')))
             return json.dumps({'__class__': type(event).__name__}).encode('UTF-8')

@@ -7,7 +7,7 @@ from idiotic.utils import AttrDict, TaggedDict, mangle_name, join_url
 import logging
 import threading
 
-log = logging.getLogger("idiotic.init")
+LOG = logging.getLogger("idiotic.init")
 
 config = {}
 
@@ -53,7 +53,7 @@ def run_scheduled_jobs():
             else:
                 yield from asyncio.sleep(1)
         except:
-            log.exception("Exception in scheduler.run_pending()")
+            LOG.exception("Exception in scheduler.run_pending()")
             yield from asyncio.sleep(1)
 
 def _set_config(conf):
@@ -73,11 +73,11 @@ def _register_module(module, assets=None):
     name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if config.get("modules", {}).get(name, {}).get("disable", False):
-        log.info("Module {} is disabled; skipping registration".format(name))
+        LOG.info("Module {} is disabled; skipping registration".format(name))
         return
 
     if hasattr(module, "configure"):
-        log.info("Configuring module {}".format(name))
+        LOG.info("Configuring module {}".format(name))
         module.configure(config.get("modules", {}).get(name, {}),
                          idiotic.utils._APIWrapper(api, module, config.get("modules", {}).get(name, {}).get("api_base", None)),
                          assets)
@@ -88,7 +88,7 @@ def _register_builtin_module(module, assets=None):
     name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if hasattr(module, "configure"):
-        log.info("Configuring system module {}".format(name))
+        LOG.info("Configuring system module {}".format(name))
         module.configure(config,
                          config.get(name, {}),
                          idiotic.utils._APIWrapper(api, module, "/"),
