@@ -42,14 +42,6 @@ def __sched_job_do_now(self, func, *args, **kwargs):
 schedule.Job.do_once = __sched_job_do_once
 schedule.Job.do_now = __sched_job_do_now
 
-def on_before_state_change(evt):
-    for listener in list(evt.item.change_listeners):
-        listener(evt)
-
-def on_after_state_change(evt):
-    for listener in evt.item.change_listeners:
-        listener(evt)
-
 @asyncio.coroutine
 def run_scheduled_jobs():
     while True:

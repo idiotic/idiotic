@@ -27,7 +27,6 @@ import docopt
 import socket
 import asyncio
 import logging
-import schedule
 import threading
 import aiohttp.wsgi
 import idiotic
@@ -36,35 +35,12 @@ from idiotic import items, dispatcher, modules, api
 
 log = logging.getLogger("idiotic.main")
 
-class ShutdownWaiter:
-    def __init__(self):
-        self.running = True
-        self.threads = []
-
-    def stop(self):
-        self.running = False
-
-    def join_all(self):
-        self.stop()
-        for thread in self.threads:
-            thread.join()
-
-    def started(self, thread):
-        self.threads.append(thread)
-
-    def __bool__(self):
-        return self.running
-
 distrib_instance = None
 name = socket.gethostname()
-waiter = None
+distrib_thread = None
 config = {}
 
 def init():
-    global waiter
-    # Our non-daemon threads will wait on this
-    waiter = ShutdownWaiter()
-
     # load command-line options
     arguments = docopt.docopt(__doc__, version="Current version")
 
@@ -144,9 +120,8 @@ def init():
 
             if distrib_module and hasattr(distrib_module, "METHOD"):
                 distrib_class = getattr(distrib_module, "METHOD")
-                global distrib_instance
-                distrib_instance, thread = idiotic._start_distrib(distrib_class, name, config["distribution"])
-                waiter.threads.append(thread)
+                global distrib_instance, distrib_thread
+                distrib_instance, distrib_thread = idiotic._start_distrib(distrib_class, name, config["distribution"])
                 dispatcher.bind(lambda e:distrib_instance.send(event.pack_event(e)), utils.Filter(not_hasattr='_remote'))
                 distrib_instance.receive(lambda e:dispatcher.dispatch(event.unpack_event(e, modules)))
             else:
@@ -185,7 +160,7 @@ def shutdown():
 
     idiotic._stop_persistence()
 
-    waiter.join_all()
+    distrib_thread.join()
     logging.shutdown()
 
 @asyncio.coroutine
