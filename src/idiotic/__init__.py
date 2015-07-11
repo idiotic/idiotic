@@ -79,7 +79,7 @@ def _register_module(module, assets=None):
     if hasattr(module, "configure"):
         log.info("Configuring module {}".format(name))
         module.configure(config.get("modules", {}).get(name, {}),
-                         utils._APIWrapper(api, module, config.get("modules", {}).get(name, {}).get("api_base", None)),
+                         idiotic.utils._APIWrapper(api, module, config.get("modules", {}).get(name, {}).get("api_base", None)),
                          assets)
 
     modules._set(name, module)
@@ -91,7 +91,7 @@ def _register_builtin_module(module, assets=None):
         log.info("Configuring system module {}".format(name))
         module.configure(config,
                          config.get(name, {}),
-                         utils._APIWrapper(api, module, "/"),
+                         idiotic.utils._APIWrapper(api, module, "/"),
                          assets)
 
     modules._set(name, module)
