@@ -1,3 +1,5 @@
+import functools
+import datetime
 import logging
 import idiotic
 from idiotic import event, modules, history, persist_instance, utils
@@ -15,32 +17,32 @@ def command(func):
             source = None
 
         if "command" in kwargs:
-            command = kwargs["command"]
+            name = kwargs["command"]
         else:
-            command = func.__name__
+            name = func.__name__
 
-        LOG.debug("@command({}) on {}".format(command, self))
+        LOG.debug("@command({}) on {}".format(name, self))
 
         if not self.enabled:
-            LOG.info("Ignoring command {} on disabled item {}".format(command, self))
+            LOG.info("Ignoring command {} on disabled item {}".format(name, self))
             return
 
         # Create an event and send it
-        pre_event = event.CommandEvent(self, command, source, kind="before")
+        pre_event = event.CommandEvent(self, name, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
 
         if not pre_event.canceled:
             func(self, *args, **kwargs)
 
             if hasattr(self, "command_history"):
-                self.command_history.record(command)
+                self.command_history.record(name)
 
             if persist_instance:
                 persist_instance.append_item_history(self, datetime.datetime.now(),
-                                                     command, kind="command",
+                                                     name, kind="command",
                                                      extra={"args": args, "kwargs": kwargs} if args or kwargs else None)
 
-            post_event = event.CommandEvent(self, command, source, kind="after")
+            post_event = event.CommandEvent(self, name, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
     return command_decorator
 
@@ -193,16 +195,17 @@ class ItemProxy(BaseItem):
         self.methods = methods
         self._state = None
 
-        dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
+        idiotic.dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
             item=self.name, type=idiotic.event.StateChangeEvent))
 
     def __pack__(self):
-        return {"typename": self.typename,
-                "host": self.host,
-                "name": self.name,
-                "commands": self.commands,
-                "attrs": self.attrs,
-                "methods": self.methods,
+        return {
+            "typename": self.typename,
+            "host": self.host,
+            "name": self.name,
+            "commands": self.commands,
+            "attrs": self.attrs,
+            "methods": self.methods,
         }
 
     def __cache_update(self, e):
@@ -216,11 +219,11 @@ class ItemProxy(BaseItem):
         LOG.info("signaling change state on {} from {} -> {}".format(
             self, self._state, val))
 
-        dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, source))
+        idiotic.dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, source))
 
     def __getattr__(self, attr):
         if attr in self.commands:
-            return functools.partial(dispatcher.dispatch,
+            return functools.partial(idiotic.dispatcher.dispatch,
                                      idiotic.event.SendCommandEvent,
                                      source = None)
         elif attr in self.attrs:
@@ -231,7 +234,7 @@ class ItemProxy(BaseItem):
 
     def __setattr__(self, attr, val):
         if attr in self.attrs:
-            dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, None))
+            idiotic.dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, None))
         else:
             raise NameError("Item has no attribute {}".format(attr))
 
@@ -290,7 +293,7 @@ class Number(BaseItem):
     def set(self, val):
         try:
             self.state = self.kind(val)
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             LOG.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
 
 class Motor(BaseItem):
@@ -307,8 +310,7 @@ class Motor(BaseItem):
               MOVING_REVERSE,
               STOPPED)
 
-    STATES_CONSTRAINED = STATES + (STOPPED_START,
-              STOPPED_END)
+    STATES_CONSTRAINED = STATES + (STOPPED_START, STOPPED_END)
 
     def __init__(self, *args, constrained=False, timeout=None, **kwargs):
         self.constrained = constrained
@@ -320,18 +322,18 @@ class Motor(BaseItem):
         if self.state != Motor.STOPPED_END or not self.constrained:
             self.state = Motor.MOVING_FORWARD
             if self.timeout:
-                raise NotImplemented("timeout is not implemented. probably should do it with asyncio, or implement timers")
+                raise NotImplementedError("timeout is not implemented. probably should do it with asyncio, or implement timers")
         else:
-            LOG.notice("Not moving {} forward; already at end stop".format(self))
+            LOG.debug("Not moving {} forward; already at end stop".format(self))
 
     @command
     def reverse(self):
         if self.state != Motor.STOPPED_START or not self.constrained:
             self.state = Motor.MOVING_REVERSE
             if self.timeout:
-                raise NotImplemented("timeout is not implemented. probably should do it with asyncio, or implement timers")
+                raise NotImplementedError("timeout is not implemented. probably should do it with asyncio, or implement timers")
         else:
-            LOG.notice("Not moving {} reverse; already at start stop".format(self))
+            LOG.debug("Not moving {} reverse; already at start stop".format(self))
 
     @command
     def stop(self):
@@ -427,44 +429,43 @@ class Group(BaseItem):
             elif command_send is not None:
                 self.send_commands = dict(command_send)
 
-        @property
-        def state(self):
-            if self._group_state_getter:
-                return self._group_state_getter(self.members)
-            else:
-                return super().state
+    @property
+    def state(self):
+        if self._group_state_getter:
+            return self._group_state_getter(self.members)
+        else:
+            return super().state
 
-        @state.setter
-        def state(self, state):
-            if self._group_state_setter:
-                self._group_state_setter(self.members, state)
-            else:
-                # FIXME not sure if this will work
-                super().state = state
+    @state.setter
+    def state(self, state):
+        if self._group_state_setter:
+            self._group_state_setter(self.members, state)
+        else:
+            # FIXME not sure if this will work
+            super().state = state
 
-        @command
-        def command(self, command=None, *args, **kwargs):
-            # Will receive any command by name
-            if command and command in self.relay_commands:
-                self.relay_commands[command](command, *args, **kwargs)
+    def command(self, command=None, *args, **kwargs):
+        # Will receive any command by name
+        if command and command in self.relay_commands:
+            self.relay_commands[command](command, *args, **kwargs)
 
-        def flattened(self, include_groups=False):
-            """Return this group's members and all members of its subgroups, as a
-            single list.
+    def flattened(self, include_subgroups=False):
+        """Return this group's members and all members of its subgroups, as a
+        single list.
 
-            Keyword arguments:
-            include_groups    -- If True, include each subgroup along with its
-                                 members. Otherwise, subgroups will not be
-                                 included but their members will be.
-            """
-            for item in self.members:
-                if type(item) is Group:
-                    if include_subgroups:
-                        yield item
-                    yield from item.flattened(include_groups)
-                else:
+        Keyword arguments:
+        include_subgroups -- If True, include each subgroup along with its
+                             members. Otherwise, subgroups will not be
+                             included but their members will be.
+        """
+        for item in self.members:
+            if isinstance(item, Group):
+                if include_subgroups:
                     yield item
+                yield from item.flattened(include_subgroups)
+            else:
+                yield item
 
-        def add(self, item):
-            if item not in self.members:
-                self.members.append(item)
+    def add(self, item):
+        if item not in self.members:
+            self.members.append(item)
