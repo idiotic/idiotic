@@ -1,5 +1,5 @@
 from idiotic.utils import Filter
-from asyncio import coroutine, Queue, sleep, QueueEmpty, QueueFull
+from asyncio import coroutine, Queue, QueueFull
 import logging
 import functools
 
@@ -34,5 +34,5 @@ class Dispatcher:
             func = yield from self.queue.get()
             try:
                 yield from coroutine(func)()
-            except Exception as e:
+            except:
                 LOG.exception("Error while running {} from dispatch queue:".format(func))
