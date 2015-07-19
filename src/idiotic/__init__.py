@@ -2,8 +2,8 @@ import schedule
 import time
 import asyncio
 from flask import Flask, json, request, Response
-from idiotic.dispatch import Dispatcher
-from idiotic.utils import AttrDict, TaggedDict, mangle_name, join_url
+from .dispatch import Dispatcher
+from .utils import AttrDict, TaggedDict, mangle_name, join_url, _APIWrapper
 import logging
 import threading
 
@@ -18,8 +18,6 @@ scenes = TaggedDict()
 modules = AttrDict()
 
 _persistences = AttrDict()
-
-_rules = {}
 
 scheduler = schedule.Scheduler()
 
@@ -57,7 +55,6 @@ def run_scheduled_jobs():
             yield from asyncio.sleep(1)
 
 def _set_config(conf):
-    global config
     config.update(conf)
 
 def _register_item(item):
@@ -78,9 +75,12 @@ def _register_module(module, assets=None):
 
     if hasattr(module, "configure"):
         LOG.info("Configuring module {}".format(name))
-        module.configure(config.get("modules", {}).get(name, {}),
-                         idiotic.utils._APIWrapper(api, module, config.get("modules", {}).get(name, {}).get("api_base", None)),
-                         assets)
+        module.configure(
+            config.get("modules", {}).get(name, {}),
+            _APIWrapper(api, module, config.get(
+                "modules", {}
+            ).get(name, {}).get("api_base", None)),
+            assets)
 
     modules._set(name, module)
 
@@ -91,7 +91,7 @@ def _register_builtin_module(module, assets=None):
         LOG.info("Configuring system module {}".format(name))
         module.configure(config,
                          config.get(name, {}),
-                         idiotic.utils._APIWrapper(api, module, "/"),
+                         _APIWrapper(api, module, "/"),
                          assets)
 
     modules._set(name, module)
