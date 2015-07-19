@@ -80,8 +80,8 @@ def init():
                 config["modules"] = {"builtin": {"api_base": "/"}}
 
             idiotic._set_config(config)
-    except (OSError, IOError) as e:
-        log.exception("Could not load config file {}:".format(arguments["config"]))
+    except (OSError, IOError):
+        LOG.exception("Could not load config file {}:".format(arguments["config"]))
 
     # load modules
     LOG.info("Loading modules from {}".format(arguments["modules"]))
@@ -160,7 +160,8 @@ def shutdown():
 
     idiotic._stop_persistence()
 
-    distrib_thread.join()
+    if distrib_thread:
+        distrib_thread.join()
     logging.shutdown()
 
 @asyncio.coroutine
