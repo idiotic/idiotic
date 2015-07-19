@@ -1,4 +1,3 @@
-import functools
 import asyncio
 
 class Timer:
