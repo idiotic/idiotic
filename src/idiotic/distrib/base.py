@@ -16,7 +16,7 @@ class TransportMethod:
     ITEM_CLASS = Neighbor
 
     def __init__(self, hostname, config):
-        raise NotImplemented("Cannot use abstract transport")
+        raise NotImplementedError("Cannot use abstract transport")
 
     def send(self, event, targets=True):
         """Send packed data to all or a subset of this node's neighbors.
