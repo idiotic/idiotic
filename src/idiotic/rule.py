@@ -2,7 +2,6 @@ import asyncio
 import idiotic
 import logging
 import datetime
-from schedule import CancelJob
 LOG = logging.getLogger("idiotic.rule")
 
 def bind(func=None, *events):
@@ -43,7 +42,7 @@ class EventBinder:
     def bind(self, callback):
         raise NotImplementedError("You must override EventBinder.bind()")
 
-    def get_filter(self, callback):
+    def get_filter(self):
         raise NotImplementedError("You must override EventBinder.get_filter()")
 
 class Command(EventBinder):
@@ -137,7 +136,7 @@ class Schedule(EventBinder):
         raise NotImplementedError("get_filter() is not supported on Schedule")
 
 class EventAugmentation:
-    def wrap(func):
+    def wrap(self, func):
         raise NotImplementedError("You must override EventAugmentation.wrap()")
 
 class Delay(EventAugmentation):
@@ -187,11 +186,13 @@ when receives certain commands.
             self.filt = [binder.get_filter()] if isinstance(binder, EventBinder) else [b.get_filter() for b in binder]
 
         if cancel != True and cancel != False:
+            # pylint: disable=no-member
             self.cancel = [cancel.get_filter()] if isinstance(cancel, EventBinder) else [c.get_filter() for c in cancel]
         else:
             self.cancel = cancel
 
         if reset != True and reset != False:
+            # pylint: disable=no-member
             self.reset = [reset.get_filter()] if isinstance(reset, EventBinder) else [r.get_filter() for r in reset]
         else:
             self.reset = reset
