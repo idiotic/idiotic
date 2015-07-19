@@ -18,8 +18,8 @@ class History:
     def cull(self):
         if self.maxage:
             pos = bisect.bisect_left(list(zip(*self.values))[0], datetime.datetime.now() - self.maxage)
-            for i in range(pos):
-                self.value.popleft()
+            for _ in range(pos):
+                self.values.popleft()
 
     def record(self, value, time=None):
         if time is None:
