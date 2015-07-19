@@ -1,5 +1,6 @@
 from .api import _APIWrapper, join_url
 from .etc import mangle_name
+import functools
 import logging
 import imp
 import sys
@@ -16,9 +17,9 @@ class AttrDict:
 
     def all(self, filt=None):
         if isinstance(filt, Filter):
-            return filter(filt.check, self.__values.values())
+            return (v for v in self.__values.values() if filt.check(v))
         elif callable(filt):
-            return filter(filt, self.__values.values())
+            return (v for v in self.__values.values() if filt(v))
         else:
             return self.__values.values()
 
@@ -38,15 +39,15 @@ class AttrDict:
 class TaggedDict(AttrDict):
     def with_tags(self, tags):
         ts=set(tags)
-        return self.all(mask=lambda i:ts.issubset(i.tags))
+        return self.all(filt=lambda i:ts.issubset(i.tags))
 
 class Filter:
     def __init__(self, mode=None, filters=None, **kwargs):
         self.checks = []
         if mode is None:
-            self.mode = lambda *x:all(*x)
+            self.mode = all
         else:
-            self.mode = lambda *x:mode(*x)
+            self.mode = mode
 
         if filters:
             # filters is used in case we need to use a reserved word
@@ -98,9 +99,6 @@ class Filter:
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) == v)
                 elif op == "type_not":
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) != v)
-                elif False and op == "item":
-                    # hack so we can check that the 'item' of an event by name
-                    self.checks.append(functools.partial(self._item_check_hack, path, op, v))
                 else:
                     # By default just check for equality
                     path.append(op)
@@ -111,29 +109,14 @@ class Filter:
         res = self.mode(c(event) for c in self.checks)
         return res
 
-    def _item_check_hack(self, path, op, v, e):
-        # we can't import item because that would be rather circular
-        # so instead, we can just check for the name attribute...
-        # this is pretty ugly though, hopefully there's a nice
-        # way around this eventually
-        path.append(op)
-        item = self.__resolve_path(e, path)
-        if hasattr(v, "name") and hasattr(item, "name"):
-            return v is item
-        elif isinstance(v, str) and hasattr(item, "name"):
-            return item.name == v
-        elif hasattr(v, "name") and isinstance(item, str):
-            return item == v.name
-        else:
-            return item == v
-
     def __resolve_path(self, e, path):
+        # TODO make this function
         cur = e
         for key in path:
             if key:
                 try:
                     cur = getattr(cur, key)
-                except AttributeError as e:
+                except AttributeError:
                     return None
         return cur
 
@@ -172,7 +155,7 @@ def load_dir(path, include_assets=False):
                 except FileNotFoundError:
                     LOG.error("Unable to load module {}: {} does not exist".format(
                         name, os.path.join(path, f, '__init__.py')))
-        except Exception as e:
+        except:
             LOG.exception("Exception encountered while loading {}".format(os.path.join(path, f)))
 
     return modules
