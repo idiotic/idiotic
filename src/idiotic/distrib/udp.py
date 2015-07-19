@@ -1,10 +1,8 @@
 from . import base
 import logging
 import socket
-import string
 import struct
 import queue
-import json
 
 PACKET_HEAD = b"ID10T"
 ID_EVENT = 1
@@ -37,7 +35,7 @@ class UDPNeighbor(base.Neighbor):
         self.host = host
         self.port = port
         self.modules = []
-        self.items = [] 
+        self.items = []
 
 class UDPTransportMethod(base.TransportMethod):
     NEIGHBOR_CLASS = UDPNeighbor
@@ -63,10 +61,11 @@ class UDPTransportMethod(base.TransportMethod):
 
         for connection in config.get("connect", []):
             if 'name' in connection and 'host' in connection:
-                self.neighbor_dict[connection['name']] = UDPNeighbor(connection['name'],
-                                                                     connection['host'],
-                                                                     connection.get('port',
-                                                                                    self.listen_port))
+                self.neighbor_dict[connection['name']] = UDPNeighbor(
+                    connection['name'],
+                    connection['host'],
+                    connection.get('port',
+                                   self.listen_port))
 
         self.running = False
 
@@ -142,7 +141,7 @@ class UDPTransportMethod(base.TransportMethod):
                     LOG.debug("Received event packet")
 
                 else:
-                    LOG.debug("Bad header: {}".format(header))
+                    LOG.debug("Bad message kind: {}".format(kind))
             except socket.timeout:
                 continue
 
