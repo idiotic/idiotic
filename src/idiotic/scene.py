@@ -5,7 +5,7 @@ import logging
 LOG = logging.getLogger("idiotic.scene")
 
 class SceneType(type):
-    def __new__(cls, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
         if name.startswith('None'):
             return None
 
@@ -13,12 +13,12 @@ class SceneType(type):
         if 'NAME' not in attrs:
             newattrs['NAME'] = name
 
-        return super(SceneType, cls).__new__(cls, name, bases, newattrs)
+        return super(SceneType, mcs).__new__(mcs, name, bases, newattrs)
 
-    def __init__(self, name, bases, attrs):
-        super(SceneType, self).__init__(name, bases, attrs)
+    def __init__(cls, name, bases, attrs):
+        super(SceneType, cls).__init__(name, bases, attrs)
         if name != "Scene":
-            idiotic._register_scene(self.NAME, self())
+            idiotic._register_scene(cls.NAME, cls())
 
 class Scene(metaclass=SceneType):
     def __init__(self):
