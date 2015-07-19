@@ -1,4 +1,7 @@
 from .etc import mangle_name
+from werkzeug.wrappers import Response
+from flask.json import jsonify
+from flask import request
 import logging
 
 LOG = logging.getLogger("idiotic.utils.api")
@@ -19,9 +22,13 @@ class _APIWrapper:
             content_type
         ))
         return self.__api.add_url_rule(join_url(self.path, path),
-                                "mod_{}_{}".format(self.modname,
-                                                   getattr(func, "__name__", "<unknown>")),
-                                _wrap_for_result(func, get_args, get_form, get_data, content_type=content_type))
+                                       "mod_{}_{}".format(
+                                           self.modname,
+                                           getattr(func, "__name__", "<unknown>")),
+                                       _wrap_for_result(
+                                           func, get_args, get_form,
+                                           get_data, *args,
+                                           content_type=content_type, **kwargs))
 
 def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, *args, **kwargs):
     def wrapper(*args, **kwargs):
@@ -49,9 +56,9 @@ def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, conten
             res = func(*args, **kwargs)
         except Exception as e:
             LOG.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
-            return json.jsonify({"status": "error", "description": str(e)})
+            return jsonify({"status": "error", "description": str(e)})
         if content_type is None:
-            return json.jsonify({"status": "success", "result": res})
+            return jsonify({"status": "success", "result": res})
         else:
             return Response(res, mimetype=content_type)
     return wrapper
