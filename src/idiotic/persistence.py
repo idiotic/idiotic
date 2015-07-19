@@ -1,7 +1,10 @@
+from . import _register_persistence
+
 class PersistenceType(type):
-    def __init__(self, name, bases, attrs):
+    def __init__(cls, name, bases, attrs):
+        super().__init__()
         if name != "Persistence":
-            idiotic._register_persistence(getattr(self, "NAME", name.lower()), self)
+            _register_persistence(getattr(cls, "NAME", name.lower()), cls)
 
 class NotConnected(Exception):
     pass
@@ -13,7 +16,7 @@ class Persistence(metaclass=PersistenceType):
     def __enter__(self):
         self.connect()
 
-    def __exit__(self):
+    def __exit__(self, type, value, traceback):
         self.disconnect()
 
     def connect(self):
