@@ -3,7 +3,7 @@
 """
 
 import logging
-from idiotic import items, scenes, _mangle_name
+from idiotic import items, scenes
 
 MODULE_NAME = "api"
 
@@ -18,7 +18,7 @@ def configure(global_config, config, api, assets):
 
 def scene_command(name, command, *_, **__):
     try:
-        scene = getattr(scenes, _mangle_name(name))
+        scene = scenes[name]
         if command == "enter":
             scene.enter()
         elif command == "exit":
@@ -31,14 +31,14 @@ def scene_command(name, command, *_, **__):
 
 def item_command(name, command, args={}, *_, **kwargs):
     try:
-        item = getattr(items, _mangle_name(name))
+        item = items[name]
         item.command(command, **args)
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
 
 def item_state(name, state=None, *args, **kwargs):
     try:
-        item = getattr(items, _mangle_name(name))
+        item = items[name]
         if state:
             item.state = state
             #item._set_state_from_context(state, "api")
@@ -48,14 +48,14 @@ def item_state(name, state=None, *args, **kwargs):
 
 def item_enable(name, *args, **kwargs):
     try:
-        item = getattr(items, _mangle_name(name))
+        item = items[name]
         item.enable()
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
 
 def item_disable(name, *args, **kwargs):
     try:
-        item = getattr(items, _mangle_name(name))
+        item = items[name]
         item.disable()
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
