@@ -84,9 +84,9 @@ class UDPTransportMethod(base.TransportMethod):
             raise ValueError("Invalid packet header '{}'".format(head))
 
         if kind == EVENT:
-            tup = struct.unpack_from(FORMAT[EVENT].format(data_len), data, HEADER_LEN)
+            tup = struct.unpack_from('!' + FORMAT[EVENT].format(data_len), data, HEADER_LEN)
         elif kind == DISCOVERY or kind == RESPONSE:
-            port, host = struct.unpack_from(FORMAT[DISCOVERY].format(
+            port, host = struct.unpack_from('!' + FORMAT[DISCOVERY].format(
                 data_len - struct.calcsize(FORMAT[DISCOVERY][:1])), data, HEADER_LEN)
             tup = port, host.decode('UTF-8')
         return kind, tup
