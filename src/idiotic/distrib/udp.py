@@ -139,6 +139,8 @@ class UDPTransportMethod(base.TransportMethod):
 
                 elif kind == ID_EVENT:
                     LOG.debug("Received event packet")
+                    event, = tup
+                    self.__do_callback(event)
 
                 else:
                     LOG.debug("Bad message kind: {}".format(kind))
@@ -150,6 +152,10 @@ class UDPTransportMethod(base.TransportMethod):
 
     def disconnect(self):
         pass
+
+    def __do_callback(self, event):
+        for cb in list(self.callbacks):
+            cb(event)
 
     def send(self, event, targets=True):
         LOG.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
