@@ -54,9 +54,10 @@ class BaseEvent:
         res = {'__class__': type(self).__name__,
                '__owner__': getattr(self, 'MODULE', 'unknown')}
         res.update(self.__dict__)
-        return json.dumps(res).encode('UTF-8')
+        return res
 
 class SendStateChangeEvent(BaseEvent):
+    MODULE = 'idiotic'
     def __init__(self, item, new, source):
         super().__init__()
         self.item = item
@@ -80,6 +81,7 @@ class StateChangeEvent(BaseEvent):
         return "StateChangeEvent({0.kind}, {0.old} -> {0.new} on {0.item} from {0.source})".format(self)
 
 class SendCommandEvent(BaseEvent):
+    MODULE = 'idiotic'
     def __init__(self, item, command, source="rule"):
         super().__init__()
         self.item = item
@@ -90,6 +92,7 @@ class SendCommandEvent(BaseEvent):
         pass
 
 class CommandEvent(BaseEvent):
+    MODULE = 'idiotic'
     def __init__(self, item, command, source, kind):
         super().__init__()
         self.item = item
@@ -101,6 +104,7 @@ class CommandEvent(BaseEvent):
         return "CommandEvent({0.kind}, '{0.command}' on {0.item} from {0.source})".format(self)
 
 class SceneEvent(BaseEvent):
+    MODULE = 'idiotic'
     def __init__(self, scene, state, kind):
         super().__init__()
         self.scene = scene
