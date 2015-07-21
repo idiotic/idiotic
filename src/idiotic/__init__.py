@@ -1,11 +1,11 @@
-import schedule
-import time
-import asyncio
-from flask import Flask, json, request, Response
-from .dispatch import Dispatcher
-from .utils import AttrDict, TaggedDict, mangle_name, join_url, _APIWrapper
-import logging
 import threading
+import schedule
+import asyncio
+import logging
+import time
+from flask import Flask, json, request, Response
+from .utils import AttrDict, TaggedDict, mangle_name, join_url, _APIWrapper
+from .dispatch import Dispatcher
 
 LOG = logging.getLogger("idiotic.init")
 
