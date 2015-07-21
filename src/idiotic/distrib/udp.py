@@ -71,7 +71,7 @@ class UDPTransportMethod(base.TransportMethod):
         self.running = False
 
     def _encode_packet(self, kind, *data):
-        strlens = [len(s) for s in data if type(s) is str]
+        strlens = [len(s) for s in data if isinstance(s, str) or isinstance(s, bytes)]
         msg_len = struct.calcsize('!' + FORMAT[kind].format(*strlens))
 
         return struct.pack(HEADER_FORMAT + FORMAT[kind].format(*strlens),
