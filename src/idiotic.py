@@ -32,6 +32,12 @@ import aiohttp.wsgi
 import idiotic
 from idiotic import utils, item, rule, distrib, event
 from idiotic import items, dispatcher, modules, api
+# FIXME: This is sort of a hack, due to dependency resolution order
+# problems (persistence and distrib must import idiotic for the
+# registration hooks). The better solution would be to move concrete
+# persistence and distribution methods into a lib folder
+import idiotic.persistence
+#import idiotic.distrib
 
 LOG = logging.getLogger("idiotic.main")
 
@@ -101,35 +107,18 @@ def init():
 
     for module in modules.all(lambda m:hasattr(m, "ready")):
         module.ready()
-    # load ui
-    # read database
 
     # correspond with other instances?
     if "distribution" in config and config["distribution"]:
         LOG.info("Initializing distribution system...")
         if "method" in config["distribution"]:
             # Built-in methods go here
-            methods = {
-                "udp": distrib.udp,
-            }
-            LOG.debug("Searching for module {}...".format(config["distribution"]["method"]))
-            if config["distribution"]["method"] in methods:
-                distrib_module = methods[config["distribution"]["method"]]
-            else:
-                distrib_module = modules.get(config["distribution"]["method"], None)
-
-            if distrib_module and hasattr(distrib_module, "METHOD"):
-                distrib_class = getattr(distrib_module, "METHOD")
-                global distrib_instance, distrib_thread
-                distrib_instance, distrib_thread = idiotic._start_distrib(distrib_class, name, config["distribution"])
-                dispatcher.bind(lambda e:distrib_instance.send(event.pack_event(e)), utils.Filter(not_hasattr='_remote'))
-                distrib_instance.receive(lambda e:dispatcher.dispatch(event.unpack_event(e, modules)))
-            else:
-                LOG.error("Could not locate distribution method '{}' -- check spelling?".format(config["distribution"]["method"]))
+            idiotic._start_distrib(config["distribution"]["method"],
+                                   name, config["distribution"])
         else:
-            LOG.warn("No distribution method defined. Skipping.")
+            LOG.warn("No distribution method specified. Skipping.")
     else:
-        LOG.info("Not setting up distribution.")
+        LOG.debug("Not setting up distribution.")
 
     # connect to persistence engine
     if "persistence" in config and config["persistence"]:
@@ -147,21 +136,11 @@ def init():
     else:
         LOG.info("Not setting up persistence.")
 
-    # start running rules
-    # start serving API
-    # start serving UI
-
-    # cleanup stuff!
-
 def shutdown():
-    if distrib_instance:
-        distrib_instance.stop()
-        distrib_instance.disconnect()
+    idiotic._stop_distrib()
 
     idiotic._stop_persistence()
 
-    if distrib_thread:
-        distrib_thread.join()
     logging.shutdown()
 
 @asyncio.coroutine
