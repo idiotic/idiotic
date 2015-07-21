@@ -1,18 +1,19 @@
 import logging
 import json
+from .utils import IdioticEncoder
 
 LOG = logging.getLogger("idiotic.event")
 
 def pack_event(event):
     try:
-        return json.dumps(event.pack()).encode('UTF-8')
+        return json.dumps(event.pack(), cls=IdioticEncoder).encode('UTF-8')
     except AttributeError:
         try:
             return json.dumps(event.__dict__.update({
                 '__class__': type(event).__name__,
                 '__owner__': getattr(event, 'MODULE', 'unknown'),
                 '_remote': True,
-            })).encode('UTF-8')
+            }), cls=IdioticEncoder).encode('UTF-8')
         except AttributeError:
             LOG.warn("Unable to pack event {} (type '{}') from module '{}'".format(
                 str(event), type(event).__name__,
@@ -52,7 +53,8 @@ class BaseEvent:
 
     def pack(self):
         res = {'__class__': type(self).__name__,
-               '__owner__': getattr(self, 'MODULE', 'unknown')}
+               '__owner__': getattr(self, 'MODULE', 'unknown'),
+               '__kind__': 'event'}
         res.update(self.__dict__)
         return res
 

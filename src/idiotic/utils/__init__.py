@@ -1,5 +1,5 @@
 from .api import _APIWrapper, join_url
-from .etc import mangle_name
+from .etc import mangle_name, IdioticEncoder
 import functools
 import logging
 import imp
@@ -160,4 +160,4 @@ def load_dir(path, include_assets=False):
 
     return modules
 
-__ALL__ = [AttrDict, TaggedDict, mangle_name, load_dir, _APIWrapper, join_url]
+__ALL__ = [AttrDict, TaggedDict, mangle_name, IdioticEncoder, load_dir, _APIWrapper, join_url]
