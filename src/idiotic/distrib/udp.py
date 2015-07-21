@@ -41,6 +41,7 @@ class UDPTransportMethod(base.TransportMethod):
     NEIGHBOR_CLASS = UDPNeighbor
     MODULE_CLASS = UDPModule
     ITEM_CLASS = UDPItem
+    NAME = "udp"
 
     def __init__(self, hostname, config):
         self.hostname = hostname

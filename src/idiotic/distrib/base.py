@@ -1,3 +1,8 @@
+import idiotic
+import logging
+
+LOG = logging.getLogger("idiotic.distrib.base")
+
 class RemoteItem:
     def __init__(self, neighbor, name):
         pass
@@ -10,7 +15,23 @@ class Neighbor:
     def __init__(self, config):
         pass
 
-class TransportMethod:
+class DistributionType(type):
+    def __new__(mcs, name, bases, attrs):
+        if name.startswith('None'):
+            return None
+
+        newattrs = dict(attrs)
+        if 'NAME' not in attrs:
+            newattrs['NAME'] = name
+
+        return super(DistributionType, mcs).__new__(mcs, name, bases, newattrs)
+
+    def __init__(cls, name, bases, attrs):
+        super(DistributionType, cls).__init__(name, bases, attrs)
+        if name != "TransportMethod":
+            idiotic._register_distrib(cls.NAME, cls)
+
+class TransportMethod(metaclass=DistributionType):
     NEIGHBOR_CLASS = RemoteItem
     MODULE_CLASS = RemoteModule
     ITEM_CLASS = Neighbor
