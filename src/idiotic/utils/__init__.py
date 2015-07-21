@@ -99,6 +99,10 @@ class Filter:
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) == v)
                 elif op == "type_not":
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) != v)
+                elif op == "hasattr":
+                    self.checks.append(lambda e:hasattr(self.__resolve_path(e, path), v))
+                elif op == "not_hasattr":
+                    self.checks.append(lambda e:not hasattr(self.__resolve_path(e, path), v))
                 else:
                     # By default just check for equality
                     path.append(op)
