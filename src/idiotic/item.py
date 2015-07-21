@@ -171,18 +171,19 @@ class BaseItem:
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
 
-    def __pack__(self):
+    def pack(self):
         return {
-            "typename": type(self).__name__,
-            "host": None,
-            "name": self.name,
-            "commands": [k for k, v in self.__dict__.keys() if callable(v)
-                         and v.__name__ == "command_decorator"],
-            "attrs": [k for k, v in self.__dict__.keys() if not callable(v)
-                      and not k.startswith('__')],
-            "methods": [k for k, v in self.__dict__.keys() if callable(v)
-                        and not k.startswith('__')]
-        }
+            "__class__": type(self).__name__,
+            "__owner__": getattr(self, 'MODULE', 'unknown'),
+            "__kind__": "item",
+            "__host__": None,
+            "__commands__": [k for k, v in self.__dict__.items() if callable(v)
+                             and v.__name__ == "command_decorator"],
+            "__attrs__": [k for k, v in self.__dict__.items() if not callable(v)
+                          and not k.startswith('__')],
+            "__methods__": [k for k, v in self.__dict__.items() if callable(v)
+                            and not k.startswith('__')]
+        }.update(self.__dict__)
 
 
 class ItemProxy(BaseItem):
@@ -198,15 +199,14 @@ class ItemProxy(BaseItem):
         idiotic.dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
             item=self.name, type=idiotic.event.StateChangeEvent))
 
-    def __pack__(self):
+    def pack(self):
         return {
-            "typename": self.typename,
-            "host": self.host,
-            "name": self.name,
-            "commands": self.commands,
-            "attrs": self.attrs,
-            "methods": self.methods,
-        }
+            "__class__": self.typename,
+            "__host__": self.host,
+            "__commands__": self.commands,
+            "__attrs__": self.attrs,
+            "__methods__": self.methods,
+        }.update(self.__dict__)
 
     def __cache_update(self, e):
         self._state = e.new

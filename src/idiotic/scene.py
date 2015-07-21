@@ -71,6 +71,16 @@ class Scene(metaclass=SceneType):
     def name(self):
         return type(self).__name__
 
+    def pack(self):
+        return {
+            "__class__": type(self).__name__,
+            "__owner__": getattr(self, 'MODULE', 'unknown'),
+            "__kind__": "scene",
+            "__active": self.__active,
+            "__methods__": [k for k, v in self.__dict__.items() if callable(v)
+                            and not k.startswith('__')]
+        }.update(self.__dict__)
+
     def __bool__(self):
         return self.__active
 
