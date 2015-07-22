@@ -56,7 +56,7 @@ and see if you could help write modules to support more third-party
 protocols.
 
 With that said, I'm currently using idiotic for my own house and it
-hasn't yet resulted in catastrope. The features which have been
+hasn't yet resulted in catastrophe. The features which have been
 implemented are almost stable at this point and idiotic is designed in
 a way that tends to eliminate single points of failure.
 
