@@ -37,22 +37,47 @@ idiotic is designed with these goals in mind:
 * Be flexible
 * Be consistent
 * Be reusable
+* Be modular
 
 # Features #
 
-*Note that idiotic is currently in alpha. Some parts in this section
-describes its design ideals and goals, rather than its current
-state. They may be incomplete, buggy, or completely absent at this
-time, but they will eventually exist. Check the documentation for
-what is currently available.*
+*Note that idiotic is currently in a very immature beta version. It
+will at times have incomplete or missing features, weird bugs and
+inconsistencies, and lack support for pretty much everything.* If
+you're not the kind of person who wants something that was written
+mostly at 4AM in control of your house and all the things in it, then
+you should probably hold off on using idiotic. If you're the kind of
+person who enjoys filing bug reports or even making pull requests and
+won't sue if your coffee machine turns against you because of a typo,
+then you're probably going to like idiotic. If you're feeling
+particularly adventurous, you could even head over to
+[idiotic-modules](https://github.com/umbc-hackafe/idiotic-modules/)
+and see if you could help write modules to support more third-party
+protocols.
+
+With that said, I'm currently using idiotic for my own house and it
+hasn't yet resulted in catastrope. The features which have been
+implemented are almost stable at this point and idiotic is designed in
+a way that tends to eliminate single points of failure.
 
 ## Uniform Configuration ##
 
 Every configuration file in idiotic is just a specialized Python
-module. If you're not familiar with Python, the syntax needed to
-configure Generally, you just need to define items, rules, or constants,
+module. Generally, you just need to define items, rules, or constants,
 but you can also get creative and define these programatically if you
-need to (or do anything else you need to -- it's Python!).
+need to (or do anything else you need to -- it's just Python!).
+
+## Lightweight and Modular ##
+
+Because of the need for flexibility, idiotic itself aims to be mostly
+infrastructure. The rest is up to the module system, which means that
+anyone can add core functionality into idiotic without having to
+modify the source code directly. There is a basic set of modules that
+are included with idiotic in packages for convenience, but these can
+be replaced or removed if you desire. So adding support for new home
+automation protocols can be done externally by just dropping a python
+script into a directory, but still with all the power of the
+underlying codebase.
 
 ## Simple and Intuitive Rule Creation ##
 
@@ -84,12 +109,26 @@ minutes?
 	def rule(event):
 	    items.light.command(event.command)
 
+Have a lot of lights? Just use a loop!
+
+    for sensor, light in [(items.some_sensor, items.some_light),
+	                      (items.another_sensor, items.another_light),
+                          (items.last_sensor, items.last_light)]:
+		# Weird scope stuff makes us use closures
+		def closure(s, l):
+	        @bind(Command(sensor))
+		    @augment(Delay(Command(s, "OFF"), period=300),
+			         cancel=Command(s, "ON"))
+			def rule(event):
+			    l.command(event.command)
+		closure(s, l)
+
 ## Flexible Web-interface Creation ##
 
 With idiotic, you can quickly create rich, dynamic control panels and
 status displays without touching any HTML, CSS, or Javascript -- or
 you can use your own CSS, HTML, and Javascript to enhance and
-customize the web interface if you want to.
+customize the web interface however you like.
 
 ## Distributed Architecture ##
 
@@ -98,9 +137,11 @@ devices attached to many different physical computers. With a
 centralized system, this necessitates the creation of an additional
 layer of communication. With idiotic, you can simply run an instance
 on each computer whose devices you want to include, and then control
-them from any other instance as though they were local.
+them from any other instance as though they were local. _This is
+pretty close to being complete, but lacks some arguably important
+features._
 
 ## REST API ##
 
-idiotic comes with a full-featured REST API that might end up being
-backwards-compatible with OpenHAB's.... _This doesn't exist yet._
+idiotic comes with an easily extensible REST API, with an optional
+compatibility layer for mimicking OpenHAB's REST API.
