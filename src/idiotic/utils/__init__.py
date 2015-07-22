@@ -28,7 +28,7 @@ class AttrDict:
         if mangled in self.__values:
             return self.__values[mangled]
         else:
-            raise NameError("Could not find locate {}".format(key))
+            raise NameError("Could not find {} in AttrDict".format(key))
 
     def __getitem__(self, index):
         return getattr(self, index)
