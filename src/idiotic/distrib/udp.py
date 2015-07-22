@@ -97,9 +97,12 @@ class UDPTransportMethod(base.TransportMethod):
             port = self.listen_port
 
         LOG.info("Sending discovery message to ({}, {})".format(target, port))
-        self.sender.sendto(self._encode_packet(RESPONSE if response else DISCOVERY,
-                                               self.listen_port, self.hostname),
-                           (target, port))
+        try:
+            self.sender.sendto(self._encode_packet(RESPONSE if response else DISCOVERY,
+                                                   self.listen_port, self.hostname),
+                               (target, port))
+        except OSError:
+            LOG.warn("Unable to send UDP packet")
 
     def connect(self):
         for neighbor in self.neighbor_dict.values():
