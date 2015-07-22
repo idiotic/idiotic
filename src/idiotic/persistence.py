@@ -2,7 +2,7 @@ from . import _register_persistence
 
 class PersistenceType(type):
     def __init__(cls, name, bases, attrs):
-        super().__init__()
+        super(PersistenceType, cls).__init__(name, bases, attrs)
         if name != "Persistence":
             _register_persistence(getattr(cls, "NAME", name.lower()), cls)
 
