@@ -125,7 +125,7 @@ class UDPTransportMethod(base.TransportMethod):
 
                     port, host = tup
 
-                    if host == self.hostname:
+                    if host == self.hostname and port == self.listen_port:
                         # Skip our own packets because... well... we're already
                         # connected to us...
                         continue
