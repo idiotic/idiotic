@@ -136,7 +136,7 @@ class UDPTransportMethod(base.TransportMethod):
                         self.neighbor_dict[host].port = port
                     else:
                         LOG.info("Found new neighbor {} at {}".format(host, addr))
-                        self.neighbor_dict[host] = UDPNeighbor(host, addr, port)
+                        self.neighbor_dict[host] = UDPNeighbor(host, addr[0], port)
 
                     if kind != RESPONSE:
                         self._send_discovery(addr[0], port, response=True)

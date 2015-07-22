@@ -6,14 +6,21 @@ LOG = logging.getLogger("idiotic.event")
 
 def pack_event(event):
     try:
-        return json.dumps(event.pack(), cls=IdioticEncoder).encode('UTF-8')
+        packed = {'__class__': type(event).__name__,
+                  '__owner__': getattr(event, 'MODULE', 'unknown'),
+                  '__kind__': 'event',
+                  '_remote': True}
+        packed.update(event.pack())
+        return json.dumps(packed, cls=IdioticEncoder).encode('UTF-8')
     except AttributeError:
         try:
-            return json.dumps(event.__dict__.update({
+            packed = {
                 '__class__': type(event).__name__,
                 '__owner__': getattr(event, 'MODULE', 'unknown'),
-                '_remote': True,
-            }), cls=IdioticEncoder).encode('UTF-8')
+                '_remote': True
+            }
+            packed.update(dict(event.__dict__))
+            return json.dumps(packed, cls=IdioticEncoder).encode('UTF-8')
         except AttributeError:
             LOG.warn("Unable to pack event {} (type '{}') from module '{}'".format(
                 str(event), type(event).__name__,
