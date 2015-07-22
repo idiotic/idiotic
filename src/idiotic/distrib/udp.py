@@ -162,7 +162,7 @@ class UDPTransportMethod(base.TransportMethod):
             cb(event)
 
     def send(self, event, targets=True):
-        LOG.debug("Sending event {} to: {}".format(event, ', '.join(targets)))
+        LOG.debug("Sending event {} to: {}".format(event, targets))
         if targets is True:
             targets = [('<broadcast>', self.listen_port)]
         else:
