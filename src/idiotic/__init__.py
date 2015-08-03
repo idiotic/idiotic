@@ -134,8 +134,6 @@ def _stop_distrib():
         distrib_thread.join()
 
 def _record_state_change(evt):
-    LOG.debug("State change {} happened".format(evt))
-    LOG.debug(dir(evt))
     if evt and evt.item:
         persist_instance.append_item_history(evt.item, evt.time, evt.new, kind="state")
 
