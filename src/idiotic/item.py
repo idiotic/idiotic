@@ -52,9 +52,11 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None):
+    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False):
         self.name = name
         self._state = None
+
+        self.ignore_redundant = ignore_redundant
 
         if tags is None:
             self.tags = set()
@@ -150,7 +152,7 @@ class BaseItem:
             return
 
         # We don't send an event if there has been literally no change
-        if self._state == val:
+        if self._state == val and self.ignore_redundant:
             LOG.debug("Ignoring redundant state change for {}".format(self))
             return
 
@@ -183,7 +185,8 @@ class BaseItem:
 
 
 class ItemProxy(BaseItem):
-    def __init__(self, typename, host, name, commands, attrs, methods):
+    def __init__(self, typename, host, name, commands, attrs, methods,
+                 ignore_redundant=False):
         self.typename = typename
         self.host = host
         self.name = name
@@ -191,6 +194,8 @@ class ItemProxy(BaseItem):
         self.attrs = attrs
         self.methods = methods
         self._state = None
+
+        self.ignore_redundant = ignore_redundant
 
         idiotic.dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
             item=self.name, type=idiotic.event.StateChangeEvent))
@@ -208,7 +213,7 @@ class ItemProxy(BaseItem):
         self._state = e.new
 
     def _set_state_from_context(self, val, source="rule"):
-        if self._state == val:
+        if self._state == val and self.ignore_redundant:
             LOG.debug("Ignoring redundant state change for {}".format(self))
             return
 
