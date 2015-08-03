@@ -21,9 +21,12 @@ class SceneType(type):
             idiotic._register_scene(cls.NAME, cls())
 
 class Scene(metaclass=SceneType):
+    TAGS = set()
     def __init__(self):
         self.__active = False
         self.history = history.History()
+        self.tags = self.TAGS
+        self.tags.add("_scene")
 
     def _switch(self, val):
         if self.__active == val:
