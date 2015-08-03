@@ -164,10 +164,6 @@ class BaseItem:
             if hasattr(self, "state_history"):
                 self.state_history.record(self._state)
 
-            if persist_instance:
-                persist_instance.append_item_history(self, datetime.datetime.now(),
-                                                     val, kind="state")
-
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
 

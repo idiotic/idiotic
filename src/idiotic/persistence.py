@@ -40,7 +40,7 @@ class Persistence(metaclass=PersistenceType):
     def purge(self):
         pass
 
-    def get_item_history(self, item, kind="state", since=None):
+    def get_item_history(self, item, kind="state", since=None, count=-1):
         pass
 
     def append_item_history(self, item, time, value, kind="state", extra=None):

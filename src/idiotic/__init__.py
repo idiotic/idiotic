@@ -133,10 +133,25 @@ def _stop_distrib():
     if distrib_thread:
         distrib_thread.join()
 
-def _start_persistence(pers_cls, conf):
+def _record_state_change(evt):
+    LOG.debug("State change {} happened".format(evt))
+    LOG.debug(dir(evt))
+    if evt and evt.item:
+        persist_instance.append_item_history(evt.item, evt.time, evt.new, kind="state")
+
+def _start_persistence(persist, conf):
     global persist_instance
-    persist_instance = pers_cls(conf)
+    persist_cls = _persistences[persist]
+    persist_instance = persist_cls(conf)
     persist_instance.connect()
+    dispatcher.bind(_record_state_change, utils.Filter(type=event.StateChangeEvent, kind="after"))
+    for item in items.all():
+        history = list(persist_instance.get_item_history(item))
+        if len(history):
+            item._state = history[-1][0]
+        if hasattr(item, "state_history"):
+            for state in history:
+                item.state_history.record(*state)
 
 def _stop_persistence():
     if persist_instance:

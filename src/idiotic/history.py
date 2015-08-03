@@ -25,7 +25,7 @@ class History:
         if time is None:
             self.values.append((datetime.datetime.now(), value))
         elif isinstance(time, datetime.datetime):
-            if time < self.values[-1][0]:
+            if len(self.values) and time < self.values[-1][0]:
                 raise NotImplementedError("We can't alter history!... yet....")
             else:
                 self.values.append((time, value))

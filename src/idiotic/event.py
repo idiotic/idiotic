@@ -1,3 +1,4 @@
+import datetime
 import logging
 import json
 from .utils import IdioticEncoder
@@ -54,6 +55,7 @@ class BaseEvent:
 
     def __init__(self):
         self.canceled = False
+        self.time = datetime.datetime.now()
 
     def cancel(self):
         self.canceled = True
