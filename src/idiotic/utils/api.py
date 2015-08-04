@@ -30,7 +30,7 @@ class _APIWrapper:
                                            get_data, *args,
                                            content_type=content_type), **kwargs)
 
-def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, *args, **kwargs):
+def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, raw_result=False *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
             clean_get_args = {k: v[0] if isinstance(v, list) else v for k, v in getattr(request, "args", {}).items()}
@@ -58,7 +58,10 @@ def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, conten
             LOG.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
             return jsonify({"status": "error", "description": str(e)})
         if content_type is None:
-            return jsonify({"status": "success", "result": res})
+            if raw_result:
+                return jsonify(res)
+            else:
+                return jsonify({"status": "success", "result": res})
         else:
             return Response(res, mimetype=content_type)
     return wrapper
