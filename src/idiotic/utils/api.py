@@ -30,7 +30,7 @@ class _APIWrapper:
                                            get_data, *args,
                                            content_type=content_type), **kwargs)
 
-def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, raw_result=False *args, **kwargs):
+def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, raw_result=False, *args, **kwargs):
     def wrapper(*args, **kwargs):
         try:
             clean_get_args = {k: v[0] if isinstance(v, list) else v for k, v in getattr(request, "args", {}).items()}
