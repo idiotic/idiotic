@@ -28,7 +28,7 @@ class _APIWrapper:
                                        _wrap_for_result(
                                            func, get_args, get_form,
                                            get_data, *args,
-                                           content_type=content_type, **kwargs))
+                                           content_type=content_type), **kwargs)
 
 def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, *args, **kwargs):
     def wrapper(*args, **kwargs):
