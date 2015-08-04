@@ -38,8 +38,17 @@ class History:
     def all(self):
         return list(self.values)
 
-    def last(self, nth=1):
-        return self.values[-nth]
+    def last(self, nth=None):
+        if nth:
+            return list(self.values)[-nth:]
+        else:
+            if self.values:
+                return self.values[-1]
+            else:
+                return []
+
+    def __len__(self):
+        return len(self.values)
 
     def __getitem__(self, pos):
         return list(self.values)[pos]
