@@ -1,4 +1,5 @@
 import threading
+import datetime
 import schedule
 import asyncio
 import logging
@@ -50,7 +51,18 @@ def run_scheduled_jobs():
             runnable_jobs = sorted((job for job in scheduler.jobs if job.should_run))
             if len(runnable_jobs):
                 for job in runnable_jobs:
-                    yield from asyncio.coroutine(scheduler._run_job)(job)
+                    # i'm sorry this is kind of terrible
+                    # but dammit, it works
+                    ret = yield from asyncio.coroutine(job.job_func)()
+
+                    while asyncio.iscoroutine(ret):
+                        ret = yield from ret
+
+                    job.last_run = datetime.datetime.now()
+                    job._schedule_next_run()
+
+                    if isinstance(ret, schedule.CancelJob):
+                        scheduler.cancel_job(job)
             else:
                 yield from asyncio.sleep(1)
         except:
