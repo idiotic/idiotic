@@ -1,5 +1,5 @@
 from idiotic.utils import Filter
-from asyncio import coroutine, Queue, QueueFull
+from asyncio import coroutine, iscoroutine, Queue, QueueFull
 import logging
 import functools
 
@@ -35,6 +35,9 @@ class Dispatcher:
             try:
                 if not hasattr(func, "__name__"):
                     setattr(func, "__name__", "<unknown>")
-                yield from coroutine(func)()
+                res = yield from coroutine(func)()
+
+                while iscoroutine(res):
+                    res = yield from res
             except:
                 LOG.exception("Error while running {} from dispatch queue:".format(func))
