@@ -33,6 +33,8 @@ class Dispatcher:
         while True:
             func = yield from self.queue.get()
             try:
+                if not hasattr(func, "__name__"):
+                    setattr(func, "__name__", "<unknown>")
                 yield from coroutine(func)()
             except:
                 LOG.exception("Error while running {} from dispatch queue:".format(func))
