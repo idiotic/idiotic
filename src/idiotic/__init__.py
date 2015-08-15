@@ -100,6 +100,10 @@ def _register_module(module, assets=None):
             ).get(name, {}).get("api_base", None)),
             assets)
 
+    if hasattr(module, "start"):
+        LOG.info("Starting module {}".format(name))
+        asyncio.get_event_loop().call_soon(module.start)
+
     modules._set(name, module)
 
 def _register_builtin_module(module, assets=None):
