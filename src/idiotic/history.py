@@ -35,6 +35,9 @@ class History:
     def at(self, time):
         return self.values[bisect.bisect(list(zip(*self.values))[0], time)-1]
 
+    def since(self, time):
+        return list(self.values)[bisect.bisect(list(zip(*self.values))[0], time)-1:]
+
     def all(self):
         return list(self.values)
 
