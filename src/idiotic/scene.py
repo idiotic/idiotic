@@ -23,6 +23,7 @@ class Scene:
     def _switch(self, val):
         if self.__active == val:
             LOG.debug("Ignoring redundant scene activation for {}".format(self))
+            return
 
         pre_event = event.SceneEvent(self, val, "before")
         idiotic.dispatcher.dispatch(pre_event)
