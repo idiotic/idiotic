@@ -4,34 +4,25 @@ import logging
 
 LOG = logging.getLogger("idiotic.scene")
 
-class SceneType(type):
-    def __new__(mcs, name, bases, attrs):
-        if name.startswith('None'):
-            return None
-
-        newattrs = dict(attrs)
-        if 'NAME' not in attrs:
-            newattrs['NAME'] = name
-
-        return super(SceneType, mcs).__new__(mcs, name, bases, newattrs)
-
-    def __init__(cls, name, bases, attrs):
-        super(SceneType, cls).__init__(name, bases, attrs)
-        if name != "Scene":
-            idiotic._register_scene(cls.NAME, cls())
-
-class Scene(metaclass=SceneType):
-    TAGS = set()
-    def __init__(self):
-        self.__active = False
+class Scene:
+    def __init__(self, name, active={}, inactive={}, tags=()):
+        self.name = name
         self.history = history.History()
-        self.tags = self.TAGS
+        self._active_state = dict(active)
+        self._inactive_state = dict(inactive)
+        self.tags = set(tags)
         self.tags.add("_scene")
+
+        self.__active = None
+
+        self._on_enter_funcs = []
+        self._on_exit_funcs = []
+
+        idiotic._register_scene(name, self)
 
     def _switch(self, val):
         if self.__active == val:
             LOG.debug("Ignoring redundant scene activation for {}".format(self))
-            return val
 
         pre_event = event.SceneEvent(self, val, "before")
         idiotic.dispatcher.dispatch(pre_event)
@@ -42,13 +33,65 @@ class Scene(metaclass=SceneType):
                 self.history.record(self.__active)
 
             if val:
-                self.entered()
+                self._activate()
+                for f in self._on_enter_funcs:
+                    try:
+                        f()
+                    except:
+                        pass
             else:
-                self.exited()
+                self._deactivate()
+                for f in self._on_exit_funcs:
+                    try:
+                        f()
+                    except:
+                        pass
 
             post_event = event.SceneEvent(self, val, "after")
             idiotic.dispatcher.dispatch(post_event)
         return val
+
+    def _activate(self):
+        itag = "_scene_" + self.name + "_inactive"
+        atag = "_scene_" + self.name + "_active"
+        for name in self._inactive_state.keys():
+            try:
+                item = idiotic.items[name]
+                item.remove_state_overlay(tag=itag)
+            except NameError:
+                pass
+
+        for name, state in self._active_state.items():
+            try:
+                item = idiotic.items[name]
+                if isinstance(state, tuple):
+                    state, disable = state
+                else:
+                    disable = False
+                item.overlay_state(state, tag=atag, disable=disable)
+            except NameError:
+                pass
+
+    def _deactivate(self):
+        itag = "_scene_" + self.name + "_inactive"
+        atag = "_scene_" + self.name + "_active"
+        for name in self._active_state.keys():
+            try:
+                item = idiotic.items[name]
+                item.remove_state_overlay(tag=atag)
+            except NameError:
+                pass
+
+        for name, state in self._inactive_state.items():
+            try:
+                item = idiotic.items[name]
+                if isinstance(state, tuple):
+                    state, disable = state
+                else:
+                    disable = False
+                item.overlay_state(state, tag=itag, disable=disable)
+            except NameError:
+                pass
 
     def enter(self):
         return self._switch(True)
@@ -56,11 +99,13 @@ class Scene(metaclass=SceneType):
     def exit(self):
         return self._switch(False)
 
-    def entered(self):
-        pass
+    def on_exit(self, func):
+        self._on_exit_funcs.append(func)
+        return func
 
-    def exited(self):
-        pass
+    def on_enter(self, func):
+        self._on_enter_funcs.append(func)
+        return func
 
     @property
     def active(self):
@@ -69,10 +114,6 @@ class Scene(metaclass=SceneType):
     @active.setter
     def active(self, val):
         return self._switch(bool(val))
-
-    @property
-    def name(self):
-        return type(self).__name__
 
     def pack(self):
         return {
@@ -88,4 +129,4 @@ class Scene(metaclass=SceneType):
         return self.__active
 
     def __str__(self):
-        return "Scene {}".format(type(self))
+        return "Scene {}".format(self.name)

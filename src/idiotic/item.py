@@ -78,6 +78,8 @@ class BaseItem:
         self.command_history = history.History()
         self.state_history = history.History()
 
+        self.__state_overlay = []
+
         idiotic._register_item(self)
 
         if bindings:
@@ -132,8 +134,45 @@ class BaseItem:
     def remove_tag(self, tag):
         self.tags.remove(tag)
 
+    def change_state(self, state):
+        pass
+
+    def overlay_state(self, state, tag=None, disable=False):
+        self.__state_overlay.append({"state": state, "disabled": disable, "tag": tag})
+        self.__compute_state_overlay()
+
+    def remove_state_overlay(self, tag=None):
+        if tag:
+            for i, overlay in enumerate(self.__state_overlay):
+                if overlay["tag"] == tag:
+                    self.__state_overlay = self.__state_overlay[:i] + self.__state_overlay[i+1:]
+                    break
+        else:
+            self.__state_overlay.pop()
+        self.__compute_state_overlay()
+
+    def __compute_state_overlay(self):
+        target_state = None
+        enabled = None
+        for overlay in reversed(self.__state_overlay):
+            if "state" in overlay and target_state is None:
+                target_state = overlay["state"]
+
+            if "disabled" in overlay and enabled is None:
+                enabled = not overlay["disabled"]
+
+        if target_state is not None:
+            self.change_state(target_state)
+        elif not self.__state_overlay:
+            self.change_state(self.state)
+
+        if enabled is not None:
+            self.enabled = enabled
+
     @property
     def state(self):
+        if self.__state_overlay:
+            return self.__state_overlay[-1]["state"]
         return self._state
 
     @state.setter
@@ -147,6 +186,9 @@ class BaseItem:
             raise ValueError("Command {} on item {} does not exist or is not a command".format(name, self))
 
     def _set_state_from_context(self, val, source="rule"):
+        if self.__state_overlay:
+            return
+
         if not self.enabled:
             LOG.info("Ignoring state change on disabled item {}".format(self))
             return
@@ -257,6 +299,13 @@ class Toggle(BaseItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def change_state(self, state):
+        if state:
+            self.on()
+        else:
+            self.off()
+        # otherwise it's already ok
+
     @command
     def on(self):
         self.state = True
@@ -290,6 +339,9 @@ class Number(BaseItem):
         self.kind = kind
         super().__init__(*args, **kwargs)
 
+    def change_state(self, state):
+        self.set(state)
+
     @command
     def set(self, val):
         try:
@@ -317,6 +369,14 @@ class Motor(BaseItem):
         self.constrained = constrained
         self.timeout = timeout
         super().__init__(*args, **kwargs)
+
+    def change_state(self, state):
+        if state == Motor.MOVING_FORWARD or state == Motor.STOPPED_END:
+            self.forward()
+        elif state == Motor.MOVING_REVERSE or state == Motor.STOPPED_START:
+            self.reverse()
+        elif state == Motor.STOPPED:
+            self.stop()
 
     @command
     def forward(self):
@@ -429,6 +489,11 @@ class Group(BaseItem):
                 self.send_commands = _ImposterDict(command_send)
             elif command_send is not None:
                 self.send_commands = dict(command_send)
+
+    def change_state(self, state):
+        # TODO add a way to override this
+        for item in self.members:
+            item.change_state(state)
 
     @property
     def state(self):
