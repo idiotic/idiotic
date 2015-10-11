@@ -153,7 +153,7 @@ class BaseItem:
 
     def __compute_state_overlay(self):
         target_state = None
-        enabled = None
+        enabled = True
         for overlay in reversed(self.__state_overlay):
             if "state" in overlay and target_state is None:
                 target_state = overlay["state"]
@@ -166,8 +166,7 @@ class BaseItem:
         elif not self.__state_overlay:
             self.change_state(self.state)
 
-        if enabled is not None:
-            self.enabled = enabled
+        self.enabled = enabled
 
     @property
     def state(self):
