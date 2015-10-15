@@ -65,7 +65,10 @@ def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, conten
             else:
                 return jsonify({"status": "success", "result": res})
         else:
-            return Response(res, mimetype=content_type)
+            if isinstance(res, Response):
+                return res
+            else:
+                return Response(res, mimetype=content_type)
     return wrapper
 
 def join_url(*paths):
