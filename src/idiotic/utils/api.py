@@ -15,7 +15,7 @@ class _APIWrapper:
             base = join_url("/api/module", self.modname)
         self.path = base
 
-    def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, content_type=None, raw_result=False, **kwargs):
+    def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, content_type=None, raw_result=False, no_source=False, **kwargs):
         LOG.info("Adding API endpoint for {}: {} (content type {})".format(
             self.modname,
             join_url(self.path, path),
@@ -29,7 +29,8 @@ class _APIWrapper:
                                            func, get_args, get_form,
                                            get_data, *args,
                                            content_type=content_type,
-                                           raw_result=raw_result), **kwargs)
+                                           raw_result=raw_result,
+                                           no_source=no_source), **kwargs)
 
 def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, raw_result=False, *args, **kwargs):
     def wrapper(*args, **kwargs):
