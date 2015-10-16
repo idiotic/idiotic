@@ -168,6 +168,8 @@ class BaseItem:
 
         if enabled is not None:
             self.enabled = enabled
+        else:
+            self.enabled = True
 
     @property
     def state(self):
