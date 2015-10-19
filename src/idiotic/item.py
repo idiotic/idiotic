@@ -52,7 +52,7 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False):
+    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False, enforce_state=False):
         self.name = name
         self._state = None
 
@@ -105,6 +105,41 @@ class BaseItem:
                         interval.do(wrap_update, self, key, func)
             elif isinstance(update, tuple):
                 update[0].do(wrap_update, self, None, update[1])
+
+        self.__enforce_jobs = []
+
+        if enforce_state:
+            self.__enforce_state_arg = enforce_state
+            self.start_state_enforce()
+
+    def start_state_enforce(self, arg=None):
+        if arg:
+            enforce_state = arg
+        else:
+            enforce_state = self.__enforce_state_arg
+
+        if isinstance(enforce_state, tuple):
+            for state in enforce_state:
+                self.start_state_enforce(state)
+        elif isinstance(enforce_state, int):
+            self.__enforce_jobs.append(idiotic.scheduler.every(enforce_state).seconds.do(self.__enforce_state))
+        elif isinstance(enforce_state, scheduler.Job):
+            self.__enforce_jobs.append(enforce_state.do(self.__enforce_state))
+        elif isinstance(enforce_state, utils.Filter):
+            idiotic.dispatcher.bind(self.__enforce_state, enforce_state)
+        else:
+            raise ValueError("Invalid enforcement parameter {}. Must be int, schedule.Job, Filter, or tuple".format(enforce_state))
+
+    def stop_state_enforce(self):
+        for job in self.__enforce_jobs:
+            idiotic.scheduler.cancel_job(job)
+
+        self.__enforce_jobs = []
+
+        idiotic.dispatcher.unbind(self.__enforce_state)
+
+    def __enforce_state(self):
+        self.change_state(self.state)
 
     def bind_on_command(self, function, **kwargs):
         LOG.debug("Binding on command for {}".format(self))
