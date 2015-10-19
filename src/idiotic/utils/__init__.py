@@ -41,7 +41,93 @@ class TaggedDict(AttrDict):
         ts=set(tags)
         return self.all(filt=lambda i:ts.issubset(i.tags))
 
-class Filter:
+class BaseFilter:
+    def __init__(self, *args):
+        raise NotImplementedError()
+
+    def __and__(self, other):
+        return AndFilter(self, other)
+
+    def __or__(self, other):
+        return OrFilter(self, other)
+
+    def __neg__(self):
+        return NotFilter(self)
+
+    def __invert__(self):
+        return NotFilter(self)
+
+    def __xor__(self, other):
+        return XorFilter(self, other)
+
+    def check(self, value):
+        return True
+
+class NotFilter(BaseFilter):
+    def __init__(self, base):
+        if not hasattr(base, "match"):
+            raise ValueError("{} has no attribute 'match'".format(base))
+        self.__base = base
+
+    def check(self, event):
+        return not self.__base.check(event)
+
+    def __str__(self):
+        return "NotFilter({})".format(str(self.__base))
+
+    def __repr__(self):
+        return "NotFilter({})".format(repr(self.__base))
+
+class AndFilter(BaseFilter):
+    def __init__(self, *bases):
+        for f in bases:
+            if not hasattr(f, "match"):
+                raise ValueError("{} has no attribute 'match'".format(f))
+        self.__bases = bases
+
+    def match(self, event):
+        return all((b.match(event) for b in self.__bases))
+
+    def __str__(self):
+        return "AndFilter({})".format(", ".join((str(b) for b in self.__bases)))
+
+    def __repr__(self):
+        return "AndFilter({})".format(", ".join((repr(b) for b in self.__bases)))
+
+class OrFilter(BaseFilter):
+    def __init__(self, *bases):
+        for f in bases:
+            if not hasattr(f, "match"):
+                raise ValueError("{} has no attribute 'match'".format(f))
+        self.__bases = bases
+
+    def match(self, event):
+        return any((b.match(event) for b in self.__bases))
+
+    def __str__(self):
+        return "OrFilter({})".format(", ".join((str(b) for b in self.__bases)))
+
+    def __repr__(self):
+        return "OrFilter({})".format(", ".join((repr(b) for b in self.__bases)))
+
+class XorFilter(BaseFilter):
+    def __init__(self, a, b):
+        for f in (a, b):
+            if not hasattr(f, "match"):
+                raise ValueError("{} has no attribute 'match'".format(f))
+        self.__a = a
+        self.__b = b
+
+    def match(self, event):
+        return a.match(event) ^ b.match(event)
+
+    def __str__(self):
+        return "XorFilter({}, {})".format(str(a), str(b))
+
+    def __repr__(self):
+        return "XorFilter({}, {})".format(repr(a), repr(b))
+
+class Filter(BaseFilter):
     def __init__(self, mode=None, filters=None, **kwargs):
         self.checks = []
         if mode is None:
