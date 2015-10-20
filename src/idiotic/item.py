@@ -343,6 +343,13 @@ class Toggle(BaseItem):
             self.off()
         # otherwise it's already ok
 
+    def _set_state_from_context(self, val, source="rule"):
+        if val in ("True", "true", "1", "on"):
+            val = True
+        elif val in ("False", "false", "0", "off"):
+            val = False
+        super()._set_state_from_context(bool(val), source)
+
     @command
     def on(self):
         self.state = True
