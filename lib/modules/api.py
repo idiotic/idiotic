@@ -12,7 +12,8 @@ log = logging.getLogger("module.api")
 def configure(global_config, config, api, assets):
     api.serve(scene_command, '/api/scene/<name>/command/<command>')
     api.serve(item_command, '/api/item/<name>/command/<command>', get_args="args")
-    api.serve(item_state, '/api/item/<name>/state', get_data="state")
+    api.serve(item_state, '/api/item/<name>/state', get_data="state",
+              methods=['GET', 'PUT', 'POST'])
     api.serve(item_enable, '/api/item/<name>/enable')
     api.serve(item_disable, '/api/item/<name>/disable')
 
