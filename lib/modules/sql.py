@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, PickleType, ForeignKey, create_engine, select
+from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, PickleType, ForeignKey, create_engine, select, and_
 import logging
 import idiotic.persistence
 
