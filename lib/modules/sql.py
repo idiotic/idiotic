@@ -56,7 +56,8 @@ class SQLPersistence(idiotic.persistence.Persistence):
                         self.states.c.item_id == self.items.c.id
                     )
                 ).where(
-                    self.items.c.name == item.name
+                    self.items.c.name == item.name,
+                    self.items.c.id != None
                 )
 
                 if since:
@@ -79,7 +80,8 @@ class SQLPersistence(idiotic.persistence.Persistence):
                 self.items.select(
                     self.items.c.id
                 ).where(
-                    self.items.c.name == item.name
+                    self.items.c.name == item.name,
+                    self.items.c.id != None
                 ).limit(1)
             )
 
