@@ -40,7 +40,7 @@ def item_command(name, command, args={}, *_, **kwargs):
 def item_state(name, state=None, *args, **kwargs):
     try:
         item = items[name]
-        if state is not None:
+        if state:
             if isinstance(state, bytes):
                 state = state.decode('UTF-8')
             item.state = state
