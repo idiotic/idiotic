@@ -40,7 +40,7 @@ def item_command(name, command, args={}, *_, **kwargs):
 def item_state(name, state=None, *args, **kwargs):
     try:
         item = items[name]
-        if state:
+        if state is not None:
             item.state = state
             #item._set_state_from_context(state, "api")
         return item.state
