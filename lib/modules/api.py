@@ -41,6 +41,8 @@ def item_state(name, state=None, *args, **kwargs):
     try:
         item = items[name]
         if state is not None:
+            if isinstance(state, bytes):
+                state = state.decode('UTF-8')
             item.state = state
             #item._set_state_from_context(state, "api")
         return item.state
