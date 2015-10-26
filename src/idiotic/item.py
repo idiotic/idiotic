@@ -215,7 +215,7 @@ class BaseItem:
             idiotic.dispatcher.dispatch(post_event)
 
     def pack(self):
-        return {
+        res = {
             "__class__": type(self).__name__,
             "__owner__": getattr(self, 'MODULE', 'unknown'),
             "__kind__": "item",
@@ -226,7 +226,11 @@ class BaseItem:
                           and not k.startswith('__')],
             "__methods__": [k for k, v in self.__dict__.items() if callable(v)
                             and not k.startswith('__')]
-        }.update(self.__dict__)
+        }
+
+        res.update(self.__dict__)
+
+        return res
 
 
 class ItemProxy(BaseItem):
@@ -246,13 +250,17 @@ class ItemProxy(BaseItem):
             item=self.name, type=idiotic.event.StateChangeEvent))
 
     def pack(self):
-        return {
+        res = {
             "__class__": self.typename,
             "__host__": self.host,
             "__commands__": self.commands,
             "__attrs__": self.attrs,
             "__methods__": self.methods,
-        }.update(self.__dict__)
+        }
+
+        res.update(self.__dict__)
+
+        return res
 
     def __cache_update(self, e):
         self._state = e.new
