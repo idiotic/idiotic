@@ -226,12 +226,12 @@ class BaseItem:
             "__owner__": getattr(self, 'MODULE', 'unknown'),
             "__kind__": "item",
             "__host__": None,
-            "__commands__": [k for k, v in self.__dict__.items() if callable(v)
-                             and v.__name__ == "command_decorator"],
-            "__attrs__": [k for k, v in self.__dict__.items() if not callable(v)
-                          and not k.startswith('__')],
-            "__methods__": [k for k, v in self.__dict__.items() if callable(v)
-                            and not k.startswith('__')]
+            "__commands__": [k for k in dir(self) if callable(getattr(self, k, None))
+                             and getattr(self, k).__name__ == "command_decorator"],
+            "__attrs__": [k for k in dir(self) if not callable(getattr(self, k, None))
+                          and not k.startswith('_')],
+            "__methods__": [k for k in dir(self) if callable(getattr(self, k, None))
+                            and not k.startswith('_')]
         }
 
         res.update(self.__dict__)
