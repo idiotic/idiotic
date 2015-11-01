@@ -73,6 +73,9 @@ class BaseItem:
         else:
             self.groups = set(groups)
 
+        for group in self.groups:
+            group.add(self)
+
         self.enabled = True
 
         self.command_history = history.History()
@@ -210,6 +213,9 @@ class BaseItem:
 
             if hasattr(self, "state_history"):
                 self.state_history.record(self._state)
+
+            for group in self.groups:
+                group._member_state_changed(self, self._state, source)
 
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
@@ -442,7 +448,7 @@ class Group(BaseItem):
     summarize its state.
 
     """
-    def __init__(self, *args, state=any, state_set=None, commands=False, command_send=False, **kwargs):
+    def __init__(self, *args, state=any, state_set=None, commands=False, command_send=False, members=None, **kwargs):
         """Initialize a Group item, which may or may not handle state updates
         and commands in a custom manner.
 
@@ -485,7 +491,11 @@ class Group(BaseItem):
         """
         super().__init__(*args, **kwargs)
 
-        self.members = []
+        self.members = members or []
+
+        for item in self.members:
+            if self not in item.groups:
+                item.groups.add(self)
 
         self._group_state_getter = state
         self._group_state_setter = state_set
@@ -553,3 +563,8 @@ class Group(BaseItem):
     def add(self, item):
         if item not in self.members:
             self.members.append(item)
+
+    def _member_state_changed(self, member, state, source):
+        if self._group_state_getter:
+            post_event = event.StateChangeEvent(self, None, self.state, "group_member," + source, kind="after")
+            idiotic.dispatcher.dispatch(post_event)
