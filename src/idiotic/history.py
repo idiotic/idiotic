@@ -2,9 +2,11 @@ import collections
 import datetime
 import bisect
 
+Entry = collections.namedtuple('Entry', ['time', 'state'])
+
 class History:
     def __init__(self, initial=[], maxlen=None, maxage=None):
-        self.values = collections.deque(sorted(initial), maxlen=maxlen)
+        self.values = collections.deque(sorted((Entry(*i) for i in initial)), maxlen=maxlen)
 
         if isinstance(maxage, int):
             self.maxage = datetime.timedelta(seconds=maxage)
@@ -23,12 +25,12 @@ class History:
 
     def record(self, value, time=None):
         if time is None:
-            self.values.append((datetime.datetime.now(), value))
+            self.values.append(Entry(datetime.datetime.now(), value))
         elif isinstance(time, datetime.datetime):
             if len(self.values) and time < self.values[-1][0]:
                 raise NotImplementedError("We can't alter history!... yet....")
             else:
-                self.values.append((time, value))
+                self.values.append(Entry(time, value))
         else:
             raise ValueError("time must be datetime")
 
