@@ -34,8 +34,8 @@ def command(func):
         if not pre_event.canceled:
             func(self, *args, **kwargs)
 
-            if hasattr(self, "command_history"):
-                self.command_history.record(name)
+            if hasattr(self, "__command_history"):
+                self.__command_history.record(name)
 
             if persist_instance:
                 persist_instance.append_item_history(self, datetime.datetime.now(),
@@ -78,8 +78,8 @@ class BaseItem:
 
         self.enabled = True
 
-        self.command_history = history.History()
-        self.state_history = history.History()
+        self.__command_history = history.History()
+        self.__state_history = history.History()
 
         self.__state_overlay = []
 
@@ -205,20 +205,29 @@ class BaseItem:
 
         if self._state != val:
             LOG.info("{} changed state from {} -> {}".format(self, self._state, val))
+
         old = self._state
         pre_event = event.StateChangeEvent(self, old, val, source, kind="before")
         idiotic.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self._state = val
 
-            if hasattr(self, "state_history"):
-                self.state_history.record(self._state)
+            if hasattr(self, "__state_history"):
+                self.__state_history.record(self._state)
 
             for group in self.groups:
                 group._member_state_changed(self, self._state, source)
 
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
+
+    @property
+    def state_history(self):
+        return self.__state_history
+
+    @property
+    def command_history(self):
+        return self.__command_history
 
     def pack(self):
         res = {
