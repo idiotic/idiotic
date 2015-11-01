@@ -234,7 +234,21 @@ class BaseItem:
                             and not k.startswith('_')]
         }
 
-        res.update(self.__dict__)
+        return res
+
+    def json(self):
+        res = {
+            "type": type(self).__name__,
+            "name": self.name,
+            "id": getattr(self, "id", None),
+            "commands": [k for k in dir(self) if callable(getattr(self, k, None))
+                         and getattr(self, k, None).__name__ == "command_decorator"],
+            "methods": [k for k in dir(self) if callable(getattr(self, k, None))
+                        and not k.startswith('_')]
+        }
+
+        if hasattr(self, "state"):
+            res["state"] = self.state
 
         return res
 
@@ -568,3 +582,9 @@ class Group(BaseItem):
         if self._group_state_getter:
             post_event = event.StateChangeEvent(self, None, self.state, "group_member," + source, kind="after")
             idiotic.dispatcher.dispatch(post_event)
+
+    def json(self):
+        res = super().json()
+
+        res.update({"members": [item.name for item in self.members]})
+        return res
