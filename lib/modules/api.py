@@ -16,6 +16,9 @@ def configure(global_config, config, api, assets):
               methods=['GET', 'PUT', 'POST'])
     api.serve(item_enable, '/api/item/<name>/enable')
     api.serve(item_disable, '/api/item/<name>/disable')
+    api.serve(list_items, '/api/items')
+    api.serve(list_scenes, '/api/scenes')
+    api.serve(item_info, '/api/item/<name>')
 
 def scene_command(name, command, *_, **__):
     try:
@@ -62,3 +65,13 @@ def item_disable(name, *args, **kwargs):
         item.disable()
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
+
+def list_items(*_, **__):
+    return [i.json() for i in items.all()]
+
+def list_scenes():
+    return [s.json() for s in scenes.all()]
+
+def item_info(name=None, source=None):
+    if name:
+        return items[name].json()
