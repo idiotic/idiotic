@@ -46,6 +46,16 @@ class EventBinder:
     def get_filter(self):
         raise NotImplementedError("You must override EventBinder.get_filter()")
 
+class Event(EventBinder):
+    def __init__(self, type=None, *args, **kwargs):
+        if type is not None:
+            self.__filter = idiotic.utils.Filter(*args, type=type, **kwargs)
+        else:
+            self.__filter = idiotic.utils.Filter(*args, **kwargs)
+
+    def get_filter(self):
+        return self.__filter
+
 class Command(EventBinder):
     def __init__(self, item, command=None, time="after"):
         self.item = item
