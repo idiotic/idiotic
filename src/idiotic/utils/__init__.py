@@ -185,6 +185,10 @@ class Filter(BaseFilter):
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) == v)
                 elif op == "type_not":
                     self.checks.append(lambda e:type(self.__resolve_path(e, path)) != v)
+                elif op == "isinstance":
+                    self.checks.append(lambda e:isinstance(self.__resolve_path(e, path), v))
+                elif op == "not_isinstance":
+                    self.checks.append(lambda e:not isinstance(self.__resolve_path(e, path), v))
                 elif op == "hasattr":
                     self.checks.append(lambda e:hasattr(self.__resolve_path(e, path), v))
                 elif op == "not_hasattr":
