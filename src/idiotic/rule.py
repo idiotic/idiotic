@@ -3,6 +3,7 @@ import asyncio
 import idiotic
 import logging
 import datetime
+from idiotic import dispatcher
 LOG = logging.getLogger("idiotic.rule")
 
 def bind(func=None, *events):
@@ -52,6 +53,9 @@ class Event(EventBinder):
             self.__filter = idiotic.utils.Filter(*args, type=type, **kwargs)
         else:
             self.__filter = idiotic.utils.Filter(*args, **kwargs)
+
+    def bind(self, callback):
+        dispatcher.bind(callback, self.get_filter())
 
     def get_filter(self):
         return self.__filter
