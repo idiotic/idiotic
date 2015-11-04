@@ -229,7 +229,6 @@ class BaseItem:
     def command_history(self):
         return self.__command_history
 
-    @property
     def commands(self):
         return [k for k in dir(self) if callable(getattr(self, k, None)) and getattr(self, k).__name__ == "command_decorator"]
 
@@ -239,7 +238,7 @@ class BaseItem:
             "__owner__": getattr(self, 'MODULE', 'unknown'),
             "__kind__": "item",
             "__host__": None,
-            "__commands__": self.commands,
+            "__commands__": self.commands(),
             "__attrs__": [k for k in dir(self) if not callable(getattr(self, k, None))
                           and not k.startswith('_')],
             "__methods__": [k for k in dir(self) if callable(getattr(self, k, None))
@@ -253,7 +252,7 @@ class BaseItem:
             "type": type(self).__name__,
             "name": self.name,
             "id": getattr(self, "id", None),
-            "commands": self.commands,
+            "commands": self.commands(),
             "methods": [k for k in dir(self) if callable(getattr(self, k, None))
                         and not k.startswith('_')]
         }
