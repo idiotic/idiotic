@@ -397,6 +397,19 @@ class Number(BaseItem):
         except (ValueError, TypeError):
             LOG.warn("Invalid {} argument to Number.set: {}".format(self.kind.__name__, val))
 
+class Text(BaseItem):
+    """An item which represents a blob of text."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def change_state(self, state):
+        self.set(str(state))
+
+    @command
+    def set(self, val):
+        self.state = str(val)
+
 class Motor(BaseItem):
     """An item which can move forward, reverse, and stop."""
 
