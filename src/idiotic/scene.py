@@ -13,7 +13,7 @@ class Scene:
         self.tags = set(tags)
         self.tags.add("_scene")
 
-        self.__active = None
+        self.__active = False
 
         self._on_enter_funcs = []
         self._on_exit_funcs = []
