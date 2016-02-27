@@ -1,4 +1,4 @@
-from .api import _APIWrapper, join_url
+from .api import _APIWrapper, join_url, jsonified, single_args
 from .etc import mangle_name, IdioticEncoder
 import functools
 import logging
@@ -254,4 +254,4 @@ def load_dir(path, include_assets=False):
 
     return modules
 
-__ALL__ = [AttrDict, TaggedDict, mangle_name, IdioticEncoder, load_dir, _APIWrapper, join_url]
+__ALL__ = [AttrDict, TaggedDict, mangle_name, IdioticEncoder, load_dir, _APIWrapper, join_url, jsonified, single_args]

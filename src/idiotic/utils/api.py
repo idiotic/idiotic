@@ -6,6 +6,19 @@ import logging
 
 LOG = logging.getLogger("idiotic.utils.api")
 
+def jsonified(func):
+    def decorator(*args, **kwargs):
+        try:
+            res = func(*args, **kwargs)
+        except Exception as e:
+            LOG.exception("Exception encountered from API, args={}, kwargs={}".format(args, kwargs))
+            return jsonify({"status": "error", "description": str(e)})
+        return jsonify({"status": "success", "result": res})
+    return decorator
+
+def single_args(args):
+    return {k: v[0] if isinstance(v, list) else v for k, v in args.items()}
+
 class _APIWrapper:
     def __init__(self, api, module, base=None):
         self.__api = api
