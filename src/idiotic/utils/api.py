@@ -18,10 +18,10 @@ class _APIWrapper:
     def serve(self, func, path, *args, get_args=False, get_form=False, get_data=False, content_type=None, raw_result=False, no_source=False, **kwargs):
         LOG.info("Adding API endpoint for {}: {} (content type {})".format(
             self.modname,
-            join_url(self.path, path),
+            path,
             content_type
         ))
-        return self.__api.add_url_rule(join_url(self.path, path),
+        return self.__api.add_url_rule(path,
                                        "mod_{}_{}".format(
                                            self.modname,
                                            getattr(func, "__name__", "<unknown>")),
@@ -31,6 +31,9 @@ class _APIWrapper:
                                            content_type=content_type,
                                            raw_result=raw_result,
                                            no_source=no_source), **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.__api, name)
 
 def _wrap_for_result(func, get_args, get_form, get_data, no_source=False, content_type=None, raw_result=False, *args, **kwargs):
     def wrapper(*args, **kwargs):

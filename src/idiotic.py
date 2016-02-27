@@ -31,7 +31,7 @@ import threading
 import aiohttp.wsgi
 import idiotic
 from idiotic import utils, item, rule, distrib, event
-from idiotic import items, dispatcher, modules, api
+from idiotic import items, dispatcher, modules
 # FIXME: This is sort of a hack, due to dependency resolution order
 # problems (persistence and distrib must import idiotic for the
 # registration hooks). The better solution would be to move concrete
@@ -88,6 +88,9 @@ def init():
             idiotic._set_config(config)
     except (OSError, IOError):
         LOG.exception("Could not load config file {}:".format(arguments["config"]))
+
+    idiotic.name = name
+    idiotic.port = config.get("api", {}).get("port", 5000)
 
     # load modules
     LOG.info("Loading modules from {}".format(arguments["modules"]))
@@ -155,7 +158,14 @@ if __name__ == '__main__':
 
     try:
         loop = asyncio.get_event_loop()
-        server = loop.create_server(lambda: aiohttp.wsgi.WSGIServerHttpProtocol(api, readpayload=True), config.get("api", {}).get("listen", "*"), config.get("api", {}).get("port", 5000))
+
+        api_config = config.get("api", {})
+        listen = api_config.get("listen", "*")
+        port = api_config.get("port", 5000)
+
+        idiotic._finalize_api()
+
+        server = loop.create_server(lambda: aiohttp.wsgi.WSGIServerHttpProtocol(idiotic.api, readpayload=True), listen, port)
         loop.run_until_complete(asyncio.gather(idiotic.run_scheduled_jobs(),
                                                server,
                                                dispatcher.run()))

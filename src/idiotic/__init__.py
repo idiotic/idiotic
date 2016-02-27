@@ -5,12 +5,15 @@ import asyncio
 import logging
 import time
 from flask import Flask, json, request, Response
+from werkzeug.wsgi import DispatcherMiddleware
 from .utils import AttrDict, TaggedDict, mangle_name, join_url, _APIWrapper
 from .dispatch import Dispatcher
 
 LOG = logging.getLogger("idiotic.init")
 
 config = {}
+
+name = "idiotic"
 
 items = TaggedDict()
 
@@ -31,7 +34,11 @@ persist_instance = None
 distribution = None
 distrib_thread = None
 
-api = Flask(__name__)
+_root_api = Flask(__name__)
+
+_apis = {}
+
+api = None
 
 # Monkeypatch schedule so nobody has to deal with it directly
 def __sched_job_do_once(self, func, *args, **kwargs):
@@ -87,18 +94,30 @@ def _register_persistence(name, cls):
 def _register_module(module, assets=None):
     name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
-    if config.get("modules", {}).get(name, {}).get("disable", False):
+    mod_conf = config.get("modules", {}).get(name, {})
+
+    if mod_conf.get("disable", False):
         LOG.info("Module {} is disabled; skipping registration".format(name))
         return
+
+    base = mod_conf.get("api_base", "/api/module/" + name)
+
+    if base == '/':
+        mod_api = _root_api
+    elif base in _apis:
+        mod_api = _apis[base]
+    else:
+        mod_api = Flask(name)
+
+        _apis[mod_conf.get("api_base", "/api/module/" + name)] = mod_api
 
     if hasattr(module, "configure"):
         LOG.info("Configuring module {}".format(name))
         module.configure(
-            config.get("modules", {}).get(name, {}),
-            _APIWrapper(api, module, config.get(
-                "modules", {}
-            ).get(name, {}).get("api_base", None)),
-            assets)
+            mod_conf,
+            _APIWrapper(mod_api, module, '/'),
+            assets
+        )
 
     if hasattr(module, "start"):
         LOG.info("Starting module {}".format(name))
@@ -106,15 +125,23 @@ def _register_module(module, assets=None):
 
     modules._set(name, module)
 
+def _finalize_api():
+    global api
+    api = DispatcherMiddleware(_root_api, _apis)
+
+    return api
+
 def _register_builtin_module(module, assets=None):
     name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
     if hasattr(module, "configure"):
         LOG.info("Configuring system module {}".format(name))
-        module.configure(config,
-                         config.get(name, {}),
-                         _APIWrapper(api, module, "/"),
-                         assets)
+        module.configure(
+            config,
+            config.get(name, {}),
+            _APIWrapper(_root_api, module, '/'),
+            assets
+        )
 
     modules._set(name, module)
 
