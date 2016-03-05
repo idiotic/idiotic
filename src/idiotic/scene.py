@@ -117,14 +117,24 @@ class Scene:
         return self._switch(bool(val))
 
     def pack(self):
-        return {
+        result = {
             "__class__": type(self).__name__,
             "__owner__": getattr(self, 'MODULE', 'unknown'),
             "__kind__": "scene",
             "__active": self.__active,
             "__methods__": [k for k, v in self.__dict__.items() if callable(v)
                             and not k.startswith('__')]
-        }.update(self.__dict__)
+        }
+        result.update(self.__dict__)
+        return result
+
+    def json(self):
+        return {
+            "type": "Scene",
+            "name": self.name,
+            "active": self.__active,
+            "tags": list(self.tags),
+        }
 
     def __bool__(self):
         return self.__active
