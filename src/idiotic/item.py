@@ -252,6 +252,7 @@ class BaseItem:
             "type": type(self).__name__,
             "name": self.name,
             "id": getattr(self, "id", None),
+            "tags": list(self.tags),
             "commands": self.commands(),
             "methods": [k for k in dir(self) if callable(getattr(self, k, None))
                         and not k.startswith('_')]
