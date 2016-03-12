@@ -3,7 +3,6 @@
 """
 
 import logging
-from idiotic import items, scenes
 from idiotic.utils import jsonified, single_args
 from flask import request
 
