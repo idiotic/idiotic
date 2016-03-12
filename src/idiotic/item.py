@@ -548,7 +548,10 @@ class Group(BaseItem):
 
         if command_send:
             if command_send is True:
-                self.send_commands = _ImposterDict(lambda items, command, *args, **kwargs: (getattr(item, command)(command=command, *args, **kwargs) for item in items))
+                def dispatch_commands(items, command, *args, **kwargs):
+                    for item in items:
+                        item.command(command, *args, **kwargs)
+                self.send_commands = _ImposterDict(dispatch_commands)
             elif command_send is False:
                 self.send_commands = _Sieve()
             elif callable(command_send):
@@ -578,8 +581,8 @@ class Group(BaseItem):
 
     def command(self, command=None, *args, **kwargs):
         # Will receive any command by name
-        if command and command in self.relay_commands:
-            self.relay_commands[command](command, *args, **kwargs)
+        if command and command in self.send_commands:
+            self.send_commands[command](self.members, command, *args, **kwargs)
 
     def flattened(self, include_subgroups=False):
         """Return this group's members and all members of its subgroups, as a
