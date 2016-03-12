@@ -153,7 +153,7 @@ def run_everything(*things):
             yield from c()
         yield from asyncio.sleep(.01)
 
-if __name__ == '__main__':
+def main():
     init()
 
     try:
@@ -172,3 +172,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         LOG.info("Shutting down")
         shutdown()
+
+if __name__ == '__main__':
+    main()
