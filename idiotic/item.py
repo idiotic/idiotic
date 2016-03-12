@@ -37,7 +37,7 @@ def command(func):
             if hasattr(self, "__command_history"):
                 self.__command_history.record(name)
 
-            if self.iditoic.persist_instance:
+            if self.idiotic.persist_instance:
                 self.idiotic.persist_instance.append_item_history(
                     self, datetime.datetime.now(),
                     name, kind="command",
