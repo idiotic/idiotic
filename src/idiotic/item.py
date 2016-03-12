@@ -266,6 +266,7 @@ class BaseItem:
             "name": self.name,
             "id": getattr(self, "id", None),
             "tags": list(self.tags),
+            "enabled": self.enabled,
             "commands": self.commands(),
             "methods": [k for k in dir(self) if callable(getattr(self, k, None))
                         and not k.startswith('_')],
