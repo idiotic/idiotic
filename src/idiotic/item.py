@@ -52,7 +52,7 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False):
+    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False, aliases=None):
         self.name = name
         self._state = None
 
@@ -75,6 +75,11 @@ class BaseItem:
 
         for group in self.groups:
             group.add(self)
+
+        if aliases is None:
+            self.aliases = {}
+        else:
+            self.aliases = aliases
 
         self.enabled = True
 
@@ -185,6 +190,9 @@ class BaseItem:
         self._set_state_from_context(state)
 
     def command(self, name, *args, **kwargs):
+        if name in self.aliases:
+            name = self.aliases[name]
+
         if hasattr(self, name) and callable(getattr(self, name)):
             return getattr(self, name)(*args, **kwargs)
         else:
@@ -255,7 +263,8 @@ class BaseItem:
             "tags": list(self.tags),
             "commands": self.commands(),
             "methods": [k for k in dir(self) if callable(getattr(self, k, None))
-                        and not k.startswith('_')]
+                        and not k.startswith('_')],
+            "aliases": self.aliases,
         }
 
         if hasattr(self, "state"):
