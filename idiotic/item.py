@@ -2,7 +2,7 @@ import functools
 import datetime
 import logging
 import idiotic
-from idiotic import event, modules, history, persist_instance, utils
+from idiotic import event, history, utils
 
 LOG = logging.getLogger("idiotic.item")
 
@@ -29,7 +29,7 @@ def command(func):
 
         # Create an event and send it
         pre_event = event.CommandEvent(self, name, source, kind="before")
-        idiotic.dispatcher.dispatch(pre_event)
+        self.idiotic.dispatcher.dispatch(pre_event)
 
         if not pre_event.canceled:
             func(self, *args, **kwargs)
@@ -37,13 +37,14 @@ def command(func):
             if hasattr(self, "__command_history"):
                 self.__command_history.record(name)
 
-            if persist_instance:
-                persist_instance.append_item_history(self, datetime.datetime.now(),
-                                                     name, kind="command",
-                                                     extra={"args": args, "kwargs": kwargs} if args or kwargs else None)
+            if self.iditoic.persist_instance:
+                self.idiotic.persist_instance.append_item_history(
+                    self, datetime.datetime.now(),
+                    name, kind="command",
+                    extra={"args": args, "kwargs": kwargs} if args or kwargs else None)
 
             post_event = event.CommandEvent(self, name, source, kind="after")
-            idiotic.dispatcher.dispatch(post_event)
+            self.idiotic.dispatcher.dispatch(post_event)
     return command_decorator
 
 class BaseItem:
@@ -93,13 +94,13 @@ class BaseItem:
 
         self.__state_overlay = []
 
-        idiotic._register_item(self)
+        idiotic.instance._register_item(self)
 
         if bindings:
             for module_name, args in bindings.items():
                 LOG.debug("Setting {} bindings on {}".format(module_name, self))
                 try:
-                    module = modules[module_name]
+                    module = self.idiotic.modules[module_name]
                 except NameError:
                     LOG.warning("Module '{}' not found -- skipping".format(module_name))
                 else:
@@ -121,10 +122,10 @@ class BaseItem:
 
     def bind_on_command(self, function, **kwargs):
         LOG.debug("Binding on command for {}".format(self))
-        idiotic.dispatcher.bind(function, utils.Filter(type=event.CommandEvent, item=self, **kwargs))
+        self.idiotic.dispatcher.bind(function, utils.Filter(type=event.CommandEvent, item=self, **kwargs))
 
     def bind_on_change(self, function, **kwargs):
-        idiotic.dispatcher.bind(function, utils.Filter(type=event.StateChangeEvent, item=self, **kwargs))
+        self.idiotic.dispatcher.bind(function, utils.Filter(type=event.StateChangeEvent, item=self, **kwargs))
 
     def __str__(self):
         return type(self).__name__ + " '" + self.name + "'"
@@ -221,7 +222,7 @@ class BaseItem:
 
         old = self._state
         pre_event = event.StateChangeEvent(self, old, val, source, kind="before")
-        idiotic.dispatcher.dispatch(pre_event)
+        self.idiotic.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self._state = val
 
@@ -232,7 +233,7 @@ class BaseItem:
                 group._member_state_changed(self, self._state, source)
 
             post_event = event.StateChangeEvent(self, old, val, source, kind="after")
-            idiotic.dispatcher.dispatch(post_event)
+            self.idiotic.dispatcher.dispatch(post_event)
 
     @property
     def state_history(self):
@@ -279,7 +280,7 @@ class BaseItem:
 
 
 class ItemProxy(BaseItem):
-    def __init__(self, typename, host, name, commands, attrs, methods,
+    def __init__(self, idiotic, typename, host, name, commands, attrs, methods,
                  ignore_redundant=False):
         self.typename = typename
         self.host = host
@@ -291,8 +292,8 @@ class ItemProxy(BaseItem):
 
         self.ignore_redundant = ignore_redundant
 
-        idiotic.dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
-            item=self.name, type=idiotic.event.StateChangeEvent))
+        self.idiotic.dispatcher.bind(self.__cache_update, idiotic.utils.Filter(
+            item=self.name, type=event.StateChangeEvent))
 
     def pack(self):
         res = {
@@ -318,12 +319,12 @@ class ItemProxy(BaseItem):
         LOG.info("signaling change state on {} from {} -> {}".format(
             self, self._state, val))
 
-        idiotic.dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, source))
+        self.idiotic.dispatcher.dispatch(event.SendStateChangeEvent(self.name, val, source))
 
     def __getattr__(self, attr):
         if attr in self.commands:
-            return functools.partial(idiotic.dispatcher.dispatch,
-                                     idiotic.event.SendCommandEvent,
+            return functools.partial(self.idiotic.dispatcher.dispatch,
+                                     event.SendCommandEvent,
                                      source = None)
         elif attr in self.attrs:
             if attr in self._cache:
@@ -333,7 +334,7 @@ class ItemProxy(BaseItem):
 
     def __setattr__(self, attr, val):
         if attr in self.attrs:
-            idiotic.dispatcher.dispatch(idiotic.event.SendStateChangeEvent(self.name, val, None))
+            self.idiotic.dispatcher.dispatch(event.SendStateChangeEvent(self.name, val, None))
         else:
             raise NameError("Item has no attribute {}".format(attr))
 
@@ -622,7 +623,7 @@ class Group(BaseItem):
     def _member_state_changed(self, member, state, source):
         if self._group_state_getter:
             post_event = event.StateChangeEvent(self, None, self.state, "group_member," + source, kind="after")
-            idiotic.dispatcher.dispatch(post_event)
+            self.idiotic.dispatcher.dispatch(post_event)
 
     def json(self):
         res = super().json()

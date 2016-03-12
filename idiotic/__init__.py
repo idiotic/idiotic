@@ -22,6 +22,22 @@ def __sched_job_do_now(self, func, *args, **kwargs):
 schedule.Job.do_once = __sched_job_do_once
 schedule.Job.do_now = __sched_job_do_now
 
+instance = None
+
+distrib_types = {}
+persist_types = {}
+
+def _register_distrib_type(name, distrib):
+    global distrib_types
+    distrib_types[name] =  distrib
+
+def _register_persistence(name, cls):
+    global persist_types
+    persist_types[name] = cls
+
+def _register_scene(name, scene):
+    instance._register_scene(name, scene)
+
 class Idiotic:
     def __init__(self, config=None, name="idiotic"):
         if config is None:
@@ -32,8 +48,6 @@ class Idiotic:
         self.items = TaggedDict()
         self.scenes = TaggedDict()
         self.modules = AttrDict()
-        self._distribs = AttrDict()
-        self._persistences = AttrDict()
         self.scheduler = schedule.Scheduler()
         self.dispatcher = Dispatcher()
         self.persist_instance = None
@@ -44,7 +58,7 @@ class Idiotic:
         self.api = None
 
     @asyncio.coroutine
-    def run_scheduled_jobs():
+    def run_scheduled_jobs(self):
         while True:
             try:
                 runnable_jobs = sorted((job for job in self.scheduler.jobs if job.should_run))
@@ -68,25 +82,18 @@ class Idiotic:
                 LOG.exception("Exception in scheduler.run_pending()")
                 yield from asyncio.sleep(1)
 
-    def _set_config(conf):
-        config.update(conf)
-
-    def _register_item(item):
+    def _register_item(self, item):
         self.items._set(item.name, item)
+        item.idiotic = self
 
-    def _register_scene(name, scene):
+    def _register_scene(self, name, scene):
         self.scenes._set(name, scene)
+        scene.idiotic = self
 
-    def _register_distrib(name, distrib):
-        self._distribs._set(name, distrib)
-
-    def _register_persistence(name, cls):
-        self._persistences._set(name, cls)
-
-    def _register_module(module, assets=None):
+    def _register_module(self, module, assets=None):
         name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
-        mod_conf = config.get("modules", {}).get(name, {})
+        mod_conf = self.config.get("modules", {}).get(name, {})
 
         if mod_conf.get("disable", False):
             LOG.info("Module {} is disabled; skipping registration".format(name))
@@ -117,38 +124,45 @@ class Idiotic:
 
         self.modules._set(name, module)
 
-    def _finalize_self():
-        self.api = DispatcherMiddleware(self._rootapi, self.apis)
+    def _finalize_api(self):
+        self.api = DispatcherMiddleware(self._root_api, self._apis)
 
         return self.api
 
-    def _register_builtin_module(module, assets=None):
+    def _register_builtin_module(self, module, assets=None):
         name = mangle_name(getattr(module, "MODULE_NAME", module.__name__))
 
         if hasattr(module, "configure"):
             LOG.info("Configuring system module {}".format(name))
             module.configure(
-                config,
-                config.get(name, {}),
+                self.config,
+                self.config.get(name, {}),
                 _APIWrapper(self._root_api, module, '/'),
                 assets
             )
 
         self.modules._set(name, module)
 
-    def _send_event(evt):
+    def augment_module(self, module):
+        setattr(module, "context", self)
+        setattr(module, "modules", self.modules)
+        setattr(module, "items", self.items)
+        setattr(module, "scenes", self.scenes)
+        setattr(module, "scheduler", self.scheduler)
+
+    def _send_event(self, evt):
         LOG.debug("_send_event!")
         self.distribution.send(event.pack_event(evt))
 
-    def _recv_event(evt):
+    def _recv_event(self, evt):
         LOG.debug("_recv_event!")
         self.dispatcher.dispatch(event.unpack_event(evt, self.modules))
 
-    def _start_distrib(dist, host, conf):
+    def _start_distrib(self, dist, host, conf):
         try:
-            dist_cls = self._distribs[dist]
+            dist_cls = distrib_types[dist]
         except NameError as e:
-            raise NameError("Could not find self.distribution method {}".format(dist), e)
+            raise NameError("Could not find distribution method {}".format(dist), e)
         self.distribution = dist_cls(host, conf)
         self.distribution.connect()
 
@@ -158,22 +172,22 @@ class Idiotic:
         thread = threading.Thread(target=self.distribution.run, daemon=True)
         thread.start()
 
-    def _stop_distrib():
+    def _stop_distrib(self):
         if self.distribution:
             self.distribution.disconnect()
 
         if self.distrib_thread:
             self.distrib_thread.join()
 
-    def _record_state_change(evt):
+    def _record_state_change(self, evt):
         if evt and evt.item:
             self.persist_instance.append_item_history(evt.item, evt.time, evt.new, kind="state")
 
-    def _start_persistence(persist, conf):
-        persist_cls = self._persistences[persist]
+    def _start_persistence(self, persist, conf):
+        persist_cls = persist_types[persist]
         self.persist_instance = persist_cls(conf)
         self.persist_instance.connect()
-        self.dispatcher.bind(_record_state_change, utils.Filter(type=event.StateChangeEvent, kind="after"))
+        self.dispatcher.bind(self._record_state_change, utils.Filter(type=event.StateChangeEvent, kind="after"))
 
         for item in self.items.all():
             history = list(self.persist_instance.get_item_history(item))
@@ -184,7 +198,7 @@ class Idiotic:
                 for state in history:
                     item.state_history.record(*state)
 
-    def _stop_persistence():
+    def _stop_persistence(self):
         if self.persist_instance:
             self.persist_instance.sync()
             self.persist_instance.disconnect()
