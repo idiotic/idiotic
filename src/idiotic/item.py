@@ -52,9 +52,14 @@ class BaseItem:
     nature of its state.
 
     """
-    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False, aliases=None):
+    def __init__(self, name, groups=None, friends=None, bindings=None, update=None, tags=None, ignore_redundant=False, aliases=None, id=none):
         self.name = name
         self._state = None
+
+        if id is None:
+            self.id = utils.mangle_name(name)
+        else:
+            self.id = utils.mangle_name(id)
 
         self.ignore_redundant = ignore_redundant
 
