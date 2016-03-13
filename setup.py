@@ -4,7 +4,7 @@ import os
 setup(
     name='idiotic',
     packages=find_packages(exclude=['etc', 'contrib']),
-    version=os.popen('git describe --dirty').readlines()[0].strip(),
+    version='0.1.2',
     description='Distributed home automation controller',
     long_description="""The idiotic distributed internet of things inhabitance
     controller (idiotic), aims to be an extremely extensible, capable, and most
