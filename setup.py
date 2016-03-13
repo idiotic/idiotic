@@ -59,6 +59,10 @@ setup(
         'Flask>=0.10.1',
         'Flask-aiohttp>=0.1.0',
     ],
+    data_files=[
+        ('/usr/lib/systemd/system/idiotic.service', ['contrib/idiotic.service']),
+        ('/etc/idiotic/', ['contrib/conf.json']),
+    ],
     entry_points={
         'console_scripts': [
             'idiotic=idiotic.__main__:main',

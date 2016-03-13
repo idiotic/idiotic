@@ -1,0 +1,38 @@
+{
+    "api": {
+	"port": 8080
+    },
+    "modules": {
+	"webui": {
+	    "api_base": "/",
+	    "enable_graph": false,
+	    "sections": [
+		{"title": "Scenes",
+		 "include_tags": ["_scene"]},
+		{"title": "Lights",
+		 "include_tags": ["light"],
+		 "exclude_tags": ["nyi"]}
+	    ]
+	},
+	"openhab_compat": {
+	    "api_base": "/openhab"
+	},
+        "wink": {
+	    "base_url": "https://winkapi.quirky.com",
+	    "client_id": "quirky_wink_android_app",
+	    "client_secret": "changeme",
+	    "username": "me@example.com",
+	    "password": "hunter2",
+	    "disable": true
+	}
+    },
+    "distribution": {
+	"port": 28300,
+	"method": "udp",
+	"connect": [{"host": "example.local", "port": 28300, "name": "other-idiotic"}]
+    },
+    "persistence": {
+	"method": "sql",
+	"engine": "sqlite:///var/db/idiotic.db"
+    }
+}
