@@ -1,0 +1,2 @@
+include README LICENSE contrib/idiotic.service contrib/conf.json
+recursive-include idiotic
