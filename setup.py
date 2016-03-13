@@ -58,7 +58,6 @@ setup(
         'aiohttp>=0.21.2',
         'werkzeug0.11.4',
         'Flask>=0.10.1',
-        'Flask-aiohttp>=0.1.0',
     ],
     data_files=[
         ('/usr/lib/systemd/system/idiotic.service', ['contrib/idiotic.service']),
