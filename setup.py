@@ -54,7 +54,6 @@ setup(
     install_requires=[
         'docopt>=0.6.2',
         'schedule>=0.3.2',
-        'asyncio',
         'aiohttp>=0.21.2',
         'werkzeug>=0.11.4',
         'Flask>=0.10.1',
