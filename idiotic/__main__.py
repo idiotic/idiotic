@@ -42,7 +42,7 @@ LOG = logging.getLogger("idiotic.main")
 
 def init():
     # load command-line options
-    arguments = docopt.docopt(__doc__, version="0.1.4")
+    arguments = docopt.docopt(__doc__, version="0.1.5")
 
     # All these dashes are stupid
     arguments = {k.lstrip('--'): v for k,v in arguments.items()}
