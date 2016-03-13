@@ -56,7 +56,7 @@ setup(
         'schedule>=0.3.2',
         'asyncio',
         'aiohttp>=0.21.2',
-        'werkzeug0.11.4',
+        'werkzeug>=0.11.4',
         'Flask>=0.10.1',
     ],
     data_files=[
