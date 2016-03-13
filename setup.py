@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='idiotic',
     packages=find_packages(exclude=['etc', 'contrib']),
-    version='0.1',
+    version='0.1.0',
     description='Distributed home automation controller',
     long_description="""The idiotic distributed internet of things inhabitance
     controller (idiotic), aims to be an extremely extensible, capable, and most
@@ -51,18 +51,17 @@ setup(
         'Topic :: Home Automation',
     ],
     install_requires=[
-        'docopt',
-        'schedule',
-        'pygal',
+        'docopt>=0.6.2',
+        'schedule>=0.3.2',
         'asyncio',
-        'aiohttp',
-        'requests',
-        'werkzeug',
-        'flask',
+        'aiohttp>=0.21.2',
+        'werkzeug0.11.4',
+        'Flask>=0.10.1',
+        'Flask-aiohttp>=0.1.0',
     ],
     entry_points={
         'console_scripts': [
-            'idiotic=idiotic.__main__:main'
+            'idiotic=idiotic.__main__:main',
         ]
-    }
+    },
 )
