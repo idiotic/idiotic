@@ -59,7 +59,7 @@ setup(
         'Flask>=0.10.1',
     ],
     data_files=[
-        ('/usr/lib/systemd/system/idiotic.service', ['contrib/idiotic.service']),
+        ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
         ('/etc/idiotic/', ['contrib/conf.json']),
     ],
     entry_points={
