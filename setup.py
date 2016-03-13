@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
+import os
 
 setup(
     name='idiotic',
     packages=find_packages(exclude=['etc', 'contrib']),
-    version='0.1.0',
+    version=os.popen('git describe --dirty').readlines()[0].strip(),
     description='Distributed home automation controller',
     long_description="""The idiotic distributed internet of things inhabitance
     controller (idiotic), aims to be an extremely extensible, capable, and most
