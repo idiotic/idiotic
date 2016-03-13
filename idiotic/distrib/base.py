@@ -29,7 +29,7 @@ class DistributionType(type):
     def __init__(cls, name, bases, attrs):
         super(DistributionType, cls).__init__(name, bases, attrs)
         if name != "TransportMethod":
-            idiotic._register_distrib(cls.NAME, cls)
+            idiotic._register_distrib_type(cls.NAME, cls)
 
 class TransportMethod(metaclass=DistributionType):
     NEIGHBOR_CLASS = RemoteItem
