@@ -107,8 +107,7 @@ class Idiotic:
             mod_api = self._apis[base]
         else:
             mod_api = Flask(name)
-
-        self._apis[mod_conf.get("api_base", "/api/module/" + name)] = mod_api
+            self._apis[base] = mod_api
 
         if hasattr(module, "configure"):
             LOG.info("Configuring module {}".format(name))
