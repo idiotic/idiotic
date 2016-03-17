@@ -379,11 +379,13 @@ class Toggle(BaseItem):
     def off(self):
         self.state = False
 
-    def toggle(self, *args, **kwargs):
+    @command
+    def toggle(self):
+        LOG.debug('toggle command received');
         if self.state:
-            self.off(*args, **kwargs)
+            self.off()
         else:
-            self.on(*args, **kwargs)
+            self.on()
 
 class Trigger(BaseItem):
     """An item with no state, but which may be activated repeatedly,
