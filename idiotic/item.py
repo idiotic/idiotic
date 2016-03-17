@@ -381,7 +381,6 @@ class Toggle(BaseItem):
 
     @command
     def toggle(self):
-        LOG.debug('toggle command received');
         if self.state:
             self.off()
         else:
