@@ -26,7 +26,7 @@ class Scene:
             return
 
         pre_event = event.SceneEvent(self, val, "before")
-        idiotic.dispatcher.dispatch(pre_event)
+        self.idiotic.dispatcher.dispatch(pre_event)
         if not pre_event.canceled:
             self.__active = val
 
@@ -49,7 +49,7 @@ class Scene:
                         pass
 
             post_event = event.SceneEvent(self, val, "after")
-            idiotic.dispatcher.dispatch(post_event)
+            self.idiotic.dispatcher.dispatch(post_event)
         return val
 
     def _activate(self):
@@ -57,14 +57,14 @@ class Scene:
         atag = "_scene_" + self.name + "_active"
         for name in self._inactive_state.keys():
             try:
-                item = idiotic.items[name]
+                item = self.idiotic.items[name]
                 item.remove_state_overlay(tag=itag)
             except NameError:
                 pass
 
         for name, state in self._active_state.items():
             try:
-                item = idiotic.items[name]
+                item = self.idiotic.items[name]
                 if isinstance(state, tuple):
                     state, disable = state
                 else:
@@ -78,14 +78,14 @@ class Scene:
         atag = "_scene_" + self.name + "_active"
         for name in self._active_state.keys():
             try:
-                item = idiotic.items[name]
+                item = self.idiotic.items[name]
                 item.remove_state_overlay(tag=atag)
             except NameError:
                 pass
 
         for name, state in self._inactive_state.items():
             try:
-                item = idiotic.items[name]
+                item = self.idiotic.items[name]
                 if isinstance(state, tuple):
                     state, disable = state
                 else:
