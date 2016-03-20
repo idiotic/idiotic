@@ -11,7 +11,9 @@ class IdioticEncoder(json.JSONEncoder):
     def default(self, obj):
         if obj is None:
             return "null"
-        if hasattr(obj, "pack"):
+        elif hasattr(obj, "json"):
+            return obj.json()
+        elif hasattr(obj, "pack"):
             return obj.pack()
         else:
             return json.JONEncoder.default(self, obj)

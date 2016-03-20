@@ -6,7 +6,7 @@ import logging
 import time
 from flask import Flask, json, request, Response
 from werkzeug.wsgi import DispatcherMiddleware
-from .utils import AttrDict, TaggedDict, mangle_name, join_url, _APIWrapper
+from .utils import AttrDict, TaggedDict, mangle_name, join_url, _APIWrapper, IdioticEncoder
 from .dispatch import Dispatcher
 
 LOG = logging.getLogger("idiotic.init")
@@ -54,6 +54,7 @@ class Idiotic:
         self.distribution = None
         self.distrib_thread = None
         self._root_api = Flask(__name__)
+        self._root_api.json_encoder = IdioticEncoder
         self._apis = {}
         self.api = None
 
@@ -107,6 +108,7 @@ class Idiotic:
             mod_api = self._apis[base]
         else:
             mod_api = Flask(name)
+            mod_api.json_encoder = IdioticEncoder
             self._apis[base] = mod_api
 
         if hasattr(module, "configure"):
