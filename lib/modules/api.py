@@ -11,16 +11,16 @@ MODULE_NAME = "api"
 log = logging.getLogger("module.api")
 
 def configure(global_config, config, api, assets):
-    api.serve(scene_command, '/api/scene/<name>/command/<command>')
-    api.serve(item_command, '/api/item/<name>/command/<command>', get_args="args")
-    api.serve(item_state, '/api/item/<name>/state', get_data="state",
-              methods=['GET', 'PUT', 'POST'])
-    api.serve(item_enable, '/api/item/<name>/enable')
-    api.serve(item_disable, '/api/item/<name>/disable')
-    api.serve(list_items, '/api/items')
-    api.serve(list_scenes, '/api/scenes')
-    api.serve(item_info, '/api/item/<name>')
+    api.add_url_rule('/api/scene/<name>/command/<command>', 'scene_command', scene_command)
+    api.add_url_rule('/api/item/<name>/command/<command>', 'item_command', item_command)
+    api.add_url_rule('/api/item/<name>/state', 'item_state', item_state, methods=['GET', 'PUT', 'POST'])
+    api.add_url_rule('/api/item/<name>/enable', 'item_enable', item_enable)
+    api.add_url_rule('/api/item/<name>/disable', 'item_disable', item_disable)
+    api.add_url_rule('/api/items', 'list_items', list_items)
+    api.add_url_rule('/api/scenes', 'list_scenes', list_scenes)
+    api.add_url_rule('/api/item/<name>', 'item_info', item_info)
 
+@jsonified
 def scene_command(name, command, *_, **__):
     try:
         scene = scenes[name]
@@ -34,7 +34,9 @@ def scene_command(name, command, *_, **__):
     except AttributeError:
         raise ValueError("Scene '{}' does not exist!".format(name))
 
-def item_command(name, command, args={}, *_, **kwargs):
+@jsonified
+def item_command(name, command, *_, **kwargs):
+    args = single_args(request.args)
     try:
         item = items[name]
         item.command(command, **args)
@@ -42,7 +44,9 @@ def item_command(name, command, args={}, *_, **kwargs):
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
 
-def item_state(name, state=None, *args, **kwargs):
+@jsonified
+def item_state(name, *args, **kwargs):
+    state = request.data
     try:
         item = items[name]
         if state:
@@ -54,6 +58,7 @@ def item_state(name, state=None, *args, **kwargs):
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
 
+@jsonified
 def item_enable(name, *args, **kwargs):
     try:
         item = items[name]
@@ -61,6 +66,7 @@ def item_enable(name, *args, **kwargs):
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
 
+@jsonified
 def item_disable(name, *args, **kwargs):
     try:
         item = items[name]
@@ -68,12 +74,15 @@ def item_disable(name, *args, **kwargs):
     except:
         raise ValueError("Item '{}' does not exist!".format(name))
 
+@jsonified
 def list_items(*_, **__):
     return [i.json() for i in items.all()]
 
+@jsonified
 def list_scenes():
     return [s.json() for s in scenes.all()]
 
+@jsonified
 def item_info(name=None, source=None):
     if name:
         return items[name].json()
