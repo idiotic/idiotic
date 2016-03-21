@@ -28,7 +28,7 @@ def command(func):
             return
 
         # Create an event and send it
-        pre_event = event.CommandEvent(self, name, source, kind="before")
+        pre_event = event.CommandEvent(self, name, source, kind="before", args=args, kwargs=kwargs)
         self.idiotic.dispatcher.dispatch(pre_event)
 
         if not pre_event.canceled:
@@ -42,7 +42,7 @@ def command(func):
                     name, kind="command",
                     extra={"args": args, "kwargs": kwargs} if args or kwargs else None)
 
-            post_event = event.CommandEvent(self, name, source, kind="after")
+            post_event = event.CommandEvent(self, name, source, kind="after", args=args, kwargs=kwargs)
             self.idiotic.dispatcher.dispatch(post_event)
     return command_decorator
 

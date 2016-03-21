@@ -104,12 +104,14 @@ class SendCommandEvent(BaseEvent):
 
 class CommandEvent(BaseEvent):
     MODULE = 'idiotic'
-    def __init__(self, item, command, source, kind):
+    def __init__(self, item, command, source, kind, args=[], kwargs={}):
         super().__init__()
         self.item = item
         self.command = command
         self.source = source
         self.kind = kind
+        self.args = args
+        self.kwargs = kwargs
 
     def __repr__(self):
         return "CommandEvent({0.kind}, '{0.command}' on {0.item} from {0.source})".format(self)
