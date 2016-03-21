@@ -573,11 +573,21 @@ class Group(BaseItem):
                 self.send_commands = _ImposterDict(command_send)
             elif command_send is not None:
                 self.send_commands = dict(command_send)
+        else:
+            self.send_commands = {}
 
     def change_state(self, state):
         # TODO add a way to override this
         for item in self.members:
             item.change_state(state)
+
+    def commands(self):
+        res = set()
+
+        for item in self.members:
+            res.update((c for c in item.commands() if c in self.send_commands))
+
+        return list(res)
 
     @property
     def state(self):
