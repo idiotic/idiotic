@@ -4,7 +4,7 @@
 Usage:
   idiotic.py --help
   idiotic.py --version
-  idiotic.py [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--modules=<dir>]] [-v | -vv | -q | -qq] [-s]
+  idiotic.py [--lib=<dir>] [--base=<dir> | [--config=<file>] [--rules=<dir>] [--items=<dir>] [--modules=<dir>]] [-v | -vv | -q | -qq] [-s]
 
 Options:
   -h --help           Show this text.
@@ -16,6 +16,7 @@ Options:
   -r --rules=<dir>    Path to rules config directory [default: <base>/rules].
   -i --items=<dir>    Path to items config directory [default: <base>/items].
   -m --modules=<dir>  Path to modules directory [default: <base>/modules].
+  -l --lib=<dir>      Path to idiotic system libraries directory [default: /usr/lib].
   -s --standalone     Run without connecting to other instances.
 """
 
@@ -87,14 +88,17 @@ def init():
     # FIXME global state
     idiotic.instance = instance
 
-    # load modules
+    # Load modules
+    system_modules = os.path.join(arguments["lib"], "modules")
+    LOG.info("Loading system modules from {}".format(system_modules))
+    for module, assets in utils.load_dir(system_modules):
+        instance.augment_module(module)
+        instance._register_builtin_module(module, assets)
+
     LOG.info("Loading modules from {}".format(arguments["modules"]))
     for module, assets in utils.load_dir(arguments["modules"], True):
         instance.augment_module(module)
-        if module.__name__.startswith("_"):
-            instance._register_builtin_module(module, assets)
-        else:
-            instance._register_module(module, assets)
+        instance._register_module(module, assets)
 
     # load items
     LOG.info("Loading items from {}".format(arguments["items"]))
