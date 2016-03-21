@@ -344,7 +344,6 @@ class Rule:
             else:
                 funcs()
         else:
-            LOG.error("******")
             LOG.error(funcs)
             for func in funcs:
                 LOG.error(func)
