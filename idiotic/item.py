@@ -384,6 +384,37 @@ class Toggle(BaseItem):
         else:
             self.on()
 
+class Dimmer(Toggle):
+    """An item which has an on and off state with a separate value, which
+    is applied when the state is on. The value should be between 0 and 1
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.value = 0
+
+    def change_state(self, state):
+        self.set(state)
+
+    @command
+    def set(self, val):
+        if not val:
+            self.off()
+        else:
+            self.value = max(min(float(val), 1), 0)
+            self.on()
+
+    @command
+    def on(self):
+        self.state = self.value
+
+    def json(self):
+        res = super().json()
+        res.update({"value": self.value})
+        return res
+
 class Trigger(BaseItem):
     """An item with no state, but which may be activated repeatedly,
     triggering a distinct command each time.
