@@ -1,6 +1,10 @@
 from setuptools import setup, find_packages
 import os
 
+libfiles = []
+for x in os.walk('lib'):
+    libfiles.append((os.path.join('/usr/lib/idiotic', *(x[0].split(os.path.sep)[1:])), [os.path.join(x[0], y) for y in x[2]]))
+
 setup(
     name='idiotic',
     packages=find_packages(exclude=['etc', 'contrib']),
@@ -61,7 +65,7 @@ setup(
     data_files=[
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
         ('/etc/idiotic/', ['contrib/conf.json']),
-    ],
+    ] + libfiles,
     entry_points={
         'console_scripts': [
             'idiotic=idiotic.__main__:main',
