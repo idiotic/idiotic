@@ -34,11 +34,33 @@ class History:
         else:
             raise ValueError("time must be datetime")
 
-    def at(self, time):
-        return self.values[bisect.bisect(list(zip(*self.values))[0], time)-1]
+    def at(self, time=None, age=None):
+        if isinstance(time, int):
+            time = datetime.datetime.fromtimestamp(seconds=time)
 
-    def since(self, time):
-        return list(self.values)[bisect.bisect(list(zip(*self.values))[0], time)-1:]
+        if age:
+            time = datetime.datetime.now() - datetime.timedelta(seconds=age)
+
+        for i in reversed(range(len(self.values))):
+            if self.values[i].time <= time:
+                return self.values[i]
+
+        return None
+
+    def since(self, time=None, age=None):
+        if isinstance(time, int):
+            time = datetime.datetime.fromtimestamp(seconds=time)
+
+        if age:
+            time = datetime.datetime.now() - datetime.timedelta(seconds=age)
+
+        for i in reversed(range(len(self.values))):
+            if self.values[i].time > time:
+                yield self.values[i]
+            else:
+                raise StopIteration()
+
+        return None
 
     def all(self):
         return list(self.values)

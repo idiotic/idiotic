@@ -34,8 +34,7 @@ def command(func):
         if not pre_event.canceled:
             func(self, *args, **kwargs)
 
-            if hasattr(self, "__command_history"):
-                self.__command_history.record(name)
+            self.command_history.record(name)
 
             if self.idiotic.persist_instance:
                 self.idiotic.persist_instance.append_item_history(
@@ -226,8 +225,7 @@ class BaseItem:
         if not pre_event.canceled:
             self._state = val
 
-            if hasattr(self, "__state_history"):
-                self.__state_history.record(self._state)
+            self.__state_history.record(self._state)
 
             for group in self.groups:
                 group._member_state_changed(self, self._state, source)
