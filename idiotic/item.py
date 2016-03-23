@@ -390,20 +390,36 @@ class Dimmer(Toggle):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, min=0, max=1, step=.05, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.value = 0
+        self.min = min
+        self.max = max
+        self.value = self.max
+        self.step = step
 
     def change_state(self, state):
         self.set(state)
 
     @command
+    def up(self, step=None):
+        self.set(self.value + (step or self.step))
+
+    @command
+    def down(self, step=None):
+        self.set(self.value - (step or self.step))
+
+    @command
+    def full(self):
+        self.set(self.max)
+
+    @command
     def set(self, val):
+        val = max(min(float(val), 1), 0)
         if not val:
             self.off()
         else:
-            self.value = max(min(float(val), 1), 0)
+            self.value = val
             self.on()
 
     @command
