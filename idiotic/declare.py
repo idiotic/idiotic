@@ -1,4 +1,4 @@
-from idiotic.item import _BagOfHolding
+from idiotic.utils import AlwaysInDict
 from idiotic import timer
 import asyncio
 import logging
@@ -199,7 +199,7 @@ class StateIsCondition(ItemLambdaCondition):
 class CommandReceivedCondition(ItemLambdaCondition):
     def __init__(self, item, since, commands=None, **kwargs):
         if commands is None:
-            commands = _BagOfHolding()
+            commands = AlwaysInDict()
         else:
             if isinstance(commands, str):
                 commands = [commands]

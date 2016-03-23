@@ -41,6 +41,24 @@ class TaggedDict(AttrDict):
         ts=set(tags)
         return self.all(filt=lambda i:ts.issubset(i.tags))
 
+class AlwaysInDict:
+    def __contains__(self, arg):
+        return True
+
+class NeverInDict:
+    def __contains__(self, arg):
+        return False
+
+class SingleItemDict:
+    def __init__(self, item):
+        self.item = item
+
+    def __contains__(self, arg):
+        return True
+
+    def __getitem__(self, index):
+        return self.item
+
 class BaseFilter:
     def __init__(self, *args):
         raise NotImplementedError()
@@ -254,4 +272,4 @@ def load_dir(path, include_assets=False):
 
     return modules
 
-__ALL__ = [AttrDict, TaggedDict, mangle_name, IdioticEncoder, load_dir, _APIWrapper, join_url, jsonified, single_args]
+__ALL__ = [AttrDict, TaggedDict, AlwaysInDict, NeverInDict, SingleItemDict, mangle_name, IdioticEncoder, load_dir, _APIWrapper, join_url, jsonified, single_args]

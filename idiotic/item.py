@@ -508,24 +508,6 @@ class Motor(BaseItem):
     def stop(self):
         self.state = Motor.STOPPED
 
-class _BagOfHolding:
-    def __contains__(self, arg):
-        return True
-
-class _Sieve:
-    def __contains__(self, arg):
-        return False
-
-class _ImposterDict:
-    def __init__(self, item):
-        self.item = item
-
-    def __contains__(self, arg):
-        return True
-
-    def __getitem__(self, index):
-        return self.item
-
 class Group(BaseItem):
     """An item which contains other items. It may have custom behavior
     defined to facilitate acting on all its members at once, and to
@@ -588,20 +570,20 @@ class Group(BaseItem):
             try:
                 self.relay_commands = set(commands)
             except TypeError:
-                self.relay_commands = _BagOfHolding()
+                self.relay_commands = utils.AlwaysInDict()
         else:
-            self.relay_commands = _Sieve()
+            self.relay_commands = utils.NeverInDict()
 
         if command_send:
             if command_send is True:
                 def dispatch_commands(items, command, *args, **kwargs):
                     for item in items:
                         item.command(command, *args, **kwargs)
-                self.send_commands = _ImposterDict(dispatch_commands)
+                self.send_commands = utils.SingleItemDict(dispatch_commands)
             elif command_send is False:
-                self.send_commands = _Sieve()
+                self.send_commands = utils.NeverInDict()
             elif callable(command_send):
-                self.send_commands = _ImposterDict(command_send)
+                self.send_commands = utils.SingleItemDict(command_send)
             elif command_send is not None:
                 self.send_commands = dict(command_send)
         else:
