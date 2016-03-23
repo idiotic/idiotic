@@ -179,6 +179,19 @@ class ItemLambdaCondition(Condition):
     def __str__(self):
         return "ItemLambdaCondition on {}".format(len(self.items) + " items" if len(self.items) > 1 else self.items[0])
 
+class ChangedSinceCondition(Condition):
+    def __init__(self, item, since, **kwargs):
+        self.item = item
+        self.since = since
+
+        if 'recalculate_delay' not in kwargs:
+            kwargs['recalculate_delay'] = since
+
+        super().__init__(lambda i: bool(item.command_history.since(age=since)), item, **kwargs)
+
+    def __str__(self):
+        return "StateChangedCondition for {} within {} seconds".format(self.item, self.since)
+
 class StateIsCondition(ItemLambdaCondition):
     def __init__(self, item, state, since=None, **kwargs):
         self.item = item
