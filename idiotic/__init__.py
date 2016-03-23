@@ -48,6 +48,8 @@ class Idiotic:
         self.items = TaggedDict()
         self.scenes = TaggedDict()
         self.modules = AttrDict()
+        self.rule_modules = AttrDict()
+        self.item_modules = AttrDict()
         self.scheduler = schedule.Scheduler()
         self.dispatcher = Dispatcher()
         self.persist_instance = None
@@ -150,6 +152,7 @@ class Idiotic:
         setattr(module, "items", self.items)
         setattr(module, "scenes", self.scenes)
         setattr(module, "scheduler", self.scheduler)
+        setattr(module, "_idiotic_loaded", True)
 
     def _send_event(self, evt):
         LOG.debug("_send_event!")

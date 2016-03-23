@@ -83,32 +83,53 @@ def init():
     except (OSError, IOError):
         LOG.exception("Could not load config file {}:".format(arguments["config"]))
 
+    config.update({
+        "paths": {
+            "lib": {
+                t: os.path.join(arguments["lib"], t)
+                for t in ("modules", "items", "rules")
+            },
+            "modules": arguments["modules"],
+            "items": arguments["items"],
+            "rules": arguments["rules"],
+            }
+    })
+
     instance = idiotic.Idiotic(config, name)
 
     # FIXME global state
     idiotic.instance = instance
 
     # Load modules
-    system_modules = os.path.join(arguments["lib"], "modules")
-    LOG.info("Loading system modules from {}".format(system_modules))
-    for module, assets in utils.load_dir(system_modules):
-        instance.augment_module(module)
-        instance._register_builtin_module(module, assets)
+    LOG.info("Loading system modules from {}".format(config["paths"]["lib"]["modules"]))
+    for module, assets in utils.load_dir(config["paths"]["lib"]["modules"],
+                                         ignore=instance.modules):
+        if not getattr(module, "_idiotic_loaded", False):
+            instance.augment_module(module)
+            instance._register_builtin_module(module, assets)
 
-    LOG.info("Loading modules from {}".format(arguments["modules"]))
-    for module, assets in utils.load_dir(arguments["modules"], True):
-        instance.augment_module(module)
-        instance._register_module(module, assets)
+    LOG.info("Loading modules from {}".format(config["paths"]["modules"]))
+    for module, assets in utils.load_dir(config["paths"]["modules"], True,
+                                         ignore=instance.modules):
+        if not getattr(module, "_idiotic_loaded", False):
+            instance.augment_module(module)
+            instance._register_module(module, assets)
 
     # load items
-    LOG.info("Loading items from {}".format(arguments["items"]))
-    for module, _ in utils.load_dir(arguments["items"]):
-        instance.augment_module(module)
+    LOG.info("Loading items from {}".format(config["paths"]["items"]))
+    for module, _ in utils.load_dir(config["paths"]["items"],
+                                    ignore=instance.item_modules):
+        if not getattr(module, "_idiotic_loaded", False):
+            instance.augment_module(module)
+            instance.item_modules[getattr(module, "MODULE_NAME", module.__name__)] = module
 
     # load rules
-    LOG.info("Loading rules from {}".format(arguments["rules"]))
-    for module, _ in utils.load_dir(arguments["rules"]):
-        instance.augment_module(module)
+    LOG.info("Loading rules from {}".format(config["paths"]["rules"]))
+    for module, _ in utils.load_dir(config["paths"]["rules"],
+                                    ignore=instance.rule_modules):
+        if not getattr(module, "_idiotic_loaded", False):
+            instance.augment_module(module)
+            instance.rule_modules[getattr(module, "MODULE_NAME", module.__name__)] = module
 
     for module in instance.modules.all(lambda m:hasattr(m, "ready")):
         module.ready()

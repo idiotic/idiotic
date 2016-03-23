@@ -33,6 +33,9 @@ class AttrDict:
     def __getitem__(self, index):
         return getattr(self, index)
 
+    def __setitem__(self, index, val):
+        self._set(index, val)
+
     def __contains__(self, key):
         return key in self.__values
 
@@ -239,34 +242,38 @@ class Filter(BaseFilter):
         return "Filter({})".format(", ".join(
             ("{}=<{}>".format(k.replace("__","."),repr(v)) for k,v in self.checks_def.items())))
 
-def load_dir(path, include_assets=False):
-    sys.path.insert(0, os.path.abspath("."))
+def load_single(f, include_assets=False):
+    LOG.info("Loading file {}...".format(f))
+    name = os.path.splitext(f)[0]
+    if os.path.isdir(f):
+        LOG.info("Attempting to load directory {} as a module...".format(
+            os.path.join(f)))
+
+        try:
+            mod = imp.load_source(name, os.path.join(f, '__init__.py'))
+            assets = None
+            if os.path.exists(os.path.join(f, 'assets')) and \
+               os.path.isdir(os.path.join(f, 'assets')):
+                assets = os.path.abspath(os.path.join(f, 'assets'))
+
+            return (mod, assets)
+        except FileNotFoundError:
+            LOG.error("Unable to load module {}: {} does not exist".format(
+                name, os.path.join(f, '__init__.py')))
+    else:
+        return (imp.load_source(name, os.path.join(f)), None)
+
+
+def load_dir(path, include_assets=False, ignore=[]):
+    sys.path.insert(1, os.path.abspath("."))
     modules = []
     for f in os.listdir(path):
         try:
-            if f.startswith(".") or f.endswith("~") or f.endswith("#") or f.startswith("__"):
+            if f.startswith(".") or f.endswith("~") or f.endswith("#") or f.startswith("__") \
+               or os.path.splitext(f)[0] in ignore:
                 continue
 
-            LOG.info("Loading file {}...".format(os.path.join(path, f)))
-            name = os.path.splitext(f)[0]
-
-            try:
-                modules.append((imp.load_source(name, os.path.join(path, f)), None))
-            except IsADirectoryError:
-                LOG.info("Attempting to load directory {} as a module...".format(
-                    os.path.join(path, f)))
-
-                try:
-                    mod = imp.load_source(name, os.path.join(path, f, '__init__.py'))
-                    assets = None
-                    if os.path.exists(os.path.join(path, f, 'assets')) and \
-                       os.path.isdir(os.path.join(path, f, 'assets')):
-                        assets = os.path.abspath(os.path.join(path, f, 'assets'))
-
-                    modules.append((mod, assets))
-                except FileNotFoundError:
-                    LOG.error("Unable to load module {}: {} does not exist".format(
-                        name, os.path.join(path, f, '__init__.py')))
+            modules.append(load_single(os.path.join(path, f), include_assets))
         except:
             LOG.exception("Exception encountered while loading {}".format(os.path.join(path, f)))
 
