@@ -1,0 +1,5 @@
+cluster:
+  listen: '::'
+  port: 28300
+  connect:
+   - 'localhost:28300'
