@@ -1,5 +1,5 @@
-from setuptools import setup, find_packages
-import os
+from setuptools import setup
+
 
 def read_license():
     with open("LICENSE") as f:
@@ -36,6 +36,7 @@ setup(
     install_requires=[
         'pyzmq>=15.4.0',
         'pysyncobj>=0.2.1',
+        'yaml'
     ],
     data_files=[
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
