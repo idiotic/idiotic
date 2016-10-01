@@ -1,17 +1,59 @@
-import functools
-from typing import Iterable
+import uuid
+from typing import Iterable, Callable, Any, Dict, Set
+from idiotic import resource
+from idiotic import config
+
+
+class Input:
+    def __init__(self):
+        self.callback = None  # type: Callable[[Any], Any]
+
+    def connect(self, receiver):
+        """Registers the callback for this input"""
+        self.callback = receiver
+
+    def output(self, value):
+        if self.callback:
+            self.callback(value)
+
+
+class EventInput(Input):
+    def __init__(self, **filters):
+        super().__init__()
 
 
 class Block:
-    def __init__(self, resources: Iterable['idiotic.cluster.Resource'] = None):
-        #: Map of inputs to their callbacks
-        self.inputs = {}
+    def __init__(self, resources: Iterable[resource.Resource] = None, **inputs):
+        #: A globally unique identifier for the block
+        self.id = uuid.uuid4()
+
+        #: Map of input receiver names to inputs
+        self.inputs = inputs  # type: Dict[str, Input]
 
         #: List of resources that this block needs
-        self.resources = resources or []
+        self.resources = list(resources) or []
 
-    def require(self, *resources: 'idiotic.cluster.Resource'):
+        self.connect(**self.inputs)
+
+    def connect(self, **inputs: Dict[str, Input]):
+        for name, inputter in inputs.items():
+            if hasattr(self, name) and callable(getattr(self, name)):
+                inputter.connect(getattr(self, name))
+            else:
+                raise ValueError("{} has no method named '{}'".format(self, name))
+
+    def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
+
+    def precheck_nodes(self, config: config.Config) -> Set[str]:
+        all_nodes = set(config.nodes.keys())
+
+        for req in self.resources:
+            nodes = req.available_hosts(config)
+            if nodes is not None:
+                all_nodes = all_nodes.union(resource)
+
+        return all_nodes
 
     def check_resources(self) -> bool:
         return all((r.available for r in self.resources))
