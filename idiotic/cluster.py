@@ -1,6 +1,6 @@
-import pysyncobj
 from idiotic import config
 from idiotic import block
+import pysyncobj
 import asyncio
 
 
@@ -11,6 +11,7 @@ class Node:
 
 class UnassignableBlock(Exception):
     pass
+
 
 class Cluster(pysyncobj.SyncObj):
     def __init__(self, configuration: config.Config):
@@ -30,7 +31,7 @@ class Cluster(pysyncobj.SyncObj):
 
             for node in nodes:
                 self.block_owners[block] = node
-                # Later:
+                # Later: somehow tell the other node they have a new block
                 return
 
             raise UnassignableBlock(block)
