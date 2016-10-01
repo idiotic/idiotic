@@ -1,3 +1,9 @@
+global: {}
+nodes:
+  node1: {}
+  node2: {}
+  node3: {}
+
 cluster:
   listen: '::'
   port: 28300
