@@ -35,7 +35,7 @@ class Block:
 
         self.connect(**self.inputs)
 
-    def connect(self, **inputs: Dict[str, Input]):
+    async def connect(self, **inputs: Dict[str, Input]):
         for name, inputter in inputs.items():
             if hasattr(self, name) and callable(getattr(self, name)):
                 inputter.connect(getattr(self, name))
@@ -45,19 +45,19 @@ class Block:
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
 
-    def precheck_nodes(self, config: config.Config) -> Set[str]:
+    async def precheck_nodes(self, config: config.Config) -> Set[str]:
         all_nodes = set(config.nodes.keys())
 
         for req in self.resources:
-            nodes = req.available_hosts(config)
+            nodes = await req.available_hosts(config)
             if nodes is not None:
-                all_nodes = all_nodes.union(resource)
+                all_nodes.intersection_update(resource)
 
         return all_nodes
 
-    def check_resources(self) -> bool:
+    async def check_resources(self) -> bool:
         return all((r.available for r in self.resources))
 
-    def try_resources(self):
+    async def try_resources(self):
         for r in self.resources:
             r.try_check()

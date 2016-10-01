@@ -7,11 +7,11 @@ class Resource:
         self.available = False
         self.static = False
 
-    def try_check(self):
+    async def try_check(self):
         if not self.available:
             raise MissingResource(self)
 
-    def available_hosts(self, config):
+    async def available_hosts(self, config):
         """Return a list of hosts where this resource is statically guaranteed to be available.
         This is used during the pre-allocation phase of blocks to determine which nodes the scheduler
         should not attempt to schedule a block on.

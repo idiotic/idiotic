@@ -1,7 +1,7 @@
 import pysyncobj
 from idiotic import config
 from idiotic import block
-from idiotic import resource
+import asyncio
 
 
 class Node:
@@ -9,19 +9,28 @@ class Node:
         self.name = name
 
 
+class UnassignableBlock(Exception):
+    pass
+
 class Cluster(pysyncobj.SyncObj):
     def __init__(self, configuration: config.Config):
         super(Cluster, self).__init__(configuration.hostname, configuration.connect)
         self.config = configuration
         self.block_owners = {}
+        self.block_lock = asyncio.locks.Lock()
         self.resources = {}
         self.jobs = []
 
     @pysyncobj.replicated
-    def assign_block(self, block: block.Block):
-        nodes = block.precheck_nodes(self.config)
+    async def assign_block(self, block: block.Block):
 
-        for node in nodes:
-            pass
-            # assign the block to the node
-            # check the resources, reassign if needed
+        with await self.block_lock:
+            self.block_owners[block] = None
+            nodes = await block.precheck_nodes(self.config)
+
+            for node in nodes:
+                self.block_owners[block] = node
+                # Later:
+                return
+
+            raise UnassignableBlock(block)

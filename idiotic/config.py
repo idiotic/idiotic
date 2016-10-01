@@ -4,6 +4,7 @@ import yaml
 
 class Config(dict):
     connect = []
+    nodes = {}
 
     def __init__(self, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
