@@ -2,6 +2,9 @@ import socket
 import yaml
 
 
+config = None
+
+
 class Config(dict):
     connect = []
     nodes = {}
