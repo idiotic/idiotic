@@ -51,7 +51,7 @@ class Block:
         for req in self.resources:
             nodes = await req.available_hosts(config)
             if nodes is not None:
-                all_nodes.intersection_update(resource)
+                all_nodes.intersection_update(set(nodes))
 
         return all_nodes
 
