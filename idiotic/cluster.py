@@ -127,11 +127,13 @@ class Node:
 
     async def run_blocks(self):
         while True:
+            tasks = []
             for name, blk in self.blocks.items():
                 if self.own_block(name) and not blk.running:
                     print("We own {}, starting!".format(name))
-                    asyncio.get_event_loop().call_soon(blk.run_resources())
-                    asyncio.get_event_loop().call_soon(blk.run_while_ok())
+                    tasks.append(blk.run_resources)
+                    tasks.append(blk.run_while_ok)
+            await asyncio.gather(*[task() for task in tasks])
 
     async def run_messaging(self):
         while True:
