@@ -5,8 +5,8 @@ from idiotic import config
 
 
 class Input:
-    def __init__(self):
-        self.callback = None  # type: Callable[[Any], Any]
+    def __init__(self, callback=None):
+        self.callback = callback  # type: Callable[[Any], Any]
 
     def connect(self, receiver):
         """Registers the callback for this input"""
@@ -23,15 +23,15 @@ class EventInput(Input):
 
 
 class Block:
-    def __init__(self, resources: Iterable[resource.Resource] = None, **inputs):
+    def __init__(self):
         #: A globally unique identifier for the block
         self.id = uuid.uuid4()
 
         #: Map of input receiver names to inputs
-        self.inputs = inputs  # type: Dict[str, Input]
+        self.inputs = {}  # type: Dict[str, Input]
 
         #: List of resources that this block needs
-        self.resources = list(resources) or []
+        self.resources = []
 
         self.connect(**self.inputs)
 
