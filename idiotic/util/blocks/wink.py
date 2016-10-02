@@ -17,27 +17,29 @@ class WinkBlock(block.Block):
                        "client_secret": "e749124ad386a5a35c0ab554a4f2c045",
                        "username": "",
                        "password": "",
-                       "name": "",
-                       "label": "",
-                       "id": "",
+                       "wink_name": "",
+                       "wink_label": "",
+                       "wink_id": "",
                       }
         self.config.update(config)
 
         self.inputs = {}
         self.resources = [resource.HTTPResource(self.config['base_url'])]
-        self.auth = wink.auth(username=self.config['username'], password=self.config['password'])
-        self.wink = wink.Wink(auth, save_auth=False)
+        self.auth = wink.auth(**self.config)
+        self.wink = wink.Wink(self.auth, save_auth=False)
         self.device = None
-        def find(self):
-            devices = self.wink.device_list()
-            for field in ['id', 'label', 'name']:
-                for dev in devices:
-                    value = dev.data.get(field)
-                    if value and value == self.config[field]:
-                        return dev
-        self.device = find()
+        self.device = self.find()
         if not self.device:
             raise WinkDeviceNotFound("None of the provided criteria matched any devices in your Wink account")
+
+    def find(self):
+        devices = self.wink.device_list()
+        for field in ['id', 'label', 'name']:
+            for dev in devices:
+                value = dev.data.get(field)
+                if value and value == self.config["wink_" + field]:
+                    print(dev)
+                    return dev
 
     async def run(self):
         pass

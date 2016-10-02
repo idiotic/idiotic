@@ -32,3 +32,14 @@ blocks:
     min: 50
     max: 100
     type: RandomFloatBlock
+  record_light:
+    client_secret: "e749124ad386a5a35c0ab554a4f2c045"
+    username: "dylan@whichard.com"
+    password: "mZc9sQXa"
+    wink_name: "Record Light"
+    inputs:
+      power: "random_power"
+    type: WinkDimmer
+  random_power:
+    type: RandomBoolBlock
+    period: 10
