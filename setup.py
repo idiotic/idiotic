@@ -7,7 +7,7 @@ def read_license():
 
 setup(
     name='idiotic',
-    packages=-'idiotic',
+    packages=['idiotic'],
     version='2.0.0',
     description='Distributed home automation controller',
     long_description="""The idiotic distributed internet of things inhabitance
@@ -36,7 +36,7 @@ setup(
     install_requires=[
         'pyzmq>=15.4.0',
         'pysyncobj>=0.2.1',
-        'yaml'
+        'PyYAML'
     ],
     data_files=[
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
