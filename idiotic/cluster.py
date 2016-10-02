@@ -18,16 +18,32 @@ class UnassignableBlock(Exception):
 
 
 class Cluster(pysyncobj.SyncObj):
+    config = None
+    block_owners = None
+    block_lock = None
+    resources = None
+    jobs = None
+
     def __init__(self, configuration: config.Config):
         super(Cluster, self).__init__(
             '{}:{}'.format(configuration.hostname, configuration.cluster['port']),
             [h for h in configuration.cluster['connect'] if not h.startswith(configuration.hostname + ':')]
         )
-        self.config = configuration
-        self.block_owners = {}
-        self.block_lock = RLock()
-        self.resources = {}
-        self.jobs = []
+
+        if self.config is None:
+            self.config = configuration
+
+        if self.block_owners is None:
+            self.block_owners = {}
+
+        if self.block_lock is None:
+            self.block_lock = RLock()
+
+        if self.resources is None:
+            self.resources = {}
+
+        if self.jobs is None:
+            self.jobs = []
 
     async def find_destinations(self, event):
         return self.config.nodes.keys()
