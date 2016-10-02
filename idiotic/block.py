@@ -66,5 +66,7 @@ class Block:
             r.try_check()
 
     async def output(self, data, *args):
+        if not args:
+          args = [self.config['name'],]
         for source in args:
             node.dispatch({"data": data, "source": source})
