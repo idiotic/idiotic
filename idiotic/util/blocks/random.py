@@ -3,7 +3,7 @@ from idiotic import block
 from idiotic import resource
 
 class RandomBlock(block.Block):
-    def __init__(self, config={}, global_config={}):
+    def __init__(self, config={}):
         self.config = {"period": 1,
                        "min": 0,
                        "max": 1

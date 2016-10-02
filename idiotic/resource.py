@@ -1,6 +1,6 @@
 from typing import Optional, Iterable
 from idiotic import config
-
+import pyping
 
 class MissingResource(Exception):
     pass
@@ -25,3 +25,17 @@ class Resource:
 
     async def run(self):
         pass
+
+class PingResource(Resource):
+    def __init__(self, address):
+        self.address = address
+        super().__init__()
+
+    async def run(self):
+        while True:
+            await asyncio.sleep(10)
+            response = pyping.ping(self.address)
+            if response.ret_code == 0:
+                self.available = True
+            else:
+                self.available = False

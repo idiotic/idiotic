@@ -38,6 +38,7 @@ setup(
         'pysyncobj>=0.2.1',
         'PyYAML',
         'aiohttp',
+        'pyping',
     ],
     data_files=[
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),

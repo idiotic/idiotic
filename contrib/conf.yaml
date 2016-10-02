@@ -1,8 +1,9 @@
 version: 1
 global: {}
 nodes:
-  muffin:
-    fqdn: localhost
+  node1: {}
+  node2: {}
+  node3: {}
 cluster:
   listen: '::'
   port: 28300
