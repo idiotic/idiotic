@@ -10,6 +10,8 @@ import logging
 import importlib
 import pkgutil
 
+import time
+
 
 def all_subclasses(cls):
     for subclass in cls.__subclasses__():
@@ -40,6 +42,12 @@ def main():
     conf = config.Config.load(argv[1])
     config.config = conf
     cluster = Cluster(conf)
+
+    print("Waiting for cluster to become ready...")
+    while not cluster._isReady():
+        time.sleep(5)
+
+    print("Cluster is ready!")
 
     node = Node((argv[2] if len(argv) > 2 else None) or conf.hostname, cluster, conf)
 
