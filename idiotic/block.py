@@ -29,10 +29,14 @@ class Block:
         pass
 
     async def run_while_ok(self, cluster: 'Cluster'):
+        if self.running:
+            return
+
         self.running = True
         while idiotic.node.own_block(self.name) and self.check_resources():
             await self.run()
         self.running = False
+        idiotic.node.cluster.unassign_block(self.name)
         idiotic.node.cluster.assign_block(self)
 
     def require(self, *resources: resource.Resource):

@@ -37,7 +37,13 @@ class Cluster(pysyncobj.SyncObj):
     @pysyncobj.replicated
     def _assign_block(self, name, nodes):
         with self.block_lock:
-            self.block_owners[name] = None
+            if not self._isLeader():
+                print("I am not the leader!")
+                return
+
+            if self.block_owners.get(name, None):
+                print("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
+                return
 
             for node in nodes:
                 self.block_owners[name] = node
@@ -45,8 +51,19 @@ class Cluster(pysyncobj.SyncObj):
             else:
                 raise UnassignableBlock(name)
 
+    @pysyncobj.replicated
+    def unassign_block(self, name):
+        with self.block_lock:
+            self.block_owners[name] = None
+
+    def reassign_block(self, name):
+        self.unassign_block(name)
+        self.assign_block(name)
+
     def assign_block(self, block: block.Block):
+        print("Assigning block", block.name)
         self._assign_block(block.name, block.precheck_nodes(self.config))
+        print("Assigned block", block.name)
 
 
 class Node:
