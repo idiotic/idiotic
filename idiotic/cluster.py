@@ -127,6 +127,7 @@ class Node:
 
     async def run_blocks(self):
         while True:
+            print(self.cluster.block_owners)
             tasks = []
             for name, blk in self.blocks.items():
                 if self.own_block(name) and not blk.running:
