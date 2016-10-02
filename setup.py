@@ -1,5 +1,4 @@
-from setuptools import setup
-
+from setuptools import setup, find_packages
 
 def read_license():
     with open("LICENSE") as f:
@@ -7,7 +6,7 @@ def read_license():
 
 setup(
     name='idiotic',
-    packages=['idiotic'],
+    packages=find_packages(exclude=['etc', 'contrib']),
     version='2.0.0',
     description='Distributed home automation controller',
     long_description="""The idiotic distributed internet of things inhabitance
