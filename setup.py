@@ -36,7 +36,8 @@ setup(
     install_requires=[
         'pyzmq>=15.4.0',
         'pysyncobj>=0.2.1',
-        'PyYAML'
+        'PyYAML',
+        'aiohttp',
     ],
     data_files=[
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
