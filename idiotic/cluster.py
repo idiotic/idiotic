@@ -119,7 +119,7 @@ class Node:
                     asyncio.get_event_loop().call_soon(blk.run_resources())
                     asyncio.get_event_loop().call_soon(blk.run_while_ok())
                 else:
-                    print("We don't own {}, {} does".format(name, self.cluster.block_owners[name]))
+                    print("We don't own {}, {} does".format(name, self.cluster.block_owners.get(name, 'nobody')))
 
     async def run_messaging(self):
         while True:
