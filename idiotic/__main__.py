@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from idiotic import config, set_node
 from idiotic.cluster import Cluster, Node
-from idiotic.block import Block
 from sys import argv
 
 import asyncio
@@ -45,6 +44,8 @@ def main():
     node = Node((argv[2] if len(argv) > 2 else None) or conf.hostname, cluster, conf)
 
     set_node(node)
+
+    from idiotic.block import Block
 
     # Recursively load everything from utils so that we get all the block types registered
     import_submodules('idiotic.util')
