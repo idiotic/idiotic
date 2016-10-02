@@ -76,15 +76,17 @@ class Node:
         print("Event received!", event)
         dests = []
         for block in self.cluster.blocks.values():
-            if not self.own_block(block.name): continue
+            if not self.own_block(block.name):
+                print("{} owns block {}".format(self.cluster.block_owners[block.name], block.name))
+                continue
             print("We own block {}".format(block.name))
 
-            if not hasattr(block, 'inputs'): continue
+            if 'inputs' not in block.config:
+                print("{} has no inputs".format(block.name))
+                continue
             print("Block {} has inputs".format(block.name))
 
-            inputs = block.inputs
-            print(inputs)
-            for target, blockid in inputs.items():
+            for target, blockid in block.config['inputs'].items():
                 if event['source'].startswith(blockid):
                     print("Event goes to ", block.name)
                     dests.append(getattr(block, target))
@@ -92,7 +94,7 @@ class Node:
                     print("Source {} does not match {}".format(event['source'], blockid))
 
         for dest in dests:
-            await dest(event)
+            await dest(event['data'])
         log.debug("Event received: {}", event)
         # don't know what to do here
 
@@ -113,9 +115,12 @@ class Node:
             for name, blk in self.cluster.blocks.items():
                 if self.own_block(name):
                     try:
+                        print("yeeeuh")
                         await blk.run()
                     except Exception as e:
                         log.exception(e)
+                else:
+                    print("We don't own {}, {} does".format(name, self.cluster.block_owners[name]))
             await asyncio.sleep(.01)
 
     async def run_messaging(self):
