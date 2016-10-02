@@ -35,18 +35,18 @@ class Cluster(pysyncobj.SyncObj):
         return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
     @pysyncobj.replicated
-    def assign_block(self, block: block.Block):
+    def _assign_block(self, name, nodes):
         with self.block_lock:
-
             self.block_owners[block.name] = None
-            nodes = block.precheck_nodes(self.config)
 
             for node in nodes:
                 self.block_owners[block.name] = node
-                # Later: somehow tell the other node they have a new block
                 break
             else:
-                raise UnassignableBlock(block)
+                raise UnassignableBlock(name)
+
+    def assign_block(self, block: block.Block):
+        self._assign_block(block.name, block.precheck_nodes(self.config))
 
 
 class Node:
