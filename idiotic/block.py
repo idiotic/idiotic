@@ -44,7 +44,7 @@ class Block:
     async def run(self, *args, **kwargs):
         pass
 
-    async def connect(self, **inputs: Dict[str, Input]):
+    def connect(self, **inputs: Dict[str, Input]):
         for name, inputter in inputs.items():
             if hasattr(self, name) and callable(getattr(self, name)):
                 inputter.connect(getattr(self, name))
