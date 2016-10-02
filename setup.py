@@ -34,7 +34,6 @@ setup(
         'Topic :: Home Automation',
     ],
     install_requires=[
-        'pyzmq>=15.4.0',
         'pysyncobj>=0.2.1',
         'PyYAML',
         'aiohttp',
