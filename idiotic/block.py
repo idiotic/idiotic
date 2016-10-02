@@ -69,4 +69,4 @@ class Block:
         if not args:
           args = [self.config['name'],]
         for source in args:
-            node.dispatch({"data": data, "source": source})
+            node.dispatch({"data": data, "source": self.config['name']+"."+source})
