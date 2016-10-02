@@ -30,8 +30,8 @@ class KVStorage(SyncObj):
     def pop(self, key):
         self.__data.pop(key, None)
 
-    def get(self, key):
-        return self.__data.get(key, None)
+    def get(self, key, default=None):
+        return self.__data.get(key, default)
 
 
 class Cluster:
