@@ -5,24 +5,6 @@ from idiotic import config
 import idiotic
 
 
-class Input:
-    def __init__(self, callback=None):
-        self.callback = callback  # type: Callable[[Any], Any]
-
-    def connect(self, receiver):
-        """Registers the callback for this input"""
-        self.callback = receiver
-
-    def output(self, value):
-        if self.callback:
-            self.callback(value)
-
-
-class EventInput(Input):
-    def __init__(self, **filters):
-        super().__init__()
-
-
 class Block:
     REGISTRY = {}
 
@@ -34,22 +16,13 @@ class Block:
         self.config = config or {}
 
         #: Map of input receiver names to inputs
-        self.inputs = {}  # type: Dict[str, Input]
+        self.inputs = {}  # type: Dict[str, Callable]
 
         #: List of resources that this block needs
         self.resources = []
 
-        self.connect(**self.inputs)
-
     async def run(self, *args, **kwargs):
         pass
-
-    def connect(self, **inputs: Dict[str, Input]):
-        for name, inputter in inputs.items():
-            if hasattr(self, name) and callable(getattr(self, name)):
-                inputter.connect(getattr(self, name))
-            else:
-                raise ValueError("{} has no method named '{}'".format(self, name))
 
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)

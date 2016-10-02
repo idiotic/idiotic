@@ -15,11 +15,10 @@ class TeapotBlock(block.Block):
                       }
         self.config.update(config)
 
-        self.inputs = {"temperature": block.Input(),
-                       "hold": block.Input()
+        self.inputs = {"temperature": self.temperature,
+                       "hold": self.hold
                       }
         self.resources = [resource.HTTPResource(self.config['address'])]
-        self.connect(**self.inputs)
         self.hold_start = 0
         self.hold_duration = 0
 

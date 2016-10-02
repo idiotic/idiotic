@@ -79,14 +79,17 @@ class Node:
             if not self.own_block(block.name): continue
             print("We own block {}".format(block.name))
 
-            if not hasattr(block.config, 'inputs'): continue
+            if not hasattr(block, 'inputs'): continue
             print("Block {} has inputs".format(block.name))
 
-            inputs = block.config['inputs']
+            inputs = block.inputs
+            print(inputs)
             for target, blockid in inputs.items():
                 if event['source'].startswith(blockid):
                     print("Event goes to ", block.name)
                     dests.append(getattr(block, target))
+                else:
+                    print("Source {} does not match {}".format(event['source'], blockid))
 
         for dest in dests:
             await dest(event)
