@@ -1,3 +1,4 @@
+import asyncio
 import random
 from idiotic import block
 from idiotic import resource
