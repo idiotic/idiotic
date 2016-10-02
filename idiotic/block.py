@@ -22,9 +22,6 @@ class Block:
         #: The config for this block
         self.config = config or {}
 
-        #: Map of input receiver names to inputs
-        self.inputs = {}  # type: Dict[str, Callable]
-
         #: List of resources that this block needs
         self.resources = []
 
