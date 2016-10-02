@@ -26,9 +26,9 @@ blocks:
     period: 5
     min: 50
     max: 100
-    type: RandomBlock
+    type: RandomFloatBlock
   random_hold:
     period: 5
     min: 50
     max: 100
-    type: RandomBlock
+    type: RandomFloatBlock
