@@ -133,9 +133,12 @@ class Node:
             for dest in await self.cluster.find_destinations(event):
                 url = self.cluster.get_rpc_url(dest)
                 # Screw you aiohttp, I do what I want!
-                async with aiohttp.ClientSession() as client:
-                    async with client.post(url, data=json.dumps(event), headers={'Content-Type': 'application/json'}) as request:
-                        log.debug(await request.json())
+                try:
+                    async with aiohttp.ClientSession() as client:
+                        async with client.post(url, data=json.dumps(event), headers={'Content-Type': 'application/json'}) as request:
+                            log.debug(await request.json())
+                except:
+                    print("An error happened :(")
 
     async def rpc_endpoint(self, request: aiohttp.Request):
         log.debug("WOW")
