@@ -73,17 +73,12 @@ class Block:
 
     async def output(self, data, *args):
         if not args:
-          args = [self.config['name'],]
+          args = [self.name,]
         for source in args:
-            node.dispatch({"data": data, "source": self.config['name']+"."+source})
-
+            node.dispatch({"data": data, "source": self.name+"."+source})
 
 def create(name, config):
     block_type = config.get("type", "Block")
-
     block_cls = Block.REGISTRY[block_type]
-
     block = block_cls(name=name, config=config)
-
     node.cluster.assign_block(block)
-

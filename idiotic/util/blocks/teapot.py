@@ -3,7 +3,8 @@ from idiotic import block
 from idiotic import resource
 
 class TeapotBlock(block.Block):
-    def __init__(self, config={}):
+    def __init__(self, name, config):
+        self.name = name
         self.config = {"address": "https://api.particle.io",
                        "path": "/v1/devices/",
                        "access_token": "",
