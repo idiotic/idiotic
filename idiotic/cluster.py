@@ -30,7 +30,7 @@ class Cluster(pysyncobj.SyncObj):
         return self.config.nodes.keys()
 
     def get_rpc_url(self, node):
-        return "http://{}:{}/rpc".format(node, self.config.connect["port"])
+        return "http://{}:{}/rpc".format(node, self.config.cluster["port"])
 
     @pysyncobj.replicated
     async def assign_block(self, block: block.Block):
@@ -70,14 +70,17 @@ class Node:
         while True:
             event = await self.events_out.get()
 
-            for dest in self.cluster.find_destinations(event):
+            for dest in await self.cluster.find_destinations(event):
                 url = self.cluster.get_rpc_url(dest)
                 # Screw you aiohttp, I do what I want!
-                await aiohttp.request('POST', url, data=json.dumps(event))
+                async with aiohttp.ClientSession() as client:
+                    async with client.post(url, data=json.dumps(event), headers={'Content-Type': 'application/json'}) as request:
+                        log.debug(await request.json())
 
-    async def rpc_endpoint(self, request):
+    async def rpc_endpoint(self, request: aiohttp.Request):
+        log.debug("WOW")
         self.events_in.put_nowait(await request.json())
-        return web.Response(text="Success")
+        return web.Response(text='{"Success": true}', content_type='application/json')
 
     async def run_messaging(self):
         app = web.Application()

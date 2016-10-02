@@ -9,7 +9,7 @@ import logging
 
 
 def main():
-    logging.basicConfig(style='{')
+    logging.basicConfig(style='{', level=logging.DEBUG)
     conf = config.Config.load(argv[1])
     config.config = conf
     cluster = Cluster(conf)
