@@ -127,16 +127,11 @@ class Node:
 
     async def run_blocks(self):
         while True:
-            if self._was_ready != self.cluster._isReady():
-                print("Cluster {} ready!".format("NOT" if self._was_ready else "is"))
-                self._was_ready = not self._was_ready
-
             for name, blk in self.blocks.items():
                 if self.own_block(name) and not blk.running:
+                    print("We own {}, starting!".format(name))
                     asyncio.get_event_loop().call_soon(blk.run_resources())
                     asyncio.get_event_loop().call_soon(blk.run_while_ok())
-                else:
-                    print("We don't own {}, {} does".format(name, self.cluster.block_owners.get(name, 'nobody')))
 
     async def run_messaging(self):
         while True:
