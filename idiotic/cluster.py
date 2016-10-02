@@ -1,7 +1,7 @@
 from idiotic import config
 from idiotic import block
 import idiotic
-import pysyncobj
+from pysyncobj import SyncObj, replicated
 import logging
 import asyncio
 import aiohttp
@@ -17,14 +17,30 @@ class UnassignableBlock(Exception):
     pass
 
 
-class Cluster(pysyncobj.SyncObj):
+class KVStorage(SyncObj):
+    def __init__(self, selfAddress, partnerAddrs):
+        super(KVStorage, self).__init__(selfAddress, partnerAddrs)
+        self.__data = {}
+
+    @replicated
+    def set(self, key, value):
+        self.__data[key] = value
+
+    @replicated
+    def pop(self, key):
+        self.__data.pop(key, None)
+
+    def get(self, key):
+        return self.__data.get(key, None)
+
+
+class Cluster:
     def __init__(self, configuration: config.Config):
-        super(Cluster, self).__init__(
+        self.block_owners = KVStorage(
             '{}:{}'.format(configuration.hostname, configuration.cluster['port']),
             [h for h in configuration.cluster['connect'] if not h.startswith(configuration.hostname + ':')]
         )
         self.config = configuration
-        self.block_owners = {}
         self.block_lock = RLock()
         self.resources = {}
         self.jobs = []
@@ -35,28 +51,28 @@ class Cluster(pysyncobj.SyncObj):
     def get_rpc_url(self, node):
         return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
-    @pysyncobj.replicated_sync
     def _assign_block(self, name, nodes):
-        with self.block_lock:
-            if not self._isLeader():
-                print("I am not the leader!")
-                return
+        if not self.block_owners._isLeader():
+            print("I am not the leader!")
+            return
 
-            if self.block_owners.get(name, None):
-                print("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
-                return
+        if self.block_owners.get(name, None):
+            print("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
+            return
 
-            for node in nodes:
-                self.block_owners[name] = node
-                print("Assigned {} to {}".format(name, node))
-                break
-            else:
-                raise UnassignableBlock(name)
+        for node in nodes:
+            self.block_owners[name] = node
+            print("Assigned {} to {}".format(name, node))
+            break
+        else:
+            raise UnassignableBlock(name)
 
-    @pysyncobj.replicated_sync
+    def _isReady(self):
+        return self.block_owners._isReady()
+
+
     def unassign_block(self, name):
-        with self.block_lock:
-            self.block_owners[name] = None
+        self.block_owners[name] = None
 
     def reassign_block(self, name):
         self.unassign_block(name)
