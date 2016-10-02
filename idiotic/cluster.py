@@ -133,6 +133,8 @@ class Node:
                     print("We own {}, starting!".format(name))
                     tasks.append(blk.run_resources)
                     tasks.append(functools.partial(blk.run_while_ok, self.cluster))
+            if tasks:
+                print("Running {} tasks".format(len(tasks)))
             await asyncio.gather(*[task() for task in tasks])
 
     async def run_messaging(self):
