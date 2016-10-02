@@ -23,7 +23,6 @@ class Cluster(pysyncobj.SyncObj):
             [h for h in configuration.cluster['connect'] if not h.startswith(configuration.hostname + ':')]
         )
         self.config = configuration
-        self.blocks = {}
         self.block_owners = {}
         self.block_lock = RLock()
         self.resources = {}
@@ -38,7 +37,6 @@ class Cluster(pysyncobj.SyncObj):
     @pysyncobj.replicated
     def assign_block(self, block: block.Block):
         with self.block_lock:
-            self.blocks[block.name] = block
 
             self.block_owners[block.name] = None
             nodes = block.precheck_nodes(self.config)
@@ -57,6 +55,8 @@ class Node:
         self.cluster = cluster
         self.config = config
 
+        self.blocks = {}
+
         self.events_out = asyncio.Queue()
         self.events_in = asyncio.Queue()
 
@@ -67,7 +67,9 @@ class Node:
 
     async def initialize_blocks(self):
         for name, settings in self.config.blocks.items():
-            self.cluster.assign_block(block.create(name, settings))
+            blk = block.create(name, settings)
+            self.cluster.assign_block(blk)
+            self.blocks[name] = blk
 
     def dispatch(self, event):
         self.events_out.put_nowait(event)
@@ -75,7 +77,7 @@ class Node:
     async def event_received(self, event):
         print("Event received!", event)
         dests = []
-        for block in self.cluster.blocks.values():
+        for block in self.blocks.values():
             if not self.own_block(block.name):
                 print("{} owns block {}".format(self.cluster.block_owners[block.name], block.name))
                 continue
@@ -112,7 +114,7 @@ class Node:
                 print("Cluster {} ready!".format("NOT" if self._was_ready else "is"))
                 self._was_ready = not self._was_ready
 
-            for name, blk in self.cluster.blocks.items():
+            for name, blk in self.blocks.items():
                 if self.own_block(name) and not blk.running:
                     asyncio.get_event_loop().call_soon(blk.run_resources())
                     asyncio.get_event_loop().call_soon(blk.run_while_ok())
