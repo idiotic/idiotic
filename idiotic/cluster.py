@@ -7,6 +7,7 @@ import asyncio
 import aiohttp
 from aiohttp import web
 from threading import RLock
+import functools
 import json
 
 log = logging.Logger('idiotic.cluster')
@@ -132,7 +133,7 @@ class Node:
                 if self.own_block(name) and not blk.running:
                     print("We own {}, starting!".format(name))
                     tasks.append(blk.run_resources)
-                    tasks.append(blk.run_while_ok)
+                    tasks.append(functools.partial(blk.run_while_ok, self.cluster))
             await asyncio.gather(*[task() for task in tasks])
 
     async def run_messaging(self):
