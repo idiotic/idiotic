@@ -37,7 +37,6 @@ class Cluster(pysyncobj.SyncObj):
 
     @pysyncobj.replicated
     def assign_block(self, block: block.Block):
-        print("AAAAAA")
         with self.block_lock:
             self.blocks[block.name] = block
 
