@@ -1,5 +1,6 @@
 from idiotic import config
 from idiotic import block
+import idiotic
 import pysyncobj
 import logging
 import asyncio
@@ -21,6 +22,7 @@ class Cluster(pysyncobj.SyncObj):
             configuration.cluster['connect']
         )
         self.config = configuration
+        self.blocks = {}
         self.block_owners = {}
         self.block_lock = asyncio.locks.Lock()
         self.resources = {}
@@ -34,13 +36,14 @@ class Cluster(pysyncobj.SyncObj):
 
     @pysyncobj.replicated
     async def assign_block(self, block: block.Block):
-
         with await self.block_lock:
-            self.block_owners[block] = None
+            self.blocks[block.name] = block
+
+            self.block_owners[block.name] = None
             nodes = await block.precheck_nodes(self.config)
 
             for node in nodes:
-                self.block_owners[block] = node
+                self.block_owners[block.name] = node
                 # Later: somehow tell the other node they have a new block
                 return
 
@@ -55,6 +58,10 @@ class Node:
 
         self.events_out = asyncio.Queue()
         self.events_in = asyncio.Queue()
+
+    async def initialize_blocks(self):
+        for name, settings in self.config.blocks.items():
+            await self.cluster.assign_block(block.create(name, settings))
 
     def dispatch(self, event):
         self.events_out.put_nowait(event)

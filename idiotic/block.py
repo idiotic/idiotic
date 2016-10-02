@@ -77,8 +77,9 @@ class Block:
         for source in args:
             node.dispatch({"data": data, "source": self.name+"."+source})
 
-def create(name, config):
-    block_type = config.get("type", "Block")
+def create(name, block_config):
+    block_type = block_config.get("type", "Block")
+
     block_cls = Block.REGISTRY[block_type]
-    block = block_cls(name=name, config=config)
-    node.cluster.assign_block(block)
+
+    return block_cls(name=name, config=block_config)
