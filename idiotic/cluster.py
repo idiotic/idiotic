@@ -6,6 +6,7 @@ import logging
 import asyncio
 import aiohttp
 from aiohttp import web
+from threading import RLock
 import json
 
 log = logging.Logger('idiotic.cluster')
@@ -24,7 +25,7 @@ class Cluster(pysyncobj.SyncObj):
         self.config = configuration
         self.blocks = {}
         self.block_owners = {}
-        self.block_lock = asyncio.locks.Lock()
+        self.block_lock = RLock()
         self.resources = {}
         self.jobs = []
 
@@ -34,14 +35,14 @@ class Cluster(pysyncobj.SyncObj):
     def get_rpc_url(self, node):
         return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
-    @asyncio.coroutine
     @pysyncobj.replicated
-    async def assign_block(self, block: block.Block):
-        with await self.block_lock:
+    def assign_block(self, block: block.Block):
+        print("AAAAAA")
+        with self.block_lock:
             self.blocks[block.name] = block
 
             self.block_owners[block.name] = None
-            nodes = await block.precheck_nodes(self.config)
+            nodes = block.precheck_nodes(self.config)
 
             for node in nodes:
                 self.block_owners[block.name] = node
@@ -62,7 +63,7 @@ class Node:
 
     async def initialize_blocks(self):
         for name, settings in self.config.blocks.items():
-            await self.cluster.assign_block(block.create(name, settings))
+            self.cluster.assign_block(block.create(name, settings))
 
     def dispatch(self, event):
         self.events_out.put_nowait(event)

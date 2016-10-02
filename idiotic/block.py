@@ -54,11 +54,11 @@ class Block:
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
 
-    async def precheck_nodes(self, config: config.Config) -> Set[str]:
+    def precheck_nodes(self, config: config.Config) -> Set[str]:
         all_nodes = set(config.nodes.keys())
 
         for req in self.resources:
-            nodes = await req.available_hosts(config)
+            nodes = req.available_hosts(config)
             if nodes is not None:
                 all_nodes.intersection_update(set(nodes))
 
