@@ -37,10 +37,10 @@ class Cluster(pysyncobj.SyncObj):
     @pysyncobj.replicated
     def _assign_block(self, name, nodes):
         with self.block_lock:
-            self.block_owners[block.name] = None
+            self.block_owners[name] = None
 
             for node in nodes:
-                self.block_owners[block.name] = node
+                self.block_owners[name] = node
                 break
             else:
                 raise UnassignableBlock(name)
