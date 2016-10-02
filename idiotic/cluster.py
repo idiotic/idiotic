@@ -76,7 +76,18 @@ class Node:
             self.run_dispatch(),
             self.run_rpc(),
             self.run_messaging(),
+            self.run_blocks(),
         )
+
+    async def run_blocks(self):
+        while True:
+            for name, blk in self.cluster.blocks.items():
+                if self.cluster.block_owners[name] == self.name:
+                    try:
+                        await blk.run()
+                    except Exception as e:
+                        log.exception(e)
+            await asyncio.sleep(.01)
 
     async def run_messaging(self):
         while True:
