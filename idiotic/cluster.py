@@ -63,7 +63,7 @@ class Node:
         self._was_ready = False
 
     def own_block(self, name):
-        return self.cluster.block_owners[name] == self.name
+        return self.cluster.block_owners.get(name, None) == self.name
 
     async def initialize_blocks(self):
         for name, settings in self.config.blocks.items():
