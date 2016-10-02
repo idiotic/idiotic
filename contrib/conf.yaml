@@ -8,3 +8,23 @@ cluster:
   port: 28300
   connect:
     - "localhost:28300"
+blocks:
+  teakettle:
+    address: 'https://api.particle.io'
+    path: '/v1/devices/'
+    access_token: 'fe7e8d11c02660ee0cfd37e5a508e184bf95a858'
+    device_id: '210035001447343338333633'
+    inputs:
+      temperature: 'random_temp'
+      hold: 'random_hold'
+    type: TeapotBlock
+  random_temp:
+    period: 5
+    min: 50
+    max: 100
+    type: RandomBlock
+  random_hold:
+    period: 5
+    min: 50
+    max: 100
+    type: RandomBlock

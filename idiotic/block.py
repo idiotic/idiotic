@@ -2,7 +2,7 @@ import uuid
 from typing import Iterable, Callable, Any, Dict, Set
 from idiotic import resource
 from idiotic import config
-
+from idiotic import node
 
 class Input:
     def __init__(self, callback=None):
@@ -64,3 +64,7 @@ class Block:
     async def try_resources(self):
         for r in self.resources:
             r.try_check()
+
+    async def output(self, data, *args):
+        for source in args:
+            node.dispatch({"data": data, "source": source})

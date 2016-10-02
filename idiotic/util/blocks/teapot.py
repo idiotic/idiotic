@@ -27,6 +27,7 @@ class TeapotBlock(block.Block):
         self.hold_duration = value
 
     async def run(self):
-        await asyncio.sleep(20)
-        if (time.time() - self.hold_duration) < self.hold_start:
-            requests.get("{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']), data={'access_token': self.config['access_token'], 'args': str(30)})
+        while True:
+            await asyncio.sleep(20)
+            if (time.time() - self.hold_duration) < self.hold_start:
+                requests.get("{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']), data={'access_token': self.config['access_token'], 'args': str(30)})
