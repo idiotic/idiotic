@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from idiotic import config
 from idiotic.cluster import Cluster, Node
+import idiotic
 from sys import argv
 
 import asyncio
@@ -15,6 +16,8 @@ def main():
     cluster = Cluster(conf)
 
     node = Node((argv[2] if len(argv) > 2 else None) or conf.hostname, cluster, conf)
+
+    idiotic.node = node
 
     loop = asyncio.get_event_loop()
 
