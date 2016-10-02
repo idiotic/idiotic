@@ -24,9 +24,11 @@ class TeapotBlock(block.Block):
         self.hold_duration = 0
 
     def temperature(self, value):
+        print("setting temp to {}".format(value))
         requests.get("{}{}{}/set_temp".format(self.config['address'], self.config['path'], self.config['device_id']), data={'access_token': self.config['access_token'], 'args': str(value)})
 
     def hold(self, value):
+        print("holding for {}".format(value))
         self.hold_start = time.time()
         self.hold_duration = value
 
