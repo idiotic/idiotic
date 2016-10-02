@@ -1,6 +1,7 @@
 from typing import Optional, Iterable
 from idiotic import config
 import requests
+import asyncio
 
 class MissingResource(Exception):
     pass

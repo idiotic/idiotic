@@ -3,6 +3,7 @@ from typing import Iterable, Callable, Any, Dict, Set
 from idiotic import resource
 from idiotic import config
 import idiotic
+import asyncio
 
 
 class Block:
@@ -36,6 +37,9 @@ class Block:
                 all_nodes.intersection_update(set(nodes))
 
         return all_nodes
+
+    async def run_resources(self):
+        await asyncio.gather(*[r.run() for r in self.resources])
 
     async def check_resources(self) -> bool:
         return all((r.available for r in self.resources))

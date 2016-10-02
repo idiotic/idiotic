@@ -108,20 +108,18 @@ class Node:
 
     async def run_blocks(self):
         while True:
+            dests = []
             if self._was_ready != self.cluster._isReady():
                 print("Cluster {} ready!".format("NOT" if self._was_ready else "is"))
                 self._was_ready = not self._was_ready
 
             for name, blk in self.cluster.blocks.items():
                 if self.own_block(name):
-                    try:
-                        print("yeeeuh")
-                        await blk.run()
-                    except Exception as e:
-                        log.exception(e)
+                    dests.append(blk)
                 else:
                     print("We don't own {}, {} does".format(name, self.cluster.block_owners[name]))
-            await asyncio.sleep(.01)
+            await asyncio.gather(asyncio.sleep(.1), *[dest.run() for dest in dests], *[dest.run_resources() for dest in dests])
+
 
     async def run_messaging(self):
         while True:
