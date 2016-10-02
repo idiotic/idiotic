@@ -51,14 +51,12 @@ class WinkDimmer(WinkBlock):
 
     async def brightness(self, value):
         self.brightness = value
-        await loop.run_in_executor(None, self.device.set_brightness, value)
+        await asyncio.get_event_loop().run_in_executor(None, self.device.set_brightness, value)
 
     async def power(self, value):
         self.power_state = value
-        if value:
-            await loop.run_in_executor(None, self.device.turn_on)
-        else:
-            await loop.run_in_executor(None, self.device.turn_off)
+
+        await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)
 
 class WinkToggle(WinkBlock):
     def __init__(self, name, config):
@@ -67,7 +65,4 @@ class WinkToggle(WinkBlock):
 
     async def power(self, value):
         self.power_state = value
-        if value:
-            await loop.run_in_executor(None, self.device.turn_on)
-        else:
-            await loop.run_in_executor(None, self.device.turn_off)
+        await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)
