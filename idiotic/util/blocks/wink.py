@@ -38,7 +38,6 @@ class WinkBlock(block.Block):
             for dev in devices:
                 value = dev.data.get(field)
                 if value and value == self.config["wink_" + field]:
-                    print(dev)
                     return dev
 
     async def run(self):
