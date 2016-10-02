@@ -1,6 +1,6 @@
 from typing import Optional, Iterable
 from idiotic import config
-import requests
+import aiohttp
 import asyncio
 
 class MissingResource(Exception):
@@ -34,9 +34,10 @@ class HTTPResource(Resource):
 
     async def run(self):
         while True:
-            await asyncio.sleep(10)
-            response = requests.get(self.address)
-            if response.status_code == 200:
-                self.available = True
-            else:
-                self.available = False
+            async with aiohttp.ClientSession() as client:
+                async with client.get(self.address) as response:
+                    if response.status == 200:
+                        self.available = True
+                    else:
+                        self.available = False
+                await asyncio.sleep(10)
