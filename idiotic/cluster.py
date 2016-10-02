@@ -64,7 +64,16 @@ class Node:
         # don't know what to do here
 
     async def run(self):
-        await asyncio.gather(self.run_dispatch(), self.run_messaging())
+        await asyncio.gather(
+            self.run_dispatch(),
+            self.run_rpc(),
+            self.run_messaging(),
+        )
+
+    async def run_messaging(self):
+        while True:
+            event = await self.events_in.get()
+            self.event_received(event)
 
     async def run_dispatch(self):
         while True:
@@ -82,7 +91,7 @@ class Node:
         self.events_in.put_nowait(await request.json())
         return web.Response(text='{"Success": true}', content_type='application/json')
 
-    async def run_messaging(self):
+    async def run_rpc(self):
         app = web.Application()
         app.router.add_route('POST', '/rpc', self.rpc_endpoint, name='rpc')
         handler = app.make_handler()
