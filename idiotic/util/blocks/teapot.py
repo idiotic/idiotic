@@ -14,7 +14,7 @@ class TeapotBlock(block.Block):
         self.inputs = {"temperature": block.Input(),
                        "hold": block.Input()
                       }
-        self.resources = [resource.PingResource(self.config['address'])]
+        self.resources = [resource.HTTPResource(self.config['address'])]
         self.connect(**self.inputs)
         self.hold_start = 0
         self.hold_duration = 0
