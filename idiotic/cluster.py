@@ -8,6 +8,7 @@ import aiohttp
 from aiohttp import web
 from threading import RLock
 import functools
+import random
 import json
 
 log = logging.Logger('idiotic.cluster')
@@ -61,15 +62,17 @@ class Cluster:
         return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
     def _assign_block(self, name, nodes):
-        if not self.block_owners._isLeader():
-            print("I am not the leader!")
+        if not self._isReady():
             return
 
         if self.block_owners.get(name, None):
             print("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
             return
 
-        for node in nodes:
+        shuffled = list(nodes)
+        random.shuffle(shuffled)
+
+        for node in shuffled:
             self.block_owners[name] = node
             print("Assigned {} to {}".format(name, node))
             break
@@ -155,6 +158,9 @@ class Node:
             print(self.cluster.block_owners)
             tasks = []
             for name, blk in self.blocks.items():
+                if self.cluster.block_owners[name] is None:
+                    self.cluster.assign_block(blk)
+
                 if self.own_block(name) and not blk.running:
                     print("We own {}, starting!".format(name))
                     tasks.append(blk.run_resources)
