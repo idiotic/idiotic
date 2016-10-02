@@ -39,14 +39,11 @@ class TeapotBlock(block.Block):
         self.hold_duration = value
 
     async def run(self):
-        while True:
-            while await self.check_resources():
-                if True or (time.time() - self.hold_duration) < self.hold_start:
-                    async with aiohttp.ClientSession() as client:
-                        async with client.post(
-                                "{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']),
-                                data={'access_token': self.config['access_token'], 'args': str(30)}
-                        ) as request:
-                            print(await request.text())
-            await asyncio.sleep(5)
-            node.cluster.assign_block(self)
+        if True or (time.time() - self.hold_duration) < self.hold_start:
+            async with aiohttp.ClientSession() as client:
+                async with client.post(
+                        "{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']),
+                        data={'access_token': self.config['access_token'], 'args': str(30)}
+                ) as request:
+                        print(await request.text())
+        await asyncio.sleep(5)

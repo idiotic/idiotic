@@ -4,6 +4,7 @@ from idiotic import block
 from idiotic import resource
 from idiotic import node
 
+
 class RandomBlock(block.Block):
     def __init__(self, name, config):
         self.name = name
@@ -17,9 +18,7 @@ class RandomBlock(block.Block):
         self.resources = []
 
     async def run(self):
-        while await self.check_resources():
-            await asyncio.sleep(self.config['period'])
-            val = random.random()*(self.config['max']-self.config['min'])+self.config['min']
-            print("Setting random value of {}".format(val))
-            await self.output(val)
-        node.cluster.assign_block(self)
+        await asyncio.sleep(self.config['period'])
+        val = random.random()*(self.config['max']-self.config['min'])+self.config['min']
+        print("Setting random value of {}".format(val))
+        await self.output(val)

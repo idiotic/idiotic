@@ -6,8 +6,14 @@ import idiotic
 import asyncio
 
 
+if False:
+    from idiotic.cluster import Cluster
+
+
 class Block:
     REGISTRY = {}
+
+    running = False
 
     def __init__(self, name, config=None):
         #: A globally unique identifier for the block
@@ -24,6 +30,13 @@ class Block:
 
     async def run(self, *args, **kwargs):
         pass
+
+    async def run_while_ok(self, cluster: 'Cluster'):
+        self.running = True
+        while idiotic.node.own_block(self.name) and self.check_resources():
+            await self.run()
+        self.running = False
+        idiotic.node.cluster.assign_block(self)
 
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
@@ -53,6 +66,7 @@ class Block:
           args = [self.name,]
         for source in args:
             idiotic.node.dispatch({"data": data, "source": self.name+"."+source})
+
 
 def create(name, block_config):
     block_type = block_config.get("type", "Block")
