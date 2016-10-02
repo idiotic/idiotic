@@ -7,7 +7,7 @@ from sys import argv
 def main():
     conf = config.Config.load(argv[1])
     config.config = conf
-    cluster = cluster.Cluster(conf)
+    __cluster = cluster.Cluster(conf)
     # TODO: the thing
 
 if __name__ == "__main__":
