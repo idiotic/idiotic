@@ -2,6 +2,8 @@ import requests
 from idiotic import block
 from idiotic import resource
 from idiotic import node
+import asyncio
+import time
 
 class TeapotBlock(block.Block):
     def __init__(self, name, config):

@@ -2,6 +2,7 @@ import asyncio
 import random
 from idiotic import block
 from idiotic import resource
+from idiotic import node
 
 class RandomBlock(block.Block):
     def __init__(self, name, config):
