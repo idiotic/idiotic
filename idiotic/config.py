@@ -8,6 +8,7 @@ config = None
 class Config(dict):
     connect = []
     nodes = {}
+    version = 0
 
     def __init__(self, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)

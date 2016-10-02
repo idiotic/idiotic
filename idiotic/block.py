@@ -35,6 +35,9 @@ class Block:
 
         self.connect(**self.inputs)
 
+    async def run(self, *args, **kwargs):
+        pass
+
     async def connect(self, **inputs: Dict[str, Input]):
         for name, inputter in inputs.items():
             if hasattr(self, name) and callable(getattr(self, name)):
