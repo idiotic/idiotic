@@ -35,4 +35,4 @@ class TeapotBlock(block.Block):
             await asyncio.sleep(20)
             if (time.time() - self.hold_duration) < self.hold_start:
                 requests.get("{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']), data={'access_token': self.config['access_token'], 'args': str(30)})
-        node.cluster.assign_block()
+        node.cluster.assign_block(self)
