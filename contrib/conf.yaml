@@ -6,6 +6,7 @@ nodes:
   node3: {}
 cluster:
   listen: '::'
+  rpc_port: 28301
   port: 28300
   connect:
     - "localhost:28300"

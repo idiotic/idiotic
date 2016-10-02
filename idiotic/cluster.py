@@ -32,7 +32,7 @@ class Cluster(pysyncobj.SyncObj):
         return self.config.nodes.keys()
 
     def get_rpc_url(self, node):
-        return "http://{}:{}/rpc".format(node, self.config.cluster["port"])
+        return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
     @asyncio.coroutine
     @pysyncobj.replicated
@@ -103,4 +103,4 @@ class Node:
         app = web.Application()
         app.router.add_route('POST', '/rpc', self.rpc_endpoint, name='rpc')
         handler = app.make_handler()
-        await asyncio.get_event_loop().create_server(handler, self.config.cluster['listen'], self.config.cluster['port'])
+        await asyncio.get_event_loop().create_server(handler, self.config.cluster['listen'], self.config.cluster['rpc_port'])
