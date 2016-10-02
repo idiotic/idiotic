@@ -19,7 +19,7 @@ class Cluster(pysyncobj.SyncObj):
     def __init__(self, configuration: config.Config):
         super(Cluster, self).__init__(
             '{}:{}'.format(configuration.hostname, configuration.cluster['port']),
-            configuration.cluster['connect']
+            [h for h in configuration.cluster['connect'] if not h.startswith(configuration.hostname + ':')]
         )
         self.config = configuration
         self.blocks = {}
