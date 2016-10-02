@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 from idiotic import config
 from idiotic.cluster import Cluster, Node
+from idiotic.block import Block
 import idiotic
 from sys import argv
 
 import asyncio
 
 import logging
+
+
+def all_subclasses(cls):
+    for subclass in cls.__subclasses__():
+        yield from all_subclasses(subclass)
+        yield subclass
 
 
 def main():
@@ -19,8 +26,12 @@ def main():
 
     idiotic.node = node
 
-    loop = asyncio.get_event_loop()
+    # Here is where we would load modules
+    Block.REGISTRY['Block'] = Block
+    for sub in all_subclasses(Block):
+        Block.REGISTRY[sub.__name__] = sub
 
+    loop = asyncio.get_event_loop()
     loop.run_until_complete(node.run())
 
 

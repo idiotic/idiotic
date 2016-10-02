@@ -4,6 +4,7 @@ from idiotic import resource
 from idiotic import config
 from idiotic import node
 
+
 class Input:
     def __init__(self, callback=None):
         self.callback = callback  # type: Callable[[Any], Any]
@@ -23,9 +24,14 @@ class EventInput(Input):
 
 
 class Block:
-    def __init__(self):
+    REGISTRY = {}
+
+    def __init__(self, name, config=None):
         #: A globally unique identifier for the block
-        self.id = uuid.uuid4()
+        self.name = name
+
+        #: The config for this block
+        self.config = config or {}
 
         #: Map of input receiver names to inputs
         self.inputs = {}  # type: Dict[str, Input]
@@ -70,3 +76,14 @@ class Block:
           args = [self.config['name'],]
         for source in args:
             node.dispatch({"data": data, "source": self.config['name']+"."+source})
+
+
+def create(name, config):
+    block_type = config.get("type", "Block")
+
+    block_cls = Block.REGISTRY[block_type]
+
+    block = block_cls(name=name, config=config)
+
+    node.cluster.assign_block(block)
+
