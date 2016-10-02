@@ -60,6 +60,8 @@ class Node:
         self.events_out = asyncio.Queue()
         self.events_in = asyncio.Queue()
 
+        self._was_ready = False
+
     async def initialize_blocks(self):
         for name, settings in self.config.blocks.items():
             self.cluster.assign_block(block.create(name, settings))
@@ -81,6 +83,10 @@ class Node:
 
     async def run_blocks(self):
         while True:
+            if self._was_ready != self.cluster._isReady():
+                print("Cluster {} ready!".format("NOT" if self._was_ready else "is"))
+                self._was_ready = not self._was_ready
+
             for name, blk in self.cluster.blocks.items():
                 if self.cluster.block_owners[name] == self.name:
                     try:
