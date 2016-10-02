@@ -124,9 +124,7 @@ class Node:
         dests = []
         for block in self.blocks.values():
             if not self.own_block(block.name):
-                print("{} owns block {}".format(self.cluster.block_owners[block.name], block.name))
                 continue
-            print("We own block {}".format(block.name))
 
             if 'inputs' not in block.config:
                 print("{} has no inputs".format(block.name))
@@ -155,18 +153,14 @@ class Node:
 
     async def run_blocks(self):
         while True:
-            print(self.cluster.block_owners)
             tasks = []
             for name, blk in self.blocks.items():
                 if self.cluster.block_owners[name] is None:
                     self.cluster.assign_block(blk)
 
                 if self.own_block(name) and not blk.running:
-                    print("We own {}, starting!".format(name))
                     tasks.append(blk.run_resources)
                     tasks.append(functools.partial(blk.run_while_ok, self.cluster))
-            if tasks:
-                print("Running {} tasks".format(len(tasks)))
             await asyncio.gather(*[task() for task in tasks])
 
     async def run_messaging(self):
@@ -186,7 +180,7 @@ class Node:
                         async with client.post(url, data=json.dumps(event), headers={'Content-Type': 'application/json'}) as request:
                             log.debug(await request.json())
                 except:
-                    print("An error happened :(")
+                    log.exception("Exception occurred in run_dispatch()")
 
     async def rpc_endpoint(self, request: aiohttp.Request):
         log.debug("WOW")
