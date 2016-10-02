@@ -16,6 +16,7 @@ class RandomBlock(block.Block):
         self.resources = []
 
     async def run(self):
-        while True:
+        while self.check_resources:
             await asyncio.sleep(self.config['period'])
             self.output((random.random()+self.config['min'])*(self.config['max']-self.config['min']))
+        await node.cluster.assign_block()

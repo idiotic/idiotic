@@ -54,6 +54,12 @@ class Block:
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
 
+    def self.check_resources(self):
+        for i in self.resources:
+            if not i.available:
+                return False
+        return True
+
     async def precheck_nodes(self, config: config.Config) -> Set[str]:
         all_nodes = set(config.nodes.keys())
 

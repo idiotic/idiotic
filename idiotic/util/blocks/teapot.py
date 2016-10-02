@@ -1,6 +1,7 @@
 import requests
 from idiotic import block
 from idiotic import resource
+from idiotic import node
 
 class TeapotBlock(block.Block):
     def __init__(self, name, config):
@@ -28,7 +29,8 @@ class TeapotBlock(block.Block):
         self.hold_duration = value
 
     async def run(self):
-        while True:
+        while self.check_resources():
             await asyncio.sleep(20)
             if (time.time() - self.hold_duration) < self.hold_start:
                 requests.get("{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']), data={'access_token': self.config['access_token'], 'args': str(30)})
+        await node.cluster.assign_block()
