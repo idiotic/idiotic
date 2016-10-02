@@ -33,7 +33,7 @@ class Block:
             return
 
         self.running = True
-        while idiotic.node.own_block(self.name) and self.check_resources():
+        while idiotic.node.own_block(self.name) and await self.check_resources():
             await self.run()
         self.running = False
         idiotic.node.cluster.unassign_block(self.name)

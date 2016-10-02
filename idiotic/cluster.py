@@ -48,6 +48,7 @@ class Cluster(pysyncobj.SyncObj):
 
             for node in nodes:
                 self.block_owners[name] = node
+                print("Assigned {} to {}".format(name, node))
                 break
             else:
                 raise UnassignableBlock(name)
@@ -62,9 +63,7 @@ class Cluster(pysyncobj.SyncObj):
         self.assign_block(name)
 
     def assign_block(self, block: block.Block):
-        print("Assigning block", block.name)
         self._assign_block(block.name, block.precheck_nodes(self.config))
-        print("Assigned block", block.name)
 
 
 class Node:
