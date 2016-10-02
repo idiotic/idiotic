@@ -2,7 +2,7 @@ import uuid
 from typing import Iterable, Callable, Any, Dict, Set
 from idiotic import resource
 from idiotic import config
-from idiotic import node
+import idiotic
 
 
 class Input:
@@ -75,7 +75,7 @@ class Block:
         if not args:
           args = [self.name,]
         for source in args:
-            node.dispatch({"data": data, "source": self.name+"."+source})
+            idiotic.node.dispatch({"data": data, "source": self.name+"."+source})
 
 def create(name, block_config):
     block_type = block_config.get("type", "Block")

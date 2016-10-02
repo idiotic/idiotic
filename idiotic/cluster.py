@@ -62,6 +62,9 @@ class Node:
 
         self._was_ready = False
 
+    def own_block(self, name):
+        return self.cluster.block_owners[name] == self.name
+
     async def initialize_blocks(self):
         for name, settings in self.config.blocks.items():
             self.cluster.assign_block(block.create(name, settings))
@@ -69,7 +72,23 @@ class Node:
     def dispatch(self, event):
         self.events_out.put_nowait(event)
 
-    def event_received(self, event):
+    async def event_received(self, event):
+        print("Event received!", event)
+        dests = []
+        for block in self.cluster.blocks.values():
+            if not self.own_block(block.name): continue
+            print("We own block {}".format(block.name))
+            if not hasattr(block, 'inputs'): continue
+            print("Block {} has inputs".format(block.name))
+
+            inputs = block.config['inputs']
+            for target, blockid in inputs.items():
+                if event['source'].startswith(blockid):
+                    print("Event goes to ", block.name)
+                    dests.append(getattr(block, target))
+
+        for dest in dests:
+            await dest(event)
         log.debug("Event received: {}", event)
         # don't know what to do here
 
@@ -88,7 +107,7 @@ class Node:
                 self._was_ready = not self._was_ready
 
             for name, blk in self.cluster.blocks.items():
-                if self.cluster.block_owners[name] == self.name:
+                if self.own_block(name):
                     try:
                         await blk.run()
                     except Exception as e:
@@ -98,7 +117,7 @@ class Node:
     async def run_messaging(self):
         while True:
             event = await self.events_in.get()
-            self.event_received(event)
+            await self.event_received(event)
 
     async def run_dispatch(self):
         while True:
