@@ -78,7 +78,8 @@ class Node:
         for block in self.cluster.blocks.values():
             if not self.own_block(block.name): continue
             print("We own block {}".format(block.name))
-            if not hasattr(block, 'inputs'): continue
+
+            if not hasattr(block.config, 'inputs'): continue
             print("Block {} has inputs".format(block.name))
 
             inputs = block.config['inputs']
