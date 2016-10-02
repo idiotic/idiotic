@@ -33,6 +33,15 @@ class KVStorage(SyncObj):
     def get(self, key, default=None):
         return self.__data.get(key, default)
 
+    def __setitem__(self, key, value):
+        return self.set(key, value)
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __str__(self):
+        return str(self.__data)
+
 
 class Cluster:
     def __init__(self, configuration: config.Config):
