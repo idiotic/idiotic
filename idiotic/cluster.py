@@ -18,17 +18,16 @@ class UnassignableBlock(Exception):
 
 
 class Cluster(pysyncobj.SyncObj):
-    block_owners = {}
-    block_lock = RLock()
-    resources = {}
-    jobs = {}
-
     def __init__(self, configuration: config.Config):
         super(Cluster, self).__init__(
             '{}:{}'.format(configuration.hostname, configuration.cluster['port']),
             [h for h in configuration.cluster['connect'] if not h.startswith(configuration.hostname + ':')]
         )
         self.config = configuration
+        self.block_owners = {}
+        self.block_lock = RLock()
+        self.resources = {}
+        self.jobs = []
 
     async def find_destinations(self, event):
         return self.config.nodes.keys()
@@ -36,7 +35,7 @@ class Cluster(pysyncobj.SyncObj):
     def get_rpc_url(self, node):
         return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
-    @pysyncobj.replicated
+    @pysyncobj.replicated_sync
     def _assign_block(self, name, nodes):
         with self.block_lock:
             if not self._isLeader():
@@ -54,7 +53,7 @@ class Cluster(pysyncobj.SyncObj):
             else:
                 raise UnassignableBlock(name)
 
-    @pysyncobj.replicated
+    @pysyncobj.replicated_sync
     def unassign_block(self, name):
         with self.block_lock:
             self.block_owners[name] = None
