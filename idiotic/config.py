@@ -36,6 +36,10 @@ class Config(dict):
         return socket.gethostname()
 
     @property
+    def cluster_host(self):
+        return self.nodes[self.nodename].get('host', self.hostname)
+
+    @property
     def cluster_port(self):
         return self.nodes[self.nodename].get('port', self.cluster.get('port', 28300))
 

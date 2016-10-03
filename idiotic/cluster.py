@@ -47,10 +47,10 @@ class KVStorage(SyncObj):
 class Cluster:
     def __init__(self, configuration: config.Config):
         self.block_owners = KVStorage(
-            '{}:{}'.format(configuration.hostname, configuration.cluster_port),
+            '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
             ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
         )
-        print("Listening for cluster on {}:{}".format(configuration.hostname, configuration.cluster_port))
+        print("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
         print("Connecting to", list(configuration.connect_hosts()))
 
         self.config = configuration
