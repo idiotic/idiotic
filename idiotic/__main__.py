@@ -40,6 +40,9 @@ def import_submodules(package, recursive=True):
 def main():
     logging.basicConfig(style='{', level=logging.DEBUG-1)
     conf = config.Config.load(argv[1])
+
+    conf._node_name = argv[2] if len(argv) > 2 else None
+
     config.config = conf
     cluster = Cluster(conf)
 
@@ -49,7 +52,7 @@ def main():
 
     print("Cluster is ready!")
 
-    node = Node((argv[2] if len(argv) > 2 else None) or conf.hostname, cluster, conf)
+    node = Node(conf.nodename, cluster, conf)
 
     set_node(node)
 

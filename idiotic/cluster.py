@@ -47,19 +47,16 @@ class KVStorage(SyncObj):
 class Cluster:
     def __init__(self, configuration: config.Config):
         self.block_owners = KVStorage(
-            '{}:{}'.format(configuration.hostname, configuration.cluster['port']),
-            [h for h in configuration.cluster['connect'] if not h.startswith(configuration.hostname + ':')]
+            '{}:{}'.format(configuration.cluster['listen'], configuration.cluster_port),
+            ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
         )
+        print("Listening for cluster on {}:{}".format(configuration.cluster['listen'], configuration.cluster_port))
+        print("Connecting to", list(configuration.connect_hosts()))
+
         self.config = configuration
-        self.block_lock = RLock()
-        self.resources = {}
-        self.jobs = []
 
     async def find_destinations(self, event):
         return self.config.nodes.keys()
-
-    def get_rpc_url(self, node):
-        return "http://{}:{}/rpc".format(node, self.config.cluster["rpc_port"])
 
     def _assign_block(self, name, nodes):
         if not self._isReady():
@@ -173,7 +170,7 @@ class Node:
             event = await self.events_out.get()
 
             for dest in await self.cluster.find_destinations(event):
-                url = self.cluster.get_rpc_url(dest)
+                url = self.config.get_rpc_url(dest)
                 # Screw you aiohttp, I do what I want!
                 try:
                     async with aiohttp.ClientSession() as client:

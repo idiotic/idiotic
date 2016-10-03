@@ -1,17 +1,17 @@
 version: 1
 global: {}
-nodes:
-  muffin: {}
-  dom: {}
-  pinkie: {}
 cluster:
   listen: '0.0.0.0'
   rpc_port: 28301
   port: 28300
-  connect:
-    - "dom:28300"
-    - "muffin:28300"
-    - "pinkie:28300"
+nodes:
+  muffin:
+    port: 28300
+    host: localhost
+  muffin2:
+    host: localhost
+    port: 28299
+    rpc_port: 28302
 blocks:
   teakettle:
     address: 'https://api.particle.io'

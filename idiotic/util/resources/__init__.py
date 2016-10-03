@@ -8,7 +8,7 @@ class NodeIs(Resource):
 
     @property
     def available(self):
-        return self.node == config.hostname()
+        return self.node == config.nodename()
 
     async def available_hosts(self, config):
         return [self.node]
