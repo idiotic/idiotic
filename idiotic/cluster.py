@@ -46,10 +46,15 @@ class KVStorage(SyncObj):
 
 class Cluster:
     def __init__(self, configuration: config.Config):
-        self.block_owners = KVStorage(
-            '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
-            ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
-        )
+        if len(configuration.nodes) == 1:
+            self.block_owners = {}
+            self.single_node = True
+        else:
+            self.single_node = False
+            self.block_owners = KVStorage(
+                '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
+                ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
+            )
         print("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
         print("Connecting to", list(configuration.connect_hosts()))
 
@@ -59,7 +64,7 @@ class Cluster:
         return self.config.nodes.keys()
 
     def _assign_block(self, name, nodes):
-        if not self._isReady():
+        if not self.ready():
             return
 
         if self.block_owners.get(name, None):
@@ -76,9 +81,8 @@ class Cluster:
         else:
             raise UnassignableBlock(name)
 
-    def _isReady(self):
-        return self.block_owners._isReady()
-
+    def ready(self):
+        return self.single_node or self.block_owners._isReady()
 
     def unassign_block(self, name):
         self.block_owners[name] = None

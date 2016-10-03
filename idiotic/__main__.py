@@ -47,7 +47,7 @@ def main():
     cluster = Cluster(conf)
 
     print("Waiting for cluster to become ready...")
-    while not cluster._isReady():
+    while not cluster.ready():
         time.sleep(5)
 
     print("Cluster is ready!")
