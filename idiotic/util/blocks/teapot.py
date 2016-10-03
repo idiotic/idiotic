@@ -39,7 +39,7 @@ class TeapotBlock(block.Block):
         self.hold_duration = value
 
     async def run(self):
-        if True or (time.time() - self.hold_duration) < self.hold_start:
+        if (time.time() - self.hold_duration) < self.hold_start:
             async with aiohttp.ClientSession() as client:
                 async with client.post(
                         "{}{}{}/set_hold".format(self.config['address'], self.config['path'], self.config['device_id']),
