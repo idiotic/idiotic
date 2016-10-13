@@ -127,12 +127,12 @@ class Node:
             if not self.own_block(block.name):
                 continue
 
-            if 'inputs' not in block.config:
+            if not block.inputs:
                 continue
 
-            for target, blockid in block.config['inputs'].items():
+            for target, blockid in block.inputs.items():
                 if event['source'].startswith(blockid):
-                    print("Event goes to ", block.name)
+                    log.debug("Event goes to ", block.name)
                     dests.append(getattr(block, target))
 
         for dest in dests:

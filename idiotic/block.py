@@ -1,7 +1,7 @@
 import uuid
 from typing import Iterable, Callable, Any, Dict, Set
 from idiotic import resource
-from idiotic import config
+from idiotic import config as global_config
 import idiotic
 import asyncio
 
@@ -15,15 +15,22 @@ class Block:
 
     running = False
 
-    def __init__(self, name, config=None):
+    name = None
+    inputs = {}
+    resources = []
+    config = {}
+
+    def __init__(self, name, inputs=None, resources=None, **config):
         #: A globally unique identifier for the block
         self.name = name
 
-        #: The config for this block
-        self.config = config or {}
+        self.inputs = inputs or {}
 
         #: List of resources that this block needs
-        self.resources = []
+        self.resources = resources or []
+
+        #: The config for this block
+        self.config = config or {}
 
     async def run(self, *args, **kwargs):
         pass
@@ -42,7 +49,7 @@ class Block:
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
 
-    def precheck_nodes(self, config: config.Config) -> Set[str]:
+    def precheck_nodes(self, config: global_config.Config) -> Set[str]:
         all_nodes = set(config.nodes.keys())
 
         for req in self.resources:
