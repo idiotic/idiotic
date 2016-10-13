@@ -6,7 +6,7 @@ from idiotic import node
 
 
 class RandomFloatBlock(block.Block):
-    def __init__(self, name, config):
+    def __init__(self, name, **config):
         self.name = name
         self.config = {"period": 1,
                        "min": 0,
@@ -23,7 +23,7 @@ class RandomFloatBlock(block.Block):
         await self.output(val)
 
 class RandomBoolBlock(block.Block):
-    def __init__(self, name, config):
+    def __init__(self, name, **config):
         self.name = name
         self.config = {"period": 1
                       }
@@ -36,7 +36,7 @@ class RandomBoolBlock(block.Block):
         await self.output(val)
 
 class RandomIntBlock(block.Block):
-    def __init__(self, name, config):
+    def __init__(self, name, **config):
         self.name = name
         self.config = {"period": 1,
                        "min": 0,

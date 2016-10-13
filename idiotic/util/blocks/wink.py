@@ -6,11 +6,13 @@ import asyncio
 import aiohttp
 import wink
 
+
 class WinkDeviceNotFound(Exception):
     pass
 
+
 class WinkBlock(block.Block):
-    def __init__(self, name, config):
+    def __init__(self, name, **config):
         self.name = name
         self.config = {"base_url": "https://winkapi.quirky.com",
                        "client_id": "quirky_wink_android_app",
@@ -43,26 +45,24 @@ class WinkBlock(block.Block):
     async def run(self):
         pass
 
-class WinkDimmer(WinkBlock):
-    def __init__(self, name, config):
-        super().__init__(name, config)
+
+class WinkToggle(WinkBlock):
+    def __init__(self, name, **config):
+        super().__init__(name, **config)
         self.power_state = None
+
+    async def power(self, value):
+        self.power_state = value
+
+        await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)
+
+
+class WinkDimmer(WinkToggle):
+    def __init__(self, name, **config):
+        super().__init__(name, **config)
         self.brightness = None
 
     async def brightness(self, value):
         self.brightness = value
+
         await asyncio.get_event_loop().run_in_executor(None, self.device.set_brightness, value)
-
-    async def power(self, value):
-        self.power_state = value
-
-        await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)
-
-class WinkToggle(WinkBlock):
-    def __init__(self, name, config):
-        super().__init__(name, config)
-        self.power_state = None
-
-    async def power(self, value):
-        self.power_state = value
-        await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)

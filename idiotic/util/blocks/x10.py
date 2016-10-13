@@ -2,7 +2,7 @@ import requests
 from idiotic import block
 from idiotic import resource
 from idiotic import node
-from idiotic import config as global_conf
+from idiotic import config
 import asyncio
 import aiohttp
 import wink
@@ -16,7 +16,7 @@ class InvalidCodeError(Exception):
 
 
 class X10(block.Block):
-    def __init__(self, name, config):
+    def __init__(self, name, **params):
         self.name = name
         self.config = {
             "base_url": "http://localhost:5000",
@@ -25,8 +25,8 @@ class X10(block.Block):
             "item": "",
         }
 
-        self.config.update(global_conf.config.get("modules", {}).get("x10", {}))
-        self.config.update(config)
+        self.config.update(config.config.get("modules", {}).get("x10", {}))
+        self.config.update(params)
 
         if self.config["code"]:
             self.code = self.config["code"].lower()
@@ -71,9 +71,10 @@ class X10(block.Block):
     async def run(self):
         pass
 
+
 class X10AllLights(X10):
-    def __init__(self, name, config):
-        super().__init__(name, config)
+    def __init__(self, name, **params):
+        super().__init__(name, **params)
 
         self.item = "0"
         self.code = self.house + self.item

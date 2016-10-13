@@ -8,7 +8,7 @@ import time
 
 
 class TeapotBlock(block.Block):
-    def __init__(self, name, config):
+    def __init__(self, name, **config):
         self.name = name
         self.config = {"address": "https://api.particle.io",
                        "path": "/v1/devices/",

@@ -72,6 +72,15 @@ class Block:
 def create(name, block_config):
     block_type = block_config.get("type", "Block")
 
+    inputs = block_config.get("inputs", {})
+
+    for attr in ("type", "inputs"):
+        if attr in block_config:
+            del block_config[attr]
+
     block_cls = Block.REGISTRY[block_type]
 
-    return block_cls(name=name, config=block_config)
+    res = block_cls(name=name, **block_config)
+    res.inputs = inputs
+
+    return res
