@@ -8,10 +8,9 @@ nodes:
   muffin:
     port: 28300
     host: localhost
-  muffin2:
-    host: localhost
-    port: 28299
-    rpc_port: 28302
+modules:
+  x10:
+    base_url: http://vinyl.hackafe.net:5000
 blocks:
   teakettle:
     address: 'https://api.particle.io'
@@ -36,10 +35,25 @@ blocks:
     client_secret: "e749124ad386a5a35c0ab554a4f2c045"
     username: "dylan@whichard.com"
     password: "mZc9sQXa"
-    wink_name: "Record Light"
+    wink_name: "Corner Light"
     inputs:
       power: "random_power"
     type: WinkDimmer
+  test:
+    type: HTTP
+    url: http://vinyl.hackafe.net:5000/{power}/a/3
+    skip_repeats: True
+    parameters:
+      - power
+    defaults:
+      power: "off"
+    inputs:
+      power: random_state
+  random_state:
+    type: RandomList
+    items:
+      - "on"
+      - "off"
   counter_lights:
     type: X10
     code: A4
