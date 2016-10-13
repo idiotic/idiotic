@@ -128,16 +128,12 @@ class Node:
                 continue
 
             if 'inputs' not in block.config:
-                print("{} has no inputs".format(block.name))
                 continue
-            print("Block {} has inputs".format(block.name))
 
             for target, blockid in block.config['inputs'].items():
                 if event['source'].startswith(blockid):
                     print("Event goes to ", block.name)
                     dests.append(getattr(block, target))
-                else:
-                    print("Source {} does not match {}".format(event['source'], blockid))
 
         for dest in dests:
             await dest(event['data'])
