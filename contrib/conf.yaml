@@ -40,6 +40,11 @@ blocks:
     inputs:
       power: "random_power"
     type: WinkDimmer
+  counter_lights:
+    type: X10
+    code: A4
+    inputs:
+      power: random_power
   random_power:
     type: RandomBoolBlock
     period: 10
