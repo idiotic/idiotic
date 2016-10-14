@@ -56,7 +56,7 @@ class Cluster:
                 ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
             )
         logging.info("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
-        logging.debug("Connecting to", list(configuration.connect_hosts()))
+        logging.debug("Connecting to {}".format(list(configuration.connect_hosts())))
 
         self.config = configuration
 
