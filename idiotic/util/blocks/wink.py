@@ -42,9 +42,6 @@ class WinkBlock(block.Block):
                 if value and value == self.config["wink_" + field]:
                     return dev
 
-    async def run(self):
-        pass
-
 
 class WinkToggle(WinkBlock):
     def __init__(self, name, **config):

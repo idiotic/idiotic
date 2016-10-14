@@ -68,9 +68,6 @@ class X10(block.Block):
     async def power(self, val):
         await (self.on if val else self.off)()
 
-    async def run(self):
-        pass
-
 
 class X10AllLights(X10):
     def __init__(self, name, **params):
