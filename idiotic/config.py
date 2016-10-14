@@ -16,7 +16,7 @@ class Config(dict):
         self.__dict__ = self
 
     def get_rpc_url(self, node):
-        return "http://{}:{}/rpc".format(node, self.nodes.get(node, {}).get('rpc_port', self.cluster["rpc_port"]))
+        return "http://{}:{}/rpc".format(self.nodes.get(node, {}).get('host', node), self.nodes.get(node, {}).get('rpc_port', self.cluster["rpc_port"]))
 
     def connect_hosts(self):
         for name, node in self.nodes.items():
