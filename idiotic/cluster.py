@@ -43,6 +43,8 @@ class KVStorage(SyncObj):
     def __str__(self):
         return str(self.__data)
 
+    def items(self):
+        return self.__data.items()
 
 class Cluster:
     def __init__(self, configuration: config.Config):
@@ -184,12 +186,28 @@ class Node:
                         log.exception("Exception occurred in run_dispatch()")
 
     async def rpc_endpoint(self, request: aiohttp.Request):
-        log.debug("WOW")
         self.events_in.put_nowait(await request.json())
         return web.Response(text='{"Success": true}', content_type='application/json')
+
+    async def cluster_status(self, request: aiohttp.Request):
+        res = """
+        <!DOCTYPE html public>
+        <html>
+        <head><title>Cluster Status</title></head>
+        <body>
+        <table>
+        <thead><tr><th>Block</th><th>Owner</th><th>Resources</th></tr></thead>
+        <tbody>"""
+
+        for blk, owner in sorted(self.cluster.block_owners.items()):
+            res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(blk, owner, len(self.blocks[blk].resources))
+        res += "</tbody></table></body></html>"
+
+        return web.Response(text=res, content_type='text/html')
 
     async def run_rpc(self):
         app = web.Application()
         app.router.add_route('POST', '/rpc', self.rpc_endpoint, name='rpc')
+        app.router.add_route('GET', '/status', self.cluster_status, name='status')
         handler = app.make_handler()
         await asyncio.get_event_loop().create_server(handler, self.config.cluster['listen'], self.config.cluster['rpc_port'])
