@@ -3,6 +3,7 @@ from idiotic import config
 import aiohttp
 import asyncio
 
+
 class MissingResource(Exception):
     pass
 
@@ -26,6 +27,7 @@ class Resource:
 
     async def run(self):
         pass
+
 
 class HTTPResource(Resource):
     def __init__(self, address):
