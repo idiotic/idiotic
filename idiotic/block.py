@@ -41,7 +41,9 @@ class Block:
 
         self.running = True
         try:
-            await self.init_resources()
+            if idiotic.node.own_block(self.name):
+                await self.init_resources()
+
             while idiotic.node.own_block(self.name) and self.check_resources():
                 await self.run()
 
@@ -50,8 +52,10 @@ class Block:
         except:
             logging.exception("While running block {}".format(self.name))
         self.running = False
-        idiotic.node.cluster.unassign_block(self.name)
-        idiotic.node.cluster.assign_block(self)
+
+        if idiotic.node.own_block(self.name):
+            idiotic.node.cluster.unassign_block(self.name)
+            idiotic.node.cluster.assign_block(self)
 
     async def init_resources(self):
         while not all((r.initialized for r in self.resources)):
