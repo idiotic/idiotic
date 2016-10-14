@@ -119,6 +119,11 @@ class Node:
             self.cluster.assign_block(blk)
             self.blocks[name] = blk
 
+        for name, blk in self.blocks.items():
+            for input_key, input_name in blk.inputs.items():
+                if input_name not in self.blocks:
+                    raise ValueError("Block {} not found for input to block {}.{}".format(input_name, name, input_key))
+
     def dispatch(self, event):
         self.events_out.put_nowait(event)
 
