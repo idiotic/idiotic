@@ -76,9 +76,26 @@ blocks:
       - node=muffin
   periodic_1:
     type: RandomList
-    period: 5
+    period: 15
     items:
       - True
+  stairs_lights:
+    type: HTTP
+    method: post
+    url: http://celestia.hackafe.net/put_saved_animation/{animation}'
+    parameters:
+      - animation
+    inputs:
+      animation: light_pattern
+  light_pattern:
+    type: RandomList
+    period: 10
+    items:
+      - Rainbow
+      - Redstrobe
+      - Greenstrobe
+      - Bluestrobe
+      - Strobey
   random_state:
     type: RandomList
     period: 20
