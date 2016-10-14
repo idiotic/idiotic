@@ -30,8 +30,6 @@ class WinkBlock(block.Block):
 
         self.inputs = {}
         self.resources = [resource.HTTPResource(self.config['base_url'])]
-        if not self.device:
-            raise WinkDeviceNotFound("None of the provided criteria matched any devices in your Wink account")
 
     async def run(self, *_, **__):
         import wink
@@ -39,6 +37,9 @@ class WinkBlock(block.Block):
         self.auth = wink.auth(**self.config)
         self.wink = wink.Wink(self.auth, save_auth=False)
         self.device = self.find()
+
+        if not self.device:
+            raise WinkDeviceNotFound("None of the provided criteria matched any devices in your Wink account")
 
         await super().run()
 
