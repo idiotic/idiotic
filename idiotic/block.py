@@ -82,7 +82,9 @@ def create(name, block_config):
 
     inputs = block_config.get("inputs", {})
 
-    for attr in ("type", "inputs"):
+    requires = block_config.get("require", [])
+
+    for attr in ("type", "inputs", "require"):
         if attr in block_config:
             del block_config[attr]
 
@@ -90,5 +92,9 @@ def create(name, block_config):
 
     res = block_cls(name=name, **block_config)
     res.inputs = inputs
+
+    for req in requires:
+        if req.startswith("node="):
+            res.require(resource.HostResource(req[5:]))
 
     return res

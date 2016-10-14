@@ -29,6 +29,15 @@ class Resource:
         pass
 
 
+class HostResource(Resource):
+    def __init__(self, node):
+        self.node = node
+        self.available = config.config.nodename == self.node
+
+    def available_hosts(self, config: config.Config):
+        return [self.node]
+
+
 class HTTPResource(Resource):
     def __init__(self, address):
         self.address = address
