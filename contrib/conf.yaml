@@ -51,8 +51,32 @@ blocks:
       power: "off"
     inputs:
       power: random_state
+  living_room_temp_fetch:
+    type: HTTP
+    url: http://rarity:8081/temp
+    output: float
+    inputs:
+      perform: periodic_1
+  living_room_temp:
+    type: Value
+    kind: float
+    inputs:
+      value: living_room_temp_fetch
+  speech:
+    type: Speech
+    text: It is {temperature:.1f} degrees
+    parameters:
+      - temperature
+    inputs:
+      temperature: living_room_temp
+  periodic_1:
+    type: RandomList
+    period: 5
+    items:
+      - True
   random_state:
     type: RandomList
+    period: 20
     items:
       - "on"
       - "off"
@@ -63,4 +87,4 @@ blocks:
       power: random_power
   random_power:
     type: RandomBoolBlock
-    period: 10
+    period: 5
