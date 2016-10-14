@@ -114,15 +114,33 @@ class Node:
         return self.cluster.block_owners.get(name, None) == self.name
 
     async def initialize_blocks(self):
-        for name, settings in self.config.blocks.items():
-            blk = block.create(name, settings)
-            self.cluster.assign_block(blk)
-            self.blocks[name] = blk
+        try:
+            for name, settings in self.config.blocks.items():
+                blk = block.create(name, settings)
+                self.blocks[name] = blk
 
-        for name, blk in self.blocks.items():
-            for input_key, input_name in blk.inputs.items():
-                if input_name not in self.blocks:
-                    raise ValueError("Block {} not found for input to block {}.{}".format(input_name, name, input_key))
+            for name, blk in self.blocks.items():
+                # Check that all input blocks exist
+                for input_key, input_name in blk.inputs.items():
+                    if input_name not in self.blocks:
+                        raise ValueError("Block {} not found for input to block {}.{}".format(input_name, name, input_key))
+
+                # Set inputs for 'input_to' parameters
+                for output_path in blk.input_to:
+                    blkname, input_name = output_path.rsplit('.', 2)
+
+                    if blkname not in self.blocks:
+                        raise ValueError("Block {} with input {} not found for output from block {}".format(blkname, input_name, name))
+
+                    if input_name in self.blocks[blkname].inputs and self.blocks[blkname].inputs[input_name] is not None:
+                        raise ValueError("Block {} already has an input for {}".format(blkname, input_name))
+
+                    # Actually set up the input on the other block
+                    self.blocks[blkname].inputs[input_name] = name
+
+                self.cluster.assign_block(blk)
+        except:
+            log.exception("While initializing blocks...")
 
     def dispatch(self, event):
         self.events_out.put_nowait(event)

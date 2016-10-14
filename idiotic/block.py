@@ -17,6 +17,7 @@ class Block:
 
     name = None
     inputs = {}
+    input_to = []
     resources = []
     config = {}
 
@@ -96,6 +97,11 @@ def create(name, block_config):
 
     inputs = block_config.get("inputs", {})
 
+    input_to = block_config.get("input_to", [])
+
+    if isinstance(input_to, str):
+        input_to = [input_to]
+
     requires = block_config.get("require", [])
 
     for attr in ("type", "inputs", "require"):
@@ -106,6 +112,7 @@ def create(name, block_config):
 
     res = block_cls(name=name, **block_config)
     res.inputs = inputs
+    res.input_to = input_to
 
     for req in requires:
         if req.startswith("node="):
