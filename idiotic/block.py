@@ -33,19 +33,29 @@ class Block:
         self.config = config or {}
 
     async def run(self, *args, **kwargs):
-        while True:
-            await asyncio.sleep(3600)
+        await asyncio.sleep(3600)
 
     async def run_while_ok(self, cluster: 'Cluster'):
         if self.running:
             return
 
         self.running = True
-        while idiotic.node.own_block(self.name) and await self.check_resources():
-            await self.run()
+        try:
+            await self.init_resources()
+            while idiotic.node.own_block(self.name) and self.check_resources():
+                await self.run()
+
+        except KeyboardInterrupt:
+            raise
+        except:
+            logging.exception("While running block {}".format(self.name))
         self.running = False
         idiotic.node.cluster.unassign_block(self.name)
         idiotic.node.cluster.assign_block(self)
+
+    async def init_resources(self):
+        while not all((r.initialized for r in self.resources)):
+            await asyncio.sleep(.1)
 
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
@@ -61,12 +71,12 @@ class Block:
         return all_nodes
 
     async def run_resources(self):
-        await asyncio.gather(*[r.run() for r in self.resources])
+        await asyncio.gather(*[asyncio.ensure_future(r.run()) for r in self.resources])
 
-    async def check_resources(self) -> bool:
+    def check_resources(self) -> bool:
         return all((r.available for r in self.resources))
 
-    async def try_resources(self):
+    def try_resources(self):
         for r in self.resources:
             r.try_check()
 

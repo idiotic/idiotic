@@ -9,9 +9,13 @@ class MissingResource(Exception):
 
 
 class Resource:
+
+    initialized = False
+
     def __init__(self):
         self.available = False
         self.static = False
+        self.initialized = False
 
     async def try_check(self):
         if not self.available:
@@ -26,13 +30,15 @@ class Resource:
         return None
 
     async def run(self):
-        pass
+        self.initialized = True
+        await asyncio.sleep(3600)
 
 
 class HostResource(Resource):
     def __init__(self, node):
         self.node = node
         self.available = config.config.nodename == self.node
+        self.initialized = True
 
     def available_hosts(self, config: config.Config):
         return [self.node]
@@ -47,8 +53,9 @@ class HTTPResource(Resource):
         while True:
             async with aiohttp.ClientSession() as client:
                 async with client.head(self.address) as response:
-                    if response.status == 200:
+                    if response.status == 200 or 300 <= response.status <= 399:
                         self.available = True
                     else:
                         self.available = False
+                    self.initialized = True
                 await asyncio.sleep(10)

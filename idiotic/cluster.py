@@ -156,7 +156,7 @@ class Node:
                     tasks.append(blk.run_resources)
                     tasks.append(functools.partial(blk.run_while_ok, self.cluster))
 
-            await asyncio.gather(*(task() for task in tasks))
+            await asyncio.gather(*(asyncio.ensure_future(task()) for task in tasks))
 
     async def run_messaging(self):
         while True:
