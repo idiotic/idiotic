@@ -12,8 +12,6 @@ class WinkDeviceNotFound(Exception):
 
 class WinkBlock(block.Block):
     def __init__(self, name, **config):
-        import wink
-
         self.name = name
         self.config = {"base_url": "https://winkapi.quirky.com",
                        "client_id": "quirky_wink_android_app",
@@ -26,14 +24,23 @@ class WinkBlock(block.Block):
                       }
         self.config.update(config)
 
+        self.auth = None
+        self.wink = None
+        self.device = None
+
         self.inputs = {}
         self.resources = [resource.HTTPResource(self.config['base_url'])]
-        self.auth = wink.auth(**self.config)
-        self.wink = wink.Wink(self.auth, save_auth=False)
-        self.device = None
-        self.device = self.find()
         if not self.device:
             raise WinkDeviceNotFound("None of the provided criteria matched any devices in your Wink account")
+
+    async def run(self, *_, **__):
+        import wink
+
+        self.auth = wink.auth(**self.config)
+        self.wink = wink.Wink(self.auth, save_auth=False)
+        self.device = self.find()
+
+        await super().run()
 
     def find(self):
         devices = self.wink.device_list()
