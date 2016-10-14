@@ -152,32 +152,41 @@ class Node:
         while True:
             tasks = []
             for name, blk in self.blocks.items():
+                print("Checking {}".format(name))
                 if self.cluster.block_owners[name] is None:
                     self.cluster.assign_block(blk)
 
                 if self.own_block(name) and not blk.running:
                     tasks.append(blk.run_resources)
+                    print("About to run {}".format(name))
                     tasks.append(functools.partial(blk.run_while_ok, self.cluster))
-            await asyncio.gather(*[task() for task in tasks])
+            print("There are {} tasks".format(len(tasks)))
+            await asyncio.gather(*(task() for task in tasks))
 
     async def run_messaging(self):
         while True:
-            event = await self.events_in.get()
-            await self.event_received(event)
+            try:
+                event = await self.events_in.get()
+                await self.event_received(event)
+            except:
+                logging.exception("While running messaging")
 
     async def run_dispatch(self):
         while True:
             event = await self.events_out.get()
 
             for dest in await self.cluster.find_destinations(event):
-                url = self.config.get_rpc_url(dest)
-                # Screw you aiohttp, I do what I want!
-                try:
-                    async with aiohttp.ClientSession() as client:
-                        async with client.post(url, data=json.dumps(event), headers={'Content-Type': 'application/json'}) as request:
-                            log.debug(await request.json())
-                except:
-                    log.exception("Exception occurred in run_dispatch()")
+                if dest == self.name:
+                    self.events_in.put_nowait(event)
+                else:
+                    url = self.config.get_rpc_url(dest)
+                    # Screw you aiohttp, I do what I want!
+                    try:
+                        async with aiohttp.ClientSession() as client:
+                            async with client.post(url, data=json.dumps(event), headers={'Content-Type': 'application/json'}) as request:
+                                log.debug(await request.json())
+                    except:
+                        log.exception("Exception occurred in run_dispatch()")
 
     async def rpc_endpoint(self, request: aiohttp.Request):
         log.debug("WOW")
