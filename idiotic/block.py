@@ -33,7 +33,8 @@ class Block:
         self.config = config or {}
 
     async def run(self, *args, **kwargs):
-        pass
+        while True:
+            await asyncio.sleep(3600)
 
     async def run_while_ok(self, cluster: 'Cluster'):
         if self.running:
