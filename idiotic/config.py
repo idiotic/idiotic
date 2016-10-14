@@ -1,3 +1,4 @@
+import logging
 import socket
 import yaml
 
@@ -51,6 +52,12 @@ class Config(dict):
     def load(cls, path):
         try:
             with open(path) as f:
-                return cls(**yaml.load(f))
+                try:
+                    import jinja2
+                    jstream = jinja2.Template(f.read()).render()
+                    return cls(**yaml.load(jstream))
+                except ImportError:
+                    logging.info("jinja2 not found, not templating config file")
+                    return cls(**yaml.load(f))
         except (IOError, OSError):
             return cls()
