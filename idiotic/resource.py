@@ -37,7 +37,7 @@ class HTTPResource(Resource):
     async def run(self):
         while True:
             async with aiohttp.ClientSession() as client:
-                async with client.get(self.address) as response:
+                async with client.head(self.address) as response:
                     if response.status == 200:
                         self.available = True
                     else:
