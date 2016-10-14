@@ -41,7 +41,7 @@ class HTTP(block.Block):
         #: Options
         self.options = options
 
-        self._param_dict = {n: defaults.get(n, None) for n in self.parameters}
+        self._param_dict = {n: self.defaults.get(n, None) for n in self.parameters}
 
         for name in self.parameters:
             async def setparam(self, val):
