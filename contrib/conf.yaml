@@ -6,8 +6,9 @@ cluster:
   port: 28300
 nodes:
   muffin:
-    port: 28300
-    host: localhost
+    host: 192.168.1.191
+  scootaloo:
+    host: 192.168.5.3
 modules:
   x10:
     base_url: http://vinyl.hackafe.net:5000
@@ -41,6 +42,8 @@ blocks:
     inputs:
       power: "random_power"
     type: WinkDimmer
+    require:
+      - node=muffin
   test:
     type: HTTP
     url: http://vinyl.hackafe.net:5000/{power}/a/3
@@ -69,6 +72,8 @@ blocks:
       - temperature
     inputs:
       temperature: living_room_temp
+    require:
+      - node=muffin
   periodic_1:
     type: RandomList
     period: 5

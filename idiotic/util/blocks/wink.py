@@ -4,7 +4,6 @@ from idiotic import resource
 from idiotic import node
 import asyncio
 import aiohttp
-import wink
 
 
 class WinkDeviceNotFound(Exception):
@@ -13,6 +12,8 @@ class WinkDeviceNotFound(Exception):
 
 class WinkBlock(block.Block):
     def __init__(self, name, **config):
+        import wink
+
         self.name = name
         self.config = {"base_url": "https://winkapi.quirky.com",
                        "client_id": "quirky_wink_android_app",
