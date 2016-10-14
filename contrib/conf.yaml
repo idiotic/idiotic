@@ -11,6 +11,8 @@ nodes:
 modules:
   x10:
     base_url: http://vinyl.hackafe.net:5000
+  espeak:
+    command: espeak --stdout | paplay
 blocks:
   teakettle:
     address: 'https://api.particle.io'
