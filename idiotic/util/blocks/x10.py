@@ -53,7 +53,7 @@ class X10(block.Block):
             async with client.get(
                     "{}/{}/{}/{}".format(self.config['base_url'], action, self.house, self.item)
             ) as request:
-                print(await request.text())
+                await request.text()
 
     async def on(self):
         await self._action('on')

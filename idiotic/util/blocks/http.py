@@ -66,7 +66,6 @@ class HTTP(block.Block):
             return self.data
 
     async def perform(self, *_):
-        print("{} performing...".format(self.name))
         async with aiohttp.ClientSession() as client:
             async with client.request(
                     self.method,
@@ -77,5 +76,4 @@ class HTTP(block.Block):
 
                 if self.outputter:
                     output_val = self.outputter(res)
-                    print("Outputting {}".format(output_val))
                     await self.output(output_val)

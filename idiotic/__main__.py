@@ -46,11 +46,11 @@ def main():
     config.config = conf
     cluster = Cluster(conf)
 
-    print("Waiting for cluster to become ready...")
+    logging.debug("Waiting for cluster to become ready...")
     while not cluster.ready():
         time.sleep(5)
 
-    print("Cluster is ready!")
+    logging.debug("Cluster is ready!")
 
     node = Node(conf.nodename, cluster, conf)
 

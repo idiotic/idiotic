@@ -26,7 +26,6 @@ class Value(block.Block):
 
     async def value(self, val):
         self._value = self.coerce(val)
-        print("{} set value to {}".format(self.name, self._value))
         await self.output(self._value)
 
 

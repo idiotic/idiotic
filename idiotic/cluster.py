@@ -55,8 +55,8 @@ class Cluster:
                 '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
                 ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
             )
-        print("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
-        print("Connecting to", list(configuration.connect_hosts()))
+        logging.info("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
+        logging.debug("Connecting to", list(configuration.connect_hosts()))
 
         self.config = configuration
 
@@ -68,7 +68,7 @@ class Cluster:
             return
 
         if self.block_owners.get(name, None):
-            print("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
+            logging.debug("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
             return
 
         shuffled = list(nodes)
@@ -76,7 +76,7 @@ class Cluster:
 
         for node in shuffled:
             self.block_owners[name] = node
-            print("Assigned {} to {}".format(name, node))
+            logging.info("Assigned {} to {}".format(name, node))
             break
         else:
             raise UnassignableBlock(name)
@@ -121,7 +121,7 @@ class Node:
         self.events_out.put_nowait(event)
 
     async def event_received(self, event):
-        print("Event received!", event)
+        log.debug("Event received!", event)
         dests = []
         for block in self.blocks.values():
             if not self.own_block(block.name):
@@ -132,13 +132,10 @@ class Node:
 
             for target, blockid in block.inputs.items():
                 if event['source'].startswith(blockid):
-                    log.debug("Event goes to ", block.name)
                     dests.append(getattr(block, target))
 
         for dest in dests:
             await dest(event['data'])
-        log.debug("Event received: {}", event)
-        # don't know what to do here
 
     async def run(self):
         await asyncio.gather(
@@ -152,15 +149,13 @@ class Node:
         while True:
             tasks = []
             for name, blk in self.blocks.items():
-                print("Checking {}".format(name))
                 if self.cluster.block_owners[name] is None:
                     self.cluster.assign_block(blk)
 
                 if self.own_block(name) and not blk.running:
                     tasks.append(blk.run_resources)
-                    print("About to run {}".format(name))
                     tasks.append(functools.partial(blk.run_while_ok, self.cluster))
-            print("There are {} tasks".format(len(tasks)))
+
             await asyncio.gather(*(task() for task in tasks))
 
     async def run_messaging(self):
