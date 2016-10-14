@@ -30,7 +30,7 @@ class TeapotBlock(block.Block):
                     "{}{}{}/set_temp".format(self.config['address'], self.config['path'], self.config['device_id']),
                     data={'access_token': self.config['access_token'], 'args': str(value)}
             ) as request:
-                logging.debug(await request.text())
+                await request.text()
 
     async def hold(self, value):
         logging.debug("holding for {}".format(value))
