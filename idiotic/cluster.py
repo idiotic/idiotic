@@ -1,13 +1,13 @@
+from pysyncobj import SyncObj, replicated
 from idiotic import config
 from idiotic import block
-import idiotic
-from pysyncobj import SyncObj, replicated
-import logging
-import asyncio
+
 import aiohttp
 from aiohttp import web
-from threading import RLock
+
 import functools
+import logging
+import asyncio
 import random
 import json
 

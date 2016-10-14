@@ -1,11 +1,7 @@
-import requests
-from idiotic import block
 from idiotic import resource
-from idiotic import node
 from idiotic import config
-import asyncio
+from idiotic import block
 import aiohttp
-import wink
 import re
 
 CODE_REGEX = re.compile(r"^([A-Pa-p])([1-9]|1[0-6])$")

@@ -1,9 +1,10 @@
-import types
-
 from idiotic import block
 from idiotic import resource
 import aiohttp
 import json
+
+import types
+
 
 class HTTP(block.Block):
     def __init__(self, name, url, method="GET", parameters=None, defaults=None, skip_repeats=False, format_data=True,

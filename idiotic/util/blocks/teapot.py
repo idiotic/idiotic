@@ -1,7 +1,6 @@
-import requests
-from idiotic import block
 from idiotic import resource
-from idiotic import node
+from idiotic import block
+import logging
 import asyncio
 import aiohttp
 import time
