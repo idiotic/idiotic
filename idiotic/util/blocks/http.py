@@ -1,6 +1,9 @@
+import logging
+
 from idiotic import block
 from idiotic import resource
 import aiohttp
+import asyncio
 import json
 
 import types
@@ -66,14 +69,20 @@ class HTTP(block.Block):
             return self.data
 
     async def perform(self, *_):
-        async with aiohttp.ClientSession() as client:
-            async with client.request(
-                    self.method,
-                    self.url.format(**self._param_dict),
-                    data=self.formatted_data(),
-            ) as request:
-                res = await request.text()
+        while True:
+            try:
+                async with aiohttp.ClientSession() as client:
+                    async with client.request(
+                            self.method,
+                            self.url.format(**self._param_dict),
+                            data=self.formatted_data(),
+                    ) as request:
+                        res = await request.text()
 
-                if self.outputter:
-                    output_val = self.outputter(res)
-                    await self.output(output_val)
+                        if self.outputter:
+                            output_val = self.outputter(res)
+                            await self.output(output_val)
+                        break
+            except IOError:
+                logging.error("{}: Unable to retrieve {}".format(self.name, self.url))
+                await asyncio.sleep(5)

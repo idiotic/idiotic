@@ -51,11 +51,15 @@ class HTTPResource(Resource):
 
     async def run(self):
         while True:
-            async with aiohttp.ClientSession() as client:
-                async with client.head(self.address) as response:
-                    if response.status == 200 or 300 <= response.status <= 399:
-                        self.available = True
-                    else:
-                        self.available = False
-                    self.initialized = True
-                await asyncio.sleep(10)
+            try:
+                async with aiohttp.ClientSession() as client:
+                    async with client.head(self.address) as response:
+                        if response.status == 200 or 300 <= response.status <= 399:
+                            self.available = True
+                        else:
+                            self.available = False
+                        self.initialized = True
+                    await asyncio.sleep(10)
+            except OSError:
+                self.available = False
+                await asyncio.sleep(20)
