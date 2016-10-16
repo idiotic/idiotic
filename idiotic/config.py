@@ -54,7 +54,7 @@ class Config(dict):
             with open(path) as f:
                 try:
                     import jinja2
-                    jstream = jinja2.Template(f.read()).render()
+                    jstream = jinja2.Template(f.read()).render(zip=zip)
                     return cls(**yaml.load(jstream))
                 except ImportError:
                     logging.info("jinja2 not found, not templating config file")

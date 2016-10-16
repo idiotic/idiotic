@@ -15,6 +15,56 @@ modules:
   espeak:
     command: espeak --stdout | paplay
 blocks:
+  zero:
+    type: Value
+    kind: Float
+    initial: 0.0
+
+{% for room, pi in zip(
+  ['bed_room', 'living_room', 'hall', 'entertainment_room',],
+  ['rarity', 'luna', 'scootaloo', 'vinyl',]
+) %}
+  {{ room }}_temp_unvalidated:
+    type: "HTTP"
+    url: http://{{ pi }}:8081/temp
+    output: float
+    inputs:
+      perform: periodic_1
+  {{ room }}_temp_nonzero:
+    type: NotEqualBlock
+    inputs:
+      a: {{ room }}_temp_unvalidated
+      b: zero
+  {{ room }}_temp:
+    type: OutputIfBlock
+    inputs:
+      condition: {{ room }}_temp_nonzero
+      value: {{ room }}_temp_unvalidated
+    input_to:
+      - average_temp.{{ room }}
+{% endfor %}
+
+  average_temp:
+    type: AverageBlock
+    initial: 0
+    default: 0
+  speech:
+    type: Speech
+    text: It is {temperature:.1f} degrees
+    parameters:
+      - temperature
+    inputs:
+      temperature: average_temp
+    require:
+      - node=muffin
+  periodic_1:
+    type: RandomList
+    period: 6
+    items:
+      - True
+
+{% set annoying = False %}
+{% if annoying %}
   teakettle:
     address: 'https://api.particle.io'
     path: '/v1/devices/'
@@ -26,12 +76,12 @@ blocks:
     type: TeapotBlock
   random_temp:
     period: 5
-    min: 50
+    min: 90
     max: 100
     type: RandomFloatBlock
   random_hold:
     period: 5
-    min: 50
+    min: 60
     max: 100
     type: RandomFloatBlock
   record_light:
@@ -54,31 +104,6 @@ blocks:
       power: "off"
     inputs:
       power: random_state
-  living_room_temp_fetch:
-    type: HTTP
-    url: http://rarity:8081/temp
-    output: float
-    inputs:
-      perform: periodic_1
-  living_room_temp:
-    type: Value
-    kind: float
-    inputs:
-      value: living_room_temp_fetch
-  speech:
-    type: Speech
-    text: It is {temperature:.1f} degrees
-    parameters:
-      - temperature
-    inputs:
-      temperature: living_room_temp
-    require:
-      - node=muffin
-  periodic_1:
-    type: RandomList
-    period: 15
-    items:
-      - True
   stairs_lights:
     type: HTTP
     method: post
@@ -110,3 +135,4 @@ blocks:
   random_power:
     type: RandomBoolBlock
     period: 5
+{% endif %}
