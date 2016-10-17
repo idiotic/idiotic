@@ -24,7 +24,7 @@ blocks:
   {{ room }}_dht:
     type: DHT
     pin: 24
-    period: 60
+    period: 5
     require:
       - node={{ pi }}
   {{ room }}_temp_nonzero:
