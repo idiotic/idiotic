@@ -23,14 +23,16 @@ class Speech(block.Block):
 
         self._param_dict = {n: self.defaults.get(n, None) for n in self.parameters}
 
-        for name in self.parameters:
-            async def setparam(self, val):
-                await self._setparam(name, val)
-
-            setattr(self, name, types.MethodType(setparam, self))
-
         self.inputs = {}
         self.resources = []
+
+    def __getattr__(self, key):
+        if key in self._param_dict:
+            async def __input(val):
+                await self._setparam(key, val)
+            return __input
+        else:
+            raise ValueError("Parameter name not declared")
 
     async def _setparam(self, name, value):
         self._param_dict[name] = value
