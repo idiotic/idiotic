@@ -123,7 +123,11 @@ class Node:
                 # Check that all input blocks exist
                 for input_key, input_name in blk.inputs.items():
                     if input_name not in self.blocks:
-                        raise ValueError("Block {} not found for input to block {}.{}".format(input_name, name, input_key))
+                        if '.' in input_name:
+                            blkpart, outpart = input_name.rsplit('.', 2)
+                            if blkpart in self.blocks:
+                                continue
+                    raise ValueError("Block {} not found for input to block {}.{}".format(input_name, name, input_key))
 
                 # Set inputs for 'input_to' parameters
                 for output_path in blk.input_to:
