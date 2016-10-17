@@ -71,11 +71,13 @@ blocks:
     default: 0
   speech:
     type: Speech
-    text: It is {temperature:.1f} degrees
+    text: It is {temperature:.1f} degrees and {humidity:.0f} percent humidity
     parameters:
       - temperature
+      - humidity
     inputs:
       temperature: average_temp
+      humidity: average_humidity
     require:
       - node=muffin
   periodic_1:

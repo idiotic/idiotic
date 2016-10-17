@@ -46,7 +46,7 @@ class DHT(Block):
             return
 
         async with self._lock:
-            temp, humidity = await asyncio.get_event_loop().run_in_executor(None, self._perform)
-            await self.output((temp, humidity))
+            humidity, temp = await asyncio.get_event_loop().run_in_executor(None, self._perform)
+            await self.output((humidity, temp))
             await self.output(temp, "temperature")
             await self.output(humidity, "humidity")
