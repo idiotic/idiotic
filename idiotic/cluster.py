@@ -122,11 +122,14 @@ class Node:
             for name, blk in self.blocks.items():
                 # Check that all input blocks exist
                 for input_key, input_name in blk.inputs.items():
-                    if input_name not in self.blocks:
-                        if '.' in input_name:
-                            blkpart, outpart = input_name.rsplit('.', 2)
-                            if blkpart in self.blocks:
-                                continue
+                    if input_name in self.blocks:
+                        continue
+
+                    if '.' in input_name:
+                        blkpart, outpart = input_name.rsplit('.', 2)
+                        if blkpart in self.blocks:
+                            continue
+
                     raise ValueError("Block {} not found for input to block {}.{}".format(input_name, name, input_key))
 
                 # Set inputs for 'input_to' parameters
@@ -159,8 +162,8 @@ class Node:
             if not block.inputs:
                 continue
 
-            for target, blockid in block.inputs.items():
-                if event['source'] == blockid or event['source'].startswith(blockid + '.'):
+            for target, output in block.inputs.items():
+                if event['source'] == output or event['source'] == "{0}.{0}".format(output):
                     if target is None:
                         dests.append(block)
                         destnames.append(block.name)
