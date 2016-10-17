@@ -20,31 +20,52 @@ blocks:
     kind: Float
     initial: 0.0
 
-{% for room, pi in zip(
-  ['bed_room', 'living_room', 'hall', 'entertainment_room',],
-  ['rarity', 'luna', 'scootaloo', 'vinyl',]
-) %}
-  {{ room }}_temp_unvalidated:
-    type: "HTTP"
-    url: http://{{ pi }}:8081/temp
-    output: float
-    inputs:
-      perform: periodic_1
+{% macro temperature(pi, room) %}
+  {{ room }}_dht:
+    type: DHT
+    pin: 24
+    period: 60
+    require:
+      - node={{ pi }}
   {{ room }}_temp_nonzero:
     type: NotEqualBlock
     inputs:
-      a: {{ room }}_temp_unvalidated
+      a: {{ room }}_dht.temperature
+      b: zero
+  {{ room }}_hum_nonzero:
+    type: NotEqualBlock
+    inputs:
+      a: {{ room }}_dht.humidity
       b: zero
   {{ room }}_temp:
     type: OutputIfBlock
     inputs:
       condition: {{ room }}_temp_nonzero
-      value: {{ room }}_temp_unvalidated
+      value: {{ room }}_dht.temperature
     input_to:
       - average_temp.{{ room }}
-{% endfor %}
+  {{ room }}_humidity:
+    type: OutputIfBlock
+    inputs:
+      condition: {{ room }}_hum_nonzero
+      value: {{ room }}_dht.humidity
+    input_to:
+      - average_humidity.{{ room }}
+{% endmacro %}
+
+{# {% for room, pi in zip(
+  ['bed_room', 'living_room', 'hall', 'entertainment_room',],
+  ['rarity', 'luna', 'scootaloo', 'vinyl',]
+) %}
+{{ temperature(pi, room) }}
+{% endfor %} #}
+{{ temperature('scootaloo', 'hall') }}
 
   average_temp:
+    type: AverageBlock
+    initial: 0
+    default: 0
+  average_humidity:
     type: AverageBlock
     initial: 0
     default: 0
