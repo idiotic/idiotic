@@ -146,8 +146,8 @@ class Node:
         self.events_out.put_nowait(event)
 
     async def event_received(self, event):
-        log.debug("Event received!", event)
         dests = []
+        destnames = []
         for block in self.blocks.values():
             if not self.own_block(block.name):
                 continue
@@ -156,8 +156,17 @@ class Node:
                 continue
 
             for target, blockid in block.inputs.items():
-                if event['source'].startswith(blockid):
-                    dests.append(getattr(block, target))
+                if event['source'] == blockid or event['source'].startswith(blockid + '.'):
+                    if target is None:
+                        dests.append(block)
+                        destnames.append(block.name)
+                    else:
+                        dests.append(getattr(block, target))
+                        destnames.append("{}.{}".format(block.name, target))
+
+        log.debug(" * {}({})".format(event['source'], event['data']))
+        for dest in destnames:
+            log.debug(" |--> {}".format(dest))
 
         for dest in dests:
             await dest(event['data'])
