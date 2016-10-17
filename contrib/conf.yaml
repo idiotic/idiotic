@@ -9,6 +9,8 @@ nodes:
     host: 192.168.1.191
   scootaloo:
     host: 192.168.5.3
+  rarity:
+    host: 192.168.5.14
 modules:
   x10:
     base_url: http://vinyl.hackafe.net:5000
@@ -60,6 +62,7 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
+{{ temperature('rarity', 'bed_room') }}
 
   average_temp:
     type: AverageBlock
@@ -69,17 +72,6 @@ blocks:
     type: AverageBlock
     initial: 0
     default: 0
-  speech:
-    type: Speech
-    text: It is {temperature:.1f} degrees and {humidity:.0f} percent humidity
-    parameters:
-      - temperature
-      - humidity
-    inputs:
-      temperature: average_temp
-      humidity: average_humidity
-    require:
-      - node=muffin
   periodic_1:
     type: RandomList
     period: 6
@@ -88,6 +80,17 @@ blocks:
 
 {% set annoying = False %}
 {% if annoying %}
+  speech:
+    type: Speech
+    text: It is {temperature:.1f} degrees and {humidity:.0f} percent humid
+    parameters:
+      - temperature
+      - humidity
+    inputs:
+      temperature: average_temp
+      humidity: average_humidity
+    require:
+      - node=muffin
   teakettle:
     address: 'https://api.particle.io'
     path: '/v1/devices/'
