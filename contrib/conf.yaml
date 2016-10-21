@@ -55,6 +55,17 @@ blocks:
       - average_humidity.{{ room }}
 {% endmacro %}
 
+{% macro motion(pi, room, pin=13) %}
+  {{ room }}_motion_{{ pin}}:
+    type: RPiGPIO
+    device: MotionSensor
+    options:
+      pin: {{ pin }}
+    require:
+      - node={{ pi }}
+{% endmacro %}
+
+
 {# {% for room, pi in zip(
   ['bed_room', 'living_room', 'hall', 'entertainment_room',],
   ['rarity', 'luna', 'scootaloo', 'vinyl',]
@@ -63,6 +74,7 @@ blocks:
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
 {{ temperature('rarity', 'bed_room') }}
+{{ motion('luna', 'living') }}
 
   average_temp:
     type: AverageBlock
