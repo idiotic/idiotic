@@ -92,6 +92,51 @@ class Block:
             idiotic.node.dispatch({"data": data, "source": self.name+"."+source})
 
 
+class InlineBlock(Block):
+    def __init__(self, name, function=None, **kwargs):
+        super().__init__(name, **kwargs)
+
+        self.function = function
+
+    def __call__(self, *args, **kwargs):
+        if self.function:
+            self.output(self.function(*args, **kwargs))
+
+
+class ParameterBlock:
+    __param_dict = {}
+    __auto_params = True
+
+    def declare_parameters(self, *keys, **items):
+        self.__auto_params = False
+        self.__param_dict.update(items)
+
+        for key in keys:
+            if key not in self.__param_dict:
+                self.__param_dict[key] = None
+
+    def __getattr__(self, key):
+        if key in self.__param_dict:
+            async def __input(val):
+                await self._setparam(key, val)
+            return __input
+        else:
+            raise ValueError("Parameter name not declared")
+
+    async def parameter_changed(self, key, value):
+        pass
+
+    async def _setparam(self, name, value):
+        self.__param_dict[name] = value
+        await self.parameter_changed(name, value)
+
+    def formatted(self, value: str):
+        return value.format(**self.__param_dict)
+
+    def get_parameter(self, key):
+        return self.__param_dict.get(key)
+
+
 def create(name, block_config):
     block_type = block_config.get("type", "Block")
 
