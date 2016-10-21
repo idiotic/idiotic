@@ -9,8 +9,8 @@ nodes:
     host: 192.168.1.191
   scootaloo:
     host: 192.168.5.3
-  rarity:
-    host: 192.168.5.14
+  luna:
+    host: 192.168.5.6
 modules:
   x10:
     base_url: http://vinyl.hackafe.net:5000
@@ -73,8 +73,8 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-{{ temperature('rarity', 'bed_room') }}
-{{ motion('rarity', 'living_room') }}
+{{ temperature('luna', 'living_room') }}
+{{ motion('luna', 'living_room') }}
 
   average_temp:
     type: AverageBlock
