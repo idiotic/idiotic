@@ -55,7 +55,7 @@ blocks:
       - average_humidity.{{ room }}
 {% endmacro %}
 
-{% macro motion(pi, room, pin=13) %}
+{% macro motion(pi, room, pin=27) %}
   {{ room }}_motion_{{ pin}}:
     type: RPiGPIO
     device: MotionSensor
