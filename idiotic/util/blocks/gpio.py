@@ -23,7 +23,7 @@ class RPiGPIO(block.Block, block.ParameterBlock):
         else:
             await loop.run_in_executor(None, self.device.wait_for_active)
             await self.output(self.device.value)
-            pint("############ GPIO Device Inactive")
+            print("############ GPIO Device Inactive")
 
     async def parameter_changed(self, key, value):
         await asyncio.get_event_loop().run_in_executor(None, functools.partial(getattr(self.device, key), **value))
