@@ -74,7 +74,7 @@ blocks:
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
 {{ temperature('rarity', 'bed_room') }}
-{{ motion('luna', 'living') }}
+{{ motion('rarity', 'living_room') }}
 
   average_temp:
     type: AverageBlock
