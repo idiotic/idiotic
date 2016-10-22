@@ -108,6 +108,10 @@ blocks:
     period: 6
     items:
       - True
+
+{% set annoying = False %}
+{% if annoying %}
+
   speech:
     type: Speech
     text: It is {temperature:.1f} degrees and {humidity:.0f} percent humid
@@ -120,8 +124,6 @@ blocks:
     require:
       - node=muffin
 
-{% set annoying = False %}
-{% if annoying %}
   teakettle:
     address: 'https://api.particle.io'
     path: '/v1/devices/'
