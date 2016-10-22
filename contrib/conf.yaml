@@ -9,8 +9,10 @@ nodes:
     host: 192.168.1.191
   scootaloo:
     host: 192.168.5.3
-  luna:
-    host: 192.168.5.6
+#  luna:
+#    host: 192.168.5.6
+  rarity:
+    host: 192.168.5.14
 modules:
   x10:
     base_url: http://vinyl.hackafe.net:5000
@@ -56,7 +58,7 @@ blocks:
 {% endmacro %}
 
 {% macro motion(pi, room, pin=27) %}
-  {{ room }}_motion_{{ pin}}:
+  {{ room }}_motion_{{ pin }}:
     type: RPiGPIO
     device: MotionSensor
     options:
@@ -73,8 +75,25 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-{{ temperature('luna', 'living_room') }}
-{{ motion('luna', 'living_room') }}
+{{ temperature('rarity', 'bed_room') }}
+{{ motion('scootaloo', 'hall') }}
+
+  hall_occupied:
+    type: Occupancy
+    inputs:
+      motion_hall: hall_motion_27
+
+  occupancy_announce:
+    type: Speech
+    text: Hall occupied is {occupied} with probability {prob}
+    parameters:
+      - occupied
+      - prob
+    inputs:
+      occupied: hall_occupied
+      prob: hall_occupied.probability
+    require:
+      - node=muffin
 
   average_temp:
     type: AverageBlock
@@ -89,9 +108,6 @@ blocks:
     period: 6
     items:
       - True
-
-{% set annoying = False %}
-{% if annoying %}
   speech:
     type: Speech
     text: It is {temperature:.1f} degrees and {humidity:.0f} percent humid
@@ -103,6 +119,9 @@ blocks:
       humidity: average_humidity
     require:
       - node=muffin
+
+{% set annoying = False %}
+{% if annoying %}
   teakettle:
     address: 'https://api.particle.io'
     path: '/v1/devices/'
