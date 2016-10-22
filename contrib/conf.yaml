@@ -75,7 +75,6 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-#{{ temperature('rarity', 'bed_room') }}
 {{ motion('scootaloo', 'hall') }}
 
   hall_occupied:
