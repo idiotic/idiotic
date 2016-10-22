@@ -11,8 +11,8 @@ nodes:
     host: 192.168.5.3
 #  luna:
 #    host: 192.168.5.6
-  rarity:
-    host: 192.168.5.14
+#  rarity:
+#    host: 192.168.5.14
 modules:
   x10:
     base_url: http://vinyl.hackafe.net:5000
@@ -75,7 +75,7 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-{{ temperature('rarity', 'bed_room') }}
+#{{ temperature('rarity', 'bed_room') }}
 {{ motion('scootaloo', 'hall') }}
 
   hall_occupied:
