@@ -96,10 +96,15 @@ blocks:
     require:
       - node=muffin
 
+  invert_hall_motion:
+    type: NotBlock
+    inputs:
+      a: hall_motion_17
+    input_to:
+      hall_occupied.motion_hall
+
   hall_occupied:
     type: Occupancy
-    inputs:
-      motion_hall: hall_motion_17
 
 #  occupancy_announce:
 #    type: Speech
