@@ -75,7 +75,24 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-{{ motion('scootaloo', 'hall') }}
+{{ motion('scootaloo', 'hall', pin=4) }}
+
+  bathroom_door:
+    type: RPiGPIO
+    device: DigitalInputDevice
+    options:
+      pin: 27
+      bounce_time: .75
+
+  bathroom_announce:
+    type: Speech
+    text: Bathroom is {occupied}
+    parameters:
+      - occupied
+    inputs:
+      occupied: bathroom_door
+    require:
+      - node=muffin
 
   hall_occupied:
     type: Occupancy
