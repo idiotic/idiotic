@@ -14,7 +14,7 @@ NULL_EVENT = Event(None, None, 0)
 
 
 class Occupancy(block.Block):
-    def __init__(self, *args, threshold=.45, decay=.93, motion=None, doors=None, sound=None, **kwargs):
+    def __init__(self, *args, threshold=.45, decay=.85, motion=None, doors=None, sound=None, **kwargs):
         # Have some sort of thing that, going a certain distance back, calculates each thing's contribution based on a
         # configurable decay rate for each input / input type
         super().__init__(*args, **kwargs)
@@ -51,6 +51,10 @@ class Occupancy(block.Block):
         for evt in self.latest_events():
             diff = self.weights[evt.source] * self.decay ** (time.time() - evt.time)
             prob += diff
+
+            if prob > 1.0:
+                prob = 1
+                break
 
             if diff < .01:
                 # Nothing will change significantly to
