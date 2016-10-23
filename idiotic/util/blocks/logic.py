@@ -56,7 +56,7 @@ class NotBlock(MultiInputBlock):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if len(self._param_dict) != 1:
+        if len(self._param_dict) > 1:
             raise ValueError("Must have exactly one parameter")
 
     def calculate(self, arg, *extra):
