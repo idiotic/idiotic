@@ -83,6 +83,8 @@ blocks:
     options:
       pin: 27
       bounce_time: .75
+    require:
+      - node=scootaloo
 
   bathroom_announce:
     type: Speech
