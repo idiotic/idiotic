@@ -75,7 +75,7 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-{{ motion('scootaloo', 'hall', pin=4) }}
+{{ motion('scootaloo', 'hall', pin=17) }}
 
   bathroom_door:
     type: RPiGPIO
