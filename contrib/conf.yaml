@@ -79,10 +79,10 @@ blocks:
 
   bathroom_door:
     type: RPiGPIO
-    device: DigitalInputDevice
+    device: MotionSensor
     options:
       pin: 27
-      bounce_time: .75
+#      bounce_time: .75
     require:
       - node=scootaloo
 
@@ -101,17 +101,17 @@ blocks:
     inputs:
       motion_hall: hall_motion_4
 
-  occupancy_announce:
-    type: Speech
-    text: Hall occupied is {occupied} with probability {prob}
-    parameters:
-      - occupied
-      - prob
-    inputs:
-      occupied: hall_occupied
-      prob: hall_occupied.probability
-    require:
-      - node=muffin
+#  occupancy_announce:
+#    type: Speech
+#    text: Hall occupied is {occupied} with probability {prob:.2f}
+#    parameters:
+#      - occupied
+#      - prob
+#    inputs:
+#      occupied: hall_occupied
+#      prob: hall_occupied.probability
+#    require:
+#      - node=muffin
 
   average_temp:
     type: AverageBlock
