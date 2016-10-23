@@ -49,6 +49,9 @@ class Occupancy(block.Block):
     def probability(self):
         prob = 0.0
         for evt in self.latest_events():
+            if not evt.state:
+                continue
+
             diff = self.weights[evt.source] * self.decay ** (time.time() - evt.time)
             prob += diff
 
