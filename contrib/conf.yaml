@@ -99,7 +99,7 @@ blocks:
   hall_occupied:
     type: Occupancy
     inputs:
-      motion_hall: hall_motion_27
+      motion_hall: hall_motion_4
 
   occupancy_announce:
     type: Speech
