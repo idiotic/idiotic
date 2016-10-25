@@ -45,7 +45,7 @@ class Speech(block.Block):
     def _speak(self):
         try:
             logging.debug("Saying \"{}\"".format(self._text.format(**self._param_dict)))
-            subprocess.run("espeak --stdout | paplay", input=self._text.format(**self._param_dict).encode('UTF-8'), shell=True)
+            subprocess.run(self.speech_command, input=self._text.format(**self._param_dict).encode('UTF-8'), shell=True)
         except subprocess.CalledProcessError as e:
             logging.error("While trying espeak...")
 
