@@ -99,20 +99,23 @@ class LessThanEqualBlock(MultiInputBlock):
 
 
 class OutputIfBlock(block.Block):
-    def __init__(self, *args, initial=None, **kwargs):
+    def __init__(self, *args, initial=None, output_condition=True, output_value=True, **kwargs):
         super().__init__(*args, **kwargs)
         self._condition = False
         self._value = initial
 
+        self.output_condition = output_condition
+        self.output_value = output_value
+
     async def condition(self, cond):
-        if not self._condition and cond:
+        if not self._condition and cond and self.output_condition:
             await self.output(self._value)
         self._condition = cond
 
     async def value(self, val):
         self._value = val
 
-        if self._condition:
+        if self._condition and self.output_value:
             await self.output(self._value)
 
 
