@@ -230,11 +230,11 @@ class Node:
                     except:
                         log.exception("Exception occurred in run_dispatch()")
 
-    async def rpc_endpoint(self, request: aiohttp.Request):
+    async def rpc_endpoint(self, request: aiohttp.web.Request):
         self.events_in.put_nowait(await request.json())
         return web.Response(text='{"Success": true}', content_type='application/json')
 
-    async def cluster_status(self, request: aiohttp.Request):
+    async def cluster_status(self, request: aiohttp.web.Request):
         res = """
         <!DOCTYPE html public>
         <html>
