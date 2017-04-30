@@ -57,7 +57,7 @@ blocks:
       - average_humidity.{{ room }}
 {% endmacro %}
 
-{% macro motion(pi, room, pin=27) %}
+{% macro motion(pi, room, pin=27, optional=False) %}
   {{ room }}_motion_{{ pin }}:
     type: RPiGPIO
     device: MotionSensor
@@ -65,6 +65,7 @@ blocks:
       pin: {{ pin }}
     require:
       - node={{ pi }}
+    optional: {{ optional }}
 {% endmacro %}
 
 
@@ -75,7 +76,7 @@ blocks:
 {{ temperature(pi, room) }}
 {% endfor %} #}
 {{ temperature('scootaloo', 'hall') }}
-{{ motion('scootaloo', 'hall', pin=17) }}
+{{ motion('scootaloo', 'hall', pin=17, optional=True) }}
 
   bathroom_door:
     type: RPiGPIO
@@ -85,6 +86,7 @@ blocks:
 #      bounce_time: .75
     require:
       - node=scootaloo
+    optional: True
 
   bathroom_announce:
     type: Speech

@@ -21,11 +21,13 @@ class Block:
     resources = []
     config = {}
 
-    def __init__(self, name, inputs=None, resources=None, **config):
+    def __init__(self, name, inputs=None, resources=None, optional=False, **config):
         #: A globally unique identifier for the block
         self.name = name
 
         self.inputs = inputs or {}
+
+        self.optional = optional
 
         #: List of resources that this block needs
         self.resources = resources or []

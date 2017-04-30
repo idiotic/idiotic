@@ -190,8 +190,14 @@ class Node:
         while True:
             tasks = []
             for name, blk in self.blocks.items():
-                if self.cluster.block_owners[name] is None:
-                    self.cluster.assign_block(blk)
+                if self.cluster.block_owners.get(name) is None:
+                    try:
+                        self.cluster.assign_block(blk)
+                    except UnassignableBlock as e:
+                        if blk.optional:
+                            logging.warning("Block left unassigned: %s", name)
+                        else:
+                            raise
 
                 if self.own_block(name) and not blk.running:
                     tasks.append(blk.run_resources)
