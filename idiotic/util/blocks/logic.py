@@ -1,5 +1,3 @@
-import logging
-
 from idiotic import block
 from collections import OrderedDict
 from operator import eq, ne, gt, lt, ge, le
@@ -20,10 +18,8 @@ class MultiInputBlock(block.Block):
         self._value = initial
 
     def __getattr__(self, key):
-        logging.debug("Returning input for nonexistent key {}".format(key))
         if self._any_params or key in self._param_dict:
             async def __input(val):
-                logging.debug("Input {} called with {}".format(key, val))
                 self._param_dict[key] = val
                 await self._recalculate()
             return __input
@@ -31,15 +27,11 @@ class MultiInputBlock(block.Block):
             raise ValueError("Parameter name not declared")
 
     async def _recalculate(self):
-        logging.debug("Calling calculate() with {}".format(self._param_dict))
         value = self.calculate(*self._param_dict.values())
 
         if value != self._value:
             self._value = value
-            logging.debug("LogicBlock {} got a new value: {}".format(self.name, value))
             await self.output(self._value)
-        else:
-            logging.debug("Value didn't change (was {}, is {})".format(self._value, value))
 
 
 class OrBlock(MultiInputBlock):

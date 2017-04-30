@@ -60,4 +60,5 @@ class Config(dict):
                     logging.info("jinja2 not found, not templating config file")
                     return cls(**yaml.load(f))
         except (IOError, OSError):
-            return cls()
+            logging.exception("Exception while opening config file {}".format(path))
+            raise
