@@ -6,9 +6,7 @@ cluster:
   port: 28300
 nodes:
   muffin:
-    host: 192.168.1.191
-  scootaloo:
-    host: 192.168.5.3
+    host: 10.1.254.244
 #  luna:
 #    host: 192.168.5.6
 #  rarity:
@@ -75,7 +73,7 @@ blocks:
 ) %}
 {{ temperature(pi, room) }}
 {% endfor %} #}
-{{ temperature('scootaloo', 'hall') }}
+{#{{ temperature('scootaloo', 'hall') }}#}
 {{ motion('scootaloo', 'hall', pin=17, optional=True) }}
 
   bathroom_door:
@@ -83,7 +81,6 @@ blocks:
     device: MotionSensor
     options:
       pin: 27
-#      bounce_time: .75
     require:
       - node=scootaloo
     optional: True
@@ -191,7 +188,7 @@ blocks:
   stairs_lights:
     type: HTTP
     method: post
-    url: http://celestia.hackafe.net/put_saved_animation/{animation}'
+    url: http://celestia.hackafe.net/put_saved_animation/{animation}
     parameters:
       - animation
     inputs:
