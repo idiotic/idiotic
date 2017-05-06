@@ -1,15 +1,16 @@
-from pysyncobj import SyncObj, replicated
-from idiotic import config
-from idiotic import block
+import asyncio
+import functools
+import json
+import logging
+import random
 
 import aiohttp
 from aiohttp import web
+from pysyncobj import SyncObj, replicated
 
-import functools
-import logging
-import asyncio
-import random
-import json
+from idiotic import block
+from idiotic import config
+from idiotic import util
 
 log = logging.Logger('idiotic.cluster')
 
@@ -29,7 +30,10 @@ class KVStorage(SyncObj):
 
     @replicated
     def pop(self, key):
-        self.__data.pop(key, None)
+        return self.__data.pop(key)
+
+    def delete(self, key):
+        self.pop(key)
 
     def get(self, key, default=None):
         return self.__data.get(key, default)
@@ -40,54 +44,68 @@ class KVStorage(SyncObj):
     def __getitem__(self, key):
         return self.get(key)
 
+    def __delitem__(self, key):
+        self.delete(key)
+
     def __str__(self):
         return str(self.__data)
 
-    def items(self):
-        return self.__data.items()
 
 class Cluster:
     def __init__(self, configuration: config.Config):
         if len(configuration.nodes) == 1:
-            self.block_owners = {}
+            self.shared_data = {}
             self.single_node = True
         else:
             self.single_node = False
-            self.block_owners = KVStorage(
+            self.shared_data = util.NestDict(KVStorage(
                 '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
                 ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
-            )
+            ))
         logging.info("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
         logging.debug("Connecting to {}".format(list(configuration.connect_hosts())))
+
+        self.shared_data["block_owners"] = {}
 
         self.config = configuration
 
     async def find_destinations(self, event):
         return self.config.nodes.keys()
 
+    @property
+    def block_owners(self):
+        return self.shared_data["block_owners"]
+
+    def block_owner(self, name):
+        return self.block_owners.get(name, None)
+
+    def set_block_owner(self, name, owner):
+        self.block_owners[name] = owner
+
     def _assign_block(self, name, nodes):
         if not self.ready():
             return
 
-        if self.block_owners.get(name, None):
-            logging.debug("Block {} is already assigned to {}".format(name, self.block_owners.get(name)))
+        # FIXME there is a race condition here
+        if self.block_owner(name):
+            logging.debug("Block {} is already assigned to {}".format(name, self.block_owner(name)))
             return
 
         shuffled = list(nodes)
         random.shuffle(shuffled)
 
         for node in shuffled:
-            self.block_owners[name] = node
+            self.set_block_owner(name, node)
             logging.info("Assigned {} to {}".format(name, node))
             break
         else:
             raise UnassignableBlock(name)
 
     def ready(self):
-        return self.single_node or self.block_owners._isReady()
+        return self.single_node or self.shared_data._isReady()
 
     def unassign_block(self, name):
-        self.block_owners[name] = None
+        self.set_block_owner(name, None)
 
     def reassign_block(self, name):
         self.unassign_block(name)
@@ -111,7 +129,7 @@ class Node:
         self._was_ready = False
 
     def own_block(self, name):
-        return self.cluster.block_owners.get(name, None) == self.name
+        return self.cluster.block_owner(name) == self.name
 
     async def initialize_blocks(self):
         try:
@@ -190,7 +208,7 @@ class Node:
         while True:
             tasks = []
             for name, blk in self.blocks.items():
-                if self.cluster.block_owners.get(name) is None:
+                if self.cluster.block_owner(name) is None:
                     try:
                         self.cluster.assign_block(blk)
                     except UnassignableBlock as e:
