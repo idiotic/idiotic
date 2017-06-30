@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from idiotic import config, set_node
 from idiotic.cluster import Cluster, Node
-from sys import argv
 
 import asyncio
 
@@ -10,7 +9,9 @@ import logging
 import importlib
 import pkgutil
 
+import optparse
 import time
+import sys
 
 
 def all_subclasses(cls):
@@ -38,10 +39,27 @@ def import_submodules(package, recursive=True):
 
 
 def main():
-    logging.basicConfig(style='{', level=logging.DEBUG-1)
-    conf = config.Config.load(argv[1])
+    parser = optparse.OptionParser(usage="usage: %prog [options] [node-name=HOSTNAME]")
+    parser.add_option("-c", "--config", dest="config", help="load config from FILE", metavar="FILE")
+    parser.add_option("-v", "--verbose", dest="verbose", action="store_true", help="enable verbose logging")
+    parser.add_option("-q", "--quiet", dest="quiet", action="store_true", help="suppress output")
+    (options, args) = parser.parse_args()
 
-    conf._node_name = argv[2] if len(argv) > 2 else None
+    log_level = logging.INFO
+    if options.verbose:
+        log_level = logging.DEBUG
+    elif options.quiet:
+        log_level = logging.ERROR
+
+    if not options.config:
+        print("No config file specified!", file=sys.stderr)
+        exit(1)
+
+    logging.basicConfig(style='{', level=log_level)
+
+    conf = config.Config.load(options.config)
+
+    conf._node_name = args[0] if len(args) > 0 else None
 
     config.config = conf
     cluster = Cluster(conf)
