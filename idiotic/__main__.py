@@ -79,18 +79,18 @@ def main():
     from idiotic.resource import Resource
 
     # Recursively load everything from utils so that we get all the block and resource types registered
-    IDIOTIC_STDLIB = 'idiotic.util'
-    IDIOTIC_STDLIB_BLOCKS = IDIOTIC_STDLIB + '.blocks'
-    IDIOTIC_STDLIB_RESOURCES = IDIOTIC_STDLIB + '.resources'
-    import_submodules(IDIOTIC_STDLIB)
+    STDLIB = 'idiotic.util'
+    STDLIB_BLOCKS = STDLIB + '.blocks.'
+    STDLIB_RESOURCES = STDLIB + '.resources.'
+    import_submodules(STDLIB)
 
     # Add all the resources to the registry
     Resource.REGISTRY['Resource'] = Resource
     for sub in all_subclasses(Resource):
 
         key = '.'.join((sub.__module__, sub.__name__))
-        if key.startswith(IDIOTIC_STDLIB_RESOURCES + '.'):
-            key = key[len(IDIOTIC_STDLIB_RESOURCES + '.'):]
+        if key.startswith(STDLIB_RESOURCES):
+            key = key[len(STDLIB_RESOURCES):]
 
         log.debug("Loaded resource %s", key)
 
