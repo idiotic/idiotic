@@ -1,12 +1,14 @@
 import logging
 
 from idiotic import block
-from idiotic import resource
+from idiotic.util.resources import http
 import aiohttp
 import asyncio
 import json
 
 import types
+
+log = logging.getLogger(__name__)
 
 
 class HTTP(block.Block):
@@ -84,5 +86,5 @@ class HTTP(block.Block):
                             await self.output(output_val)
                         break
             except IOError:
-                logging.error("{}: Unable to retrieve {}".format(self.name, self.url))
+                log.error("%s: Unable to retrieve %s", self.name, self.url)
                 await asyncio.sleep(5)

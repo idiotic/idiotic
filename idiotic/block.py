@@ -5,6 +5,8 @@ from idiotic import config as global_config
 import idiotic
 import asyncio
 
+log = logging.getLogger(__name__)
+
 
 if False:
     from idiotic.cluster import Cluster
@@ -53,7 +55,7 @@ class Block:
         except KeyboardInterrupt:
             raise
         except:
-            logging.exception("While running block {}".format(self.name))
+            log.exception("While running block %s", self.name)
         self.running = False
 
         if idiotic.node.own_block(self.name):

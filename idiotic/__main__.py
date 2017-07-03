@@ -55,7 +55,8 @@ def main():
         print("No config file specified!", file=sys.stderr)
         exit(1)
 
-    logging.basicConfig(style='{', level=log_level)
+    log = logging.getLogger(__package__)
+    log.setLevel(log_level)
 
     conf = config.Config.load(options.config)
 
@@ -64,11 +65,11 @@ def main():
     config.config = conf
     cluster = Cluster(conf)
 
-    logging.debug("Waiting for cluster to become ready...")
+    log.debug("Waiting for cluster to become ready...")
     while not cluster.ready():
         time.sleep(5)
 
-    logging.debug("Cluster is ready!")
+    log.debug("Cluster is ready!")
 
     node = Node(conf.nodename, cluster, conf)
 
@@ -91,14 +92,14 @@ def main():
         if key.startswith(IDIOTIC_STDLIB_RESOURCES + '.'):
             key = key[len(IDIOTIC_STDLIB_RESOURCES + '.'):]
 
-        logging.debug("Loaded resource %s", key)
+        log.debug("Loaded resource %s", key)
 
         Resource.REGISTRY[key] = sub
 
     # Add all the subclasses to the registry
     Block.REGISTRY['Block'] = Block
     for sub in all_subclasses(Block):
-        logging.debug("Loaded block %s", sub.__name__)
+        log.debug("Loaded block %s", sub.__name__)
         Block.REGISTRY[sub.__name__] = sub
 
     loop = asyncio.get_event_loop()

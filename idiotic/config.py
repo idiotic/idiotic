@@ -2,7 +2,7 @@ import logging
 import socket
 import yaml
 
-
+log = logging.getLogger(__name__)
 config = None
 
 
@@ -57,8 +57,8 @@ class Config(dict):
                     jstream = jinja2.Template(f.read()).render(zip=zip)
                     return cls(**yaml.load(jstream))
                 except ImportError:
-                    logging.info("jinja2 not found, not templating config file")
+                    log.info("jinja2 not found, not templating config file")
                     return cls(**yaml.load(f))
         except (IOError, OSError):
-            logging.exception("Exception while opening config file {}".format(path))
+            log.exception("Exception while opening config file %s", path)
             raise

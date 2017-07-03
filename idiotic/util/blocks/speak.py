@@ -1,12 +1,10 @@
-import logging
-
 from idiotic import block
-from idiotic import resource
 from idiotic import config
 import subprocess
 import asyncio
+import logging
 
-import types
+log = logging.getLogger(__name__)
 
 
 class Speech(block.Block):
@@ -44,10 +42,10 @@ class Speech(block.Block):
 
     def _speak(self):
         try:
-            logging.debug("Saying \"{}\"".format(self._text.format(**self._param_dict)))
+            log.debug("Saying \"%s\"", self._text.format(**self._param_dict))
             subprocess.run(self.speech_command, input=self._text.format(**self._param_dict).encode('UTF-8'), shell=True)
         except subprocess.CalledProcessError as e:
-            logging.error("While trying espeak...")
+            log.error("While trying espeak...")
 
     async def speak(self, *_):
         await asyncio.get_event_loop().run_in_executor(None, self._speak)

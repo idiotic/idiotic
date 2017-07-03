@@ -14,6 +14,7 @@ from idiotic import util
 
 log = logging.getLogger(__name__)
 
+
 class UnassignableBlock(Exception):
     pass
 
@@ -61,8 +62,8 @@ class Cluster:
                 '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
                 ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
             ))
-        log.info("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
-        log.debug("Connecting to {}".format(list(configuration.connect_hosts())))
+        log.info("Listening for cluster on %s:%s", configuration.cluster_host, configuration.cluster_port)
+        log.debug("Connecting to %s", list(configuration.connect_hosts()))
 
         self.shared_data["block_owners"] = {}
         self.shared_data["resources"] = {}
@@ -88,7 +89,7 @@ class Cluster:
 
         # FIXME there is a race condition here
         if self.block_owner(name):
-            log.debug("Block {} is already assigned to {}".format(name, self.block_owner(name)))
+            log.debug("Block %s is already assigned to %S", name, self.block_owner(name))
             return
 
         eligible = sorted([(fit, node) for node, fit in fitnesses.items() if fit is not False])
@@ -96,7 +97,7 @@ class Cluster:
         if len(eligible):
             node = eligible[-1][1]
             self.set_block_owner(name, node)
-            log.info("Assigned {} to {}".format(name, node))
+            log.info("Assigned %s to %s", name, node)
         else:
             raise UnassignableBlock(name)
 
@@ -187,7 +188,7 @@ class Cluster:
         self.assign_block(block)
 
     def assign_block(self, block: block.Block):
-        log.debug("Assigning block {}".format(block.name))
+        log.debug("Assigning block %s", block.name)
         self._assign_block(block.name, self.block_resource_fitnesses(block))
 
 
@@ -242,21 +243,21 @@ class Node:
                     # Actually set up the input on the other block
                     self.blocks[blkname].inputs[input_name] = name
 
-                log.debug("Block {} mostly initialized".format(name))
+                log.debug("Block %s mostly initialized", name)
 
                 async def wait_for_resource(node, res):
-                    log.debug("Waiting for resource {}...".format(res.describe()))
+                    log.debug("Waiting for resource %s...", res.describe())
 
                     if not node.cluster.resource_checked_here(res):
-                        log.debug("Checking resource {}".format(res.describe()))
+                        log.debug("Checking resource %s", res.describe())
                         try:
                             fitness = await res.fitness()
                         except:
-                            log.exception("Checking resource {} failed with exception".format(res.describe()))
+                            log.exception("Checking resource %s failed with exception", res.describe())
                             fitness = 0
                         node.cluster.set_resource_fitness(res, fitness)
 
-                        log.debug("Resource {} checked with fitness={}".format(res.describe(), fitness))
+                        log.debug("Resource %s checked with fitness=%s", res.describe(), fitness)
 
                     while not node.cluster.resource_checked_all(res):
                         log.debug("Waiting for resource " + res.describe())
@@ -297,9 +298,9 @@ class Node:
                         dests.append(getattr(block, target))
                         destnames.append("{}.{}".format(block.name, target))
 
-        log.debug(" * {}({})".format(event['source'], event['data']))
+        log.debug(" * %s(%s)", event['source'], event['data'])
         for dest in destnames:
-            log.debug(" |--> {}".format(dest))
+            log.debug(" |--> %s", dest)
 
         for dest in dests:
             await dest(event['data'])

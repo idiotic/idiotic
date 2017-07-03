@@ -5,6 +5,8 @@ import asyncio
 import aiohttp
 import time
 
+log = logging.getLogger(__name__)
+
 
 class TeapotBlock(block.Block):
     def __init__(self, name, **config):
@@ -24,7 +26,7 @@ class TeapotBlock(block.Block):
         self.hold_duration = 0
 
     async def temperature(self, value):
-        logging.debug("setting temp to {}".format(value))
+        log.debug("setting temp to %s", value)
         async with aiohttp.ClientSession() as client:
             async with client.post(
                     "{}{}{}/set_temp".format(self.config['address'], self.config['path'], self.config['device_id']),
@@ -33,7 +35,7 @@ class TeapotBlock(block.Block):
                 await request.text()
 
     async def hold(self, value):
-        logging.debug("holding for {}".format(value))
+        log.debug("holding for %s", value)
         self.hold_start = time.time()
         self.hold_duration = value
 
