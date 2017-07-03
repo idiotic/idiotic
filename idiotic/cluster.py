@@ -12,8 +12,7 @@ from idiotic import block
 from idiotic import config
 from idiotic import util
 
-log = logging.Logger('idiotic.cluster')
-
+log = logging.getLogger(__name__)
 
 class UnassignableBlock(Exception):
     pass
@@ -62,10 +61,11 @@ class Cluster:
                 '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
                 ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
             ))
-        logging.info("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
-        logging.debug("Connecting to {}".format(list(configuration.connect_hosts())))
+        log.info("Listening for cluster on {}:{}".format(configuration.cluster_host, configuration.cluster_port))
+        log.debug("Connecting to {}".format(list(configuration.connect_hosts())))
 
         self.shared_data["block_owners"] = {}
+        self.shared_data["resources"] = {}
 
         self.config = configuration
 
@@ -82,24 +82,99 @@ class Cluster:
     def set_block_owner(self, name, owner):
         self.block_owners[name] = owner
 
-    def _assign_block(self, name, nodes):
+    def _assign_block(self, name, fitnesses):
         if not self.ready():
             return
 
         # FIXME there is a race condition here
         if self.block_owner(name):
-            logging.debug("Block {} is already assigned to {}".format(name, self.block_owner(name)))
+            log.debug("Block {} is already assigned to {}".format(name, self.block_owner(name)))
             return
 
-        shuffled = list(nodes)
-        random.shuffle(shuffled)
+        eligible = sorted([(fit, node) for node, fit in fitnesses.items() if fit is not False])
 
-        for node in shuffled:
+        if len(eligible):
+            node = eligible[-1][1]
             self.set_block_owner(name, node)
-            logging.info("Assigned {} to {}".format(name, node))
-            break
+            log.info("Assigned {} to {}".format(name, node))
         else:
             raise UnassignableBlock(name)
+
+    @property
+    def resources(self):
+        return self.shared_data["resources"]
+
+    def set_resource_fitness(self, resource, fitness):
+        desc = resource.describe()
+
+        if desc not in self.resources:
+            self.resources[desc] = {}
+
+        self.resources[desc][self.config.nodename] = fitness
+
+    def resource_checked_here(self, resource):
+        return self.config.nodename in self.resources.get(resource.describe(), {})
+
+    def resource_checked_all(self, resource):
+        return len(self.resources.get(resource.describe(), {})) == len(self.config.nodes)
+
+    def resource_fitnesses(self, resource):
+        return dict(self.resources.get(resource.describe(), {}))
+
+    def resource_targets(self, resource):
+        return {k: v for k, v in self.resource_fitnesses(resource).items() if v}
+
+    def block_resource_fitnesses(self, block: block.Block):
+        """Returns a map of nodename to average fitness value for this block.
+        Assumes that required resources have been checked on all nodes."""
+
+        # Short-circuit! My algorithm is terrible, so it doesn't work well for the edge case where
+        # the block has no requirements
+        if not block.resources:
+            return {n: 1 for n in self.config.nodes.keys()}
+
+        node_fitnesses = {}
+
+        for resource in block.resources:
+            resource_fitnesses = self.resource_fitnesses(resource)
+
+            max_fit = max(resource_fitnesses.values())
+            min_fit = min(resource_fitnesses.values())
+
+            for node, fitness in resource_fitnesses.items():
+                if node not in node_fitnesses:
+                    node_fitnesses[node] = {}
+
+                if not fitness:
+                    # Since we're rescaling, 0 is now an OK value...
+                    # We will check for `is False` after this
+                    node_fitnesses[node][resource.describe()] = False
+                else:
+                    if max_fit - min_fit:
+                        node_fitnesses[node][resource.describe()] = (fitness - min_fit) / (max_fit - min_fit)
+                    else:
+                        # All the values are the same, default to 1
+                        node_fitnesses[node][resource.describe()] = 1.0
+
+        res = {}
+
+        for node, res_fits in node_fitnesses.items():
+            fit_sum = 0
+            for res_desc, fit in res_fits.items():
+                if fit is False:
+                    fit_sum = False
+                    break
+
+                fit_sum += fit
+
+            if fit_sum is False:
+                # Skip this node entirely
+                res[node] = False
+                continue
+
+            res[node] = fit_sum
+
+        return res
 
     def ready(self):
         return self.single_node or self.shared_data._isReady()
@@ -107,12 +182,13 @@ class Cluster:
     def unassign_block(self, name):
         self.set_block_owner(name, None)
 
-    def reassign_block(self, name):
-        self.unassign_block(name)
-        self.assign_block(name)
+    def reassign_block(self, block: block.Block):
+        self.unassign_block(block.name)
+        self.assign_block(block)
 
     def assign_block(self, block: block.Block):
-        self._assign_block(block.name, block.precheck_nodes(self.config))
+        log.debug("Assigning block {}".format(block.name))
+        self._assign_block(block.name, self.block_resource_fitnesses(block))
 
 
 class Node:
@@ -132,10 +208,13 @@ class Node:
         return self.cluster.block_owner(name) == self.name
 
     async def initialize_blocks(self):
+        log.debug("Initializing blocks...")
         try:
             for name, settings in self.config.blocks.items():
                 blk = block.create(name, settings)
                 self.blocks[name] = blk
+
+            blk_inits = []
 
             for name, blk in self.blocks.items():
                 # Check that all input blocks exist
@@ -163,7 +242,36 @@ class Node:
                     # Actually set up the input on the other block
                     self.blocks[blkname].inputs[input_name] = name
 
-                self.cluster.assign_block(blk)
+                log.debug("Block {} mostly initialized".format(name))
+
+                async def wait_for_resource(node, res):
+                    log.debug("Waiting for resource {}...".format(res.describe()))
+
+                    if not node.cluster.resource_checked_here(res):
+                        log.debug("Checking resource {}".format(res.describe()))
+                        try:
+                            fitness = await res.fitness()
+                        except:
+                            log.exception("Checking resource {} failed with exception".format(res.describe()))
+                            fitness = 0
+                        node.cluster.set_resource_fitness(res, fitness)
+
+                        log.debug("Resource {} checked with fitness={}".format(res.describe(), fitness))
+
+                    while not node.cluster.resource_checked_all(res):
+                        log.debug("Waiting for resource " + res.describe())
+                        await asyncio.sleep(5)
+
+                async def blk_init(node, blk_):
+                    res_inits = []
+                    for resource in blk_.resources:
+                        res_inits.append(wait_for_resource(node, resource))
+
+                    await asyncio.gather(*res_inits)
+                    node.cluster.assign_block(blk_)
+
+                blk_inits.append(blk_init(self, blk))
+            await asyncio.gather(*blk_inits)
         except:
             log.exception("While initializing blocks...")
 
@@ -205,15 +313,17 @@ class Node:
         )
 
     async def run_blocks(self):
+        blacklist = set()
         while True:
             tasks = []
             for name, blk in self.blocks.items():
-                if self.cluster.block_owner(name) is None:
+                if self.cluster.block_owner(name) is None and name not in blacklist:
                     try:
                         self.cluster.assign_block(blk)
                     except UnassignableBlock as e:
+                        blacklist.add(name)
                         if blk.optional:
-                            logging.warning("Block left unassigned: %s", name)
+                            log.warning("Block left unassigned: %s", name)
                         else:
                             raise
 
@@ -229,7 +339,7 @@ class Node:
                 event = await self.events_in.get()
                 await self.event_received(event)
             except:
-                logging.exception("While running messaging")
+                log.exception("While running messaging")
 
     async def run_dispatch(self):
         while True:

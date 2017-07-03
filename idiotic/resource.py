@@ -1,7 +1,4 @@
-from typing import Optional, Iterable
-from idiotic import config
-import aiohttp
-import asyncio
+import collections
 
 
 class MissingResource(Exception):
@@ -9,57 +6,61 @@ class MissingResource(Exception):
 
 
 class Resource:
-
-    initialized = False
+    REGISTRY = {}
 
     def __init__(self):
-        self.available = False
-        self.static = False
-        self.initialized = False
+        self.running = False
 
-    async def try_check(self):
-        if not self.available:
-            raise MissingResource(self)
+    def describe(self):
+        return 'resource:idiotic.Resource/'
 
-    def available_hosts(self, config: config.Config) -> Optional[Iterable[str]]:
-        """Return a list of hosts where this resource is statically guaranteed to be available.
-        This is used during the pre-allocation phase of blocks to determine which nodes the scheduler
-        should not attempt to schedule a block on.
-        If this resource cannot be statically determined, it should return None or a list of all hosts."""
+    async def available(self):
+        return bool(await self.fitness())
 
-        return None
-
-    async def run(self):
-        self.initialized = True
-        await asyncio.sleep(3600)
-
-
-class HostResource(Resource):
-    def __init__(self, node):
-        self.node = node
-        self.available = config.config.nodename == self.node
-        self.initialized = True
-
-    def available_hosts(self, config: config.Config):
-        return [self.node]
-
-
-class HTTPResource(Resource):
-    def __init__(self, address):
-        self.address = address
-        super().__init__()
+    async def fitness(self) -> float:
+        """"Returns a number that indicates, on an arbitrary scale, how capable the executing node
+        is of satisfying this resource. A larger value indicates more capability, while a falsy
+        value indicates the resource is unavailable or unusable. Truthy values returned here will
+        only be compared against other truthy values returned by resources of the same type.
+        """
+        return 1.0
 
     async def run(self):
-        while True:
-            try:
-                async with aiohttp.ClientSession() as client:
-                    async with client.head(self.address) as response:
-                        if response.status == 200 or 300 <= response.status <= 399:
-                            self.available = True
-                        else:
-                            self.available = False
-                        self.initialized = True
-                    await asyncio.sleep(10)
-            except OSError:
-                self.available = False
-                await asyncio.sleep(20)
+        self.running = True
+
+
+def create(res_config):
+    if len(res_config) != 1:
+        raise ValueError("Resource config is malformed; must have only one top-level config")
+
+    res_type = list(res_config.keys())[0]
+    conf = list(res_config.values())[0]
+
+    res_cls = Resource.REGISTRY[res_type]
+
+    if isinstance(conf, str):
+        # Shorthand definition:
+        # require:
+        #   - RequirementType: val
+        res = res_cls(conf)
+    elif isinstance(conf, collections.Mapping):
+        # Normal named-parameter definition:
+        # require:
+        #   - RequirementType:
+        #     a: 1
+        #     b: 2
+        res = res_cls(**conf)
+    elif isinstance(conf, collections.Iterable):
+        # Ordered parameter definition:
+        # require:
+        #   - RequirementType:
+        #     - 1
+        #     - 2
+        #     - 3
+        res = res_cls(*conf)
+    else:
+        # I have no idea when this would actually happen
+        # maybe it's binary or something?
+        res = res_cls(conf)
+
+    return res

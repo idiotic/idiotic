@@ -57,35 +57,20 @@ class Block:
         self.running = False
 
         if idiotic.node.own_block(self.name):
-            idiotic.node.cluster.unassign_block(self.name)
-            idiotic.node.cluster.assign_block(self)
+            idiotic.node.cluster.reassign_block(self)
 
     async def init_resources(self):
-        while not all((r.initialized for r in self.resources)):
+        while not all((r.running for r in self.resources)):
             await asyncio.sleep(.1)
 
     def require(self, *resources: resource.Resource):
         self.resources.extend(resources)
 
-    def precheck_nodes(self, config: global_config.Config) -> Set[str]:
-        all_nodes = set(config.nodes.keys())
-
-        for req in self.resources:
-            nodes = req.available_hosts(config)
-            if nodes is not None:
-                all_nodes.intersection_update(set(nodes))
-
-        return all_nodes
-
     async def run_resources(self):
         await asyncio.gather(*[asyncio.ensure_future(r.run()) for r in self.resources])
 
     def check_resources(self) -> bool:
-        return all((r.available for r in self.resources))
-
-    def try_resources(self):
-        for r in self.resources:
-            r.try_check()
+        return all((r.available() for r in self.resources))
 
     async def output(self, data, *args):
         if not args:
@@ -162,7 +147,6 @@ def create(name, block_config):
     res.input_to = input_to
 
     for req in requires:
-        if req.startswith("node="):
-            res.require(resource.HostResource(req[5:]))
+        res.require(resource.create(req))
 
     return res

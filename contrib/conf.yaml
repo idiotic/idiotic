@@ -28,7 +28,7 @@ blocks:
     pin: 24
     interval: 5
     require:
-      - node={{ pi }}
+      - host.NodeName: {{ pi }}
   {{ room }}_temp_nonzero:
     type: NotEqualBlock
     inputs:
@@ -62,7 +62,7 @@ blocks:
     options:
       pin: {{ pin }}
     require:
-      - node={{ pi }}
+      - host.NodeName: {{ pi }}
     optional: {{ optional }}
 {% endmacro %}
 
@@ -82,7 +82,7 @@ blocks:
     options:
       pin: 27
     require:
-      - node=scootaloo
+      - host.NodeName: scootaloo
     optional: True
 
   bathroom_announce:
@@ -115,7 +115,7 @@ blocks:
 #      occupied: hall_occupied
 #      prob: hall_occupied.probability
 #    require:
-#      - node=muffin
+#      - host.NodeName: muffin
 
   average_temp:
     type: AverageBlock
@@ -144,7 +144,7 @@ blocks:
       temperature: average_temp
       humidity: average_humidity
     require:
-      - node=muffin
+      - host.NodeName: muffin
 
   teakettle:
     address: 'https://api.particle.io'
@@ -174,7 +174,7 @@ blocks:
       power: "random_power"
     type: WinkDimmer
     require:
-      - node=muffin
+      - host.NodeName: muffin
   test:
     type: HTTP
     url: http://vinyl.hackafe.net:5000/{power}/a/3
