@@ -1,4 +1,4 @@
-from idiotic import resource
+from idiotic.util.resources import http
 from idiotic import block
 import logging
 import asyncio
@@ -21,7 +21,7 @@ class TeapotBlock(block.Block):
         self.inputs = {"temperature": self.temperature,
                        "hold": self.hold
                       }
-        self.resources = [resource.HTTPResource(self.config['address'])]
+        self.require(http.URLReachable(self.config['address']))
         self.hold_start = 0
         self.hold_duration = 0
 

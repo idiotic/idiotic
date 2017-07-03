@@ -55,7 +55,7 @@ class HTTP(block.Block):
             setattr(self, name, types.MethodType(setparam, self))
 
         self.inputs = {}
-        self.resources = [resource.HTTPResource(self.url)]
+        self.resources = [http.URLReachable(self.url)]
 
     async def _setparam(self, name, value):
         if not self.skip_repeats or value != self._param_dict.get(name):
