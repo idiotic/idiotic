@@ -61,6 +61,7 @@ def main():
         print("No config file specified!", file=sys.stderr)
         exit(1)
 
+    logging.basicConfig(level=log_level)
     log = logging.getLogger(__package__)
     log.setLevel(log_level)
 
