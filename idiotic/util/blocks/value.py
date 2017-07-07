@@ -29,26 +29,26 @@ class Value(block.Block):
         await self.output(self._value)
 
 
-class IntValue(Value):
+class Int(Value):
     def __init__(self, name, **kwargs):
         super().__init__(name, kind="int", **kwargs)
 
 
-class StrValue(Value):
+class Str(Value):
     def __init__(self, name, **kwargs):
         super().__init__(name, kind="str", **kwargs)
 
 
-class FloatValue(Value):
+class Float(Value):
     def __init__(self, name, **kwargs):
         super().__init__(name, kind="float", **kwargs)
 
 
-class BoolValue(Value):
+class Bool(Value):
     def __init__(self, name, **kwargs):
         super().__init__(name, kind="bool", **kwargs)
 
 
-class JSONValue(Value):
+class JSON(Value):
     def __init__(self, name, **kwargs):
         super().__init__(name, kind="json", **kwargs)

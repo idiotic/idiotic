@@ -34,17 +34,17 @@ class MultiInputBlock(block.Block):
             await self.output(self._value)
 
 
-class OrBlock(MultiInputBlock):
+class Or(MultiInputBlock):
     def calculate(self, *args):
         return any(args)
 
 
-class AndBlock(MultiInputBlock):
+class And(MultiInputBlock):
     def calculate(self, *args):
         return all(args)
 
 
-class NotBlock(MultiInputBlock):
+class Not(MultiInputBlock):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -58,39 +58,39 @@ class NotBlock(MultiInputBlock):
         return not arg
 
 
-class NotEqualBlock(MultiInputBlock):
+class NotEqual(MultiInputBlock):
     def calculate(self, *args):
         # No duplicates == nothing is equal to anything else
         # If I just chained != operator, [1, 2, 1] would return True
         return len(set(args)) == len(args)
 
 
-class EqualBlock(MultiInputBlock):
+class Equal(MultiInputBlock):
     def calculate(self, *args):
         return reduce(eq, args)
 
 
-class GreaterThanBlock(MultiInputBlock):
+class GreaterThan(MultiInputBlock):
     def calculate(self, *args):
         return reduce(gt, args)
 
 
-class GreaterThanEqualBlock(MultiInputBlock):
+class GreaterThanEqual(MultiInputBlock):
     def calculate(self, *args):
         return reduce(ge, args)
 
 
-class LessThanBlock(MultiInputBlock):
+class LessThan(MultiInputBlock):
     def calculate(self, *args):
         return reduce(lt, args)
 
 
-class LessThanEqualBlock(MultiInputBlock):
+class LessThanEqual(MultiInputBlock):
     def calculate(self, *args):
         return reduce(le, args)
 
 
-class OutputIfBlock(block.Block):
+class OutputIf(block.Block):
     def __init__(self, *args, initial=None, output_condition=True, output_value=True, **kwargs):
         super().__init__(*args, **kwargs)
         self._condition = False
@@ -111,7 +111,7 @@ class OutputIfBlock(block.Block):
             await self.output(self._value)
 
 
-class TernaryBlock(block.Block):
+class Ternary(block.Block):
     def __init__(self, *args, initial=None, **kwargs):
         super().__init__(*args, **kwargs)
         self._condition = False

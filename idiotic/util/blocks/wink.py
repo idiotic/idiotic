@@ -10,7 +10,7 @@ class WinkDeviceNotFound(Exception):
     pass
 
 
-class WinkBlock(block.Block):
+class Device(block.Block):
     def __init__(self, name, **config):
         self.name = name
         self.config = {"base_url": "https://winkapi.quirky.com",
@@ -52,7 +52,7 @@ class WinkBlock(block.Block):
                     return dev
 
 
-class WinkToggle(WinkBlock):
+class Toggle(Device):
     def __init__(self, name, **config):
         super().__init__(name, **config)
         self.power_state = None
@@ -63,7 +63,7 @@ class WinkToggle(WinkBlock):
         await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)
 
 
-class WinkDimmer(WinkToggle):
+class Dimmer(Toggle):
     def __init__(self, name, **config):
         super().__init__(name, **config)
         self.brightness = None

@@ -12,6 +12,7 @@ import pkgutil
 import optparse
 import time
 import sys
+import re
 
 
 def all_subclasses(cls):
@@ -36,6 +37,11 @@ def import_submodules(package, recursive=True):
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
     return results
+
+
+def pascal_to_snake_case(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 def main():
@@ -88,7 +94,10 @@ def main():
     Resource.REGISTRY['Resource'] = Resource
     for sub in all_subclasses(Resource):
 
-        key = '.'.join((sub.__module__, sub.__name__))
+        name = pascal_to_snake_case(getattr(sub, 'ID', sub.__name__))
+
+        key = '.'.join((sub.__module__, name))
+
         if key.startswith(STDLIB_RESOURCES):
             key = key[len(STDLIB_RESOURCES):]
 
@@ -99,8 +108,17 @@ def main():
     # Add all the subclasses to the registry
     Block.REGISTRY['Block'] = Block
     for sub in all_subclasses(Block):
-        log.debug("Loaded block %s", sub.__name__)
-        Block.REGISTRY[sub.__name__] = sub
+
+        name = pascal_to_snake_case(getattr(sub, 'ID', sub.__name__))
+
+        key = '.'.join((sub.__module__, name))
+
+        if key.startswith(STDLIB_BLOCKS):
+            key = key[len(STDLIB_BLOCKS):]
+
+        log.debug("Loaded block %s", key)
+
+        Block.REGISTRY[key] = sub
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(node.initialize_blocks())

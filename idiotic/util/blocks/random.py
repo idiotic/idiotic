@@ -5,7 +5,7 @@ from idiotic import resource
 from idiotic import node
 
 
-class RandomFloatBlock(block.Block):
+class Float(block.Block):
     def __init__(self, name, **config):
         self.name = name
         self.config = {"period": 1,
@@ -22,7 +22,8 @@ class RandomFloatBlock(block.Block):
         val = random.random()*(self.config['max']-self.config['min'])+self.config['min']
         await self.output(val)
 
-class RandomBoolBlock(block.Block):
+
+class Bool(block.Block):
     def __init__(self, name, **config):
         self.name = name
         self.config = {"period": 1
@@ -35,7 +36,8 @@ class RandomBoolBlock(block.Block):
         val = bool(random.getrandbits(1))
         await self.output(val)
 
-class RandomIntBlock(block.Block):
+
+class Int(block.Block):
     def __init__(self, name, **config):
         self.name = name
         self.config = {"period": 1,
@@ -51,7 +53,7 @@ class RandomIntBlock(block.Block):
         await self.output(val)
 
 
-class RandomList(block.Block):
+class List(block.Block):
     def __init__(self, name, period=1, items=None):
         super().__init__(name)
         self.period = period

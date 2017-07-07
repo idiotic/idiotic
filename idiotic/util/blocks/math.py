@@ -3,21 +3,21 @@ from .logic import MultiInputBlock
 from functools import reduce
 
 
-class SumBlock(MultiInputBlock):
+class Sum(MultiInputBlock):
     def calculate(self, *args):
         return sum(args)
 
 
-class AddBlock(SumBlock):
+class Add(Sum):
     pass
 
 
-class AverageBlock(MultiInputBlock):
+class Average(MultiInputBlock):
     def calculate(self, *args):
         return sum(args) / len(args)
 
 
-class SubtractBlock(MultiInputBlock):
+class Subtract(MultiInputBlock):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -28,25 +28,25 @@ class SubtractBlock(MultiInputBlock):
         return reduce(sub, args)
 
 
-class NegativeBlock(SubtractBlock):
+class Negative(Subtract):
     def calculate(self, *args):
         return super().calculate(0, *args)
 
 
-class ProductBlock(MultiInputBlock):
+class Product(MultiInputBlock):
     def calculate(self, *args):
         return reduce(mul, args)
 
 
-class MultiplyBlock(ProductBlock):
+class Multiply(Product):
     pass
 
 
-class DivideBlock(MultiInputBlock):
+class Divide(MultiInputBlock):
     def calculate(self, *args):
         return reduce(truediv, args)
 
 
-class IntDivideBlock(MultiInputBlock):
+class IntDivide(MultiInputBlock):
     def calculate(self, *args):
         return reduce(floordiv, args)

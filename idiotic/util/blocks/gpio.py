@@ -4,6 +4,8 @@ import asyncio
 
 
 class RPiGPIO(block.Block, block.ParameterBlock):
+    ID = 'rpi'
+
     def __init__(self, *args, device=None, options=None, **kwargs):
         super().__init__(*args, **kwargs)
 

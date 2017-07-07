@@ -8,7 +8,7 @@ import time
 log = logging.getLogger(__name__)
 
 
-class TeapotBlock(block.Block):
+class Teapot(block.Block):
     def __init__(self, name, **config):
         self.name = name
         self.config = {"address": "https://api.particle.io",

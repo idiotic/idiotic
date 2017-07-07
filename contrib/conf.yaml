@@ -18,36 +18,35 @@ modules:
     command: espeak --stdout | paplay
 blocks:
   zero:
-    type: Value
-    kind: Float
+    type: value.float
     initial: 0.0
 
 {% macro temperature(pi, room) %}
   {{ room }}_dht:
-    type: DHT
+    type: dht.dht
     pin: 24
     interval: 5
     require:
-      - host.NodeName: {{ pi }}
+      - host.node_name: {{ pi }}
   {{ room }}_temp_nonzero:
-    type: NotEqualBlock
+    type: logic.not_equal
     inputs:
       a: {{ room }}_dht.temperature
       b: zero
   {{ room }}_hum_nonzero:
-    type: NotEqualBlock
+    type: logic.not_equal
     inputs:
       a: {{ room }}_dht.humidity
       b: zero
   {{ room }}_temp:
-    type: OutputIfBlock
+    type: logic.output_if
     inputs:
       condition: {{ room }}_temp_nonzero
       value: {{ room }}_dht.temperature
     input_to:
       - average_temp.{{ room }}
   {{ room }}_humidity:
-    type: OutputIfBlock
+    type: logic.output_if
     inputs:
       condition: {{ room }}_hum_nonzero
       value: {{ room }}_dht.humidity
@@ -57,12 +56,12 @@ blocks:
 
 {% macro motion(pi, room, pin=27, optional=False) %}
   {{ room }}_motion_{{ pin }}:
-    type: RPiGPIO
+    type: gpio.rpi_gpio
     device: MotionSensor
     options:
       pin: {{ pin }}
     require:
-      - host.NodeName: {{ pi }}
+      - host.node_name: {{ pi }}
     optional: {{ optional }}
 {% endmacro %}
 
@@ -77,12 +76,12 @@ blocks:
 {{ motion('scootaloo', 'hall', pin=17, optional=True) }}
 
   bathroom_door:
-    type: RPiGPIO
+    type: gpio.rpi
     device: MotionSensor
     options:
       pin: 27
     require:
-      - host.NodeName: scootaloo
+      - host.node_name: scootaloo
     optional: True
 
   bathroom_announce:
@@ -103,10 +102,10 @@ blocks:
       hall_occupied.motion_hall
 
   hall_occupied:
-    type: Occupancy
+    type: occupancy.occupancy
 
 #  occupancy_announce:
-#    type: Speech
+#    type: speech.speech
 #    text: Hall occupied is {occupied} with probability {prob:.2f}
 #    parameters:
 #      - occupied
@@ -115,18 +114,18 @@ blocks:
 #      occupied: hall_occupied
 #      prob: hall_occupied.probability
 #    require:
-#      - host.NodeName: muffin
+#      - host.node_name: muffin
 
   average_temp:
-    type: AverageBlock
+    type: math.average
     initial: 0
     default: 0
   average_humidity:
-    type: AverageBlock
+    type: math.average
     initial: 0
     default: 0
   periodic_1:
-    type: RandomList
+    type: random.list
     period: 6
     items:
       - True
@@ -135,7 +134,7 @@ blocks:
 {% if annoying %}
 
   speech:
-    type: Speech
+    type: speech.speech
     text: It is {temperature:.1f} degrees and {humidity:.0f} percent humid
     parameters:
       - temperature
@@ -144,7 +143,7 @@ blocks:
       temperature: average_temp
       humidity: average_humidity
     require:
-      - host.NodeName: muffin
+      - host.node_name: muffin
 
   teakettle:
     address: 'https://api.particle.io'
@@ -154,17 +153,17 @@ blocks:
     inputs:
       temperature: 'random_temp'
       hold: 'random_hold'
-    type: TeapotBlock
+    type: teapot.teapot
   random_temp:
     period: 5
     min: 90
     max: 100
-    type: RandomFloatBlock
+    type: random.float
   random_hold:
     period: 5
     min: 60
     max: 100
-    type: RandomFloatBlock
+    type: random.float
   record_light:
     client_secret: "e749124ad386a5a35c0ab554a4f2c045"
     username: "dylan@whichard.com"
@@ -172,11 +171,11 @@ blocks:
     wink_name: "Corner Light"
     inputs:
       power: "random_power"
-    type: WinkDimmer
+    type: wink.dimmer
     require:
-      - host.NodeName: muffin
+      - host.node_name: muffin
   test:
-    type: HTTP
+    type: http.http
     url: http://vinyl.hackafe.net:5000/{power}/a/3
     skip_repeats: True
     parameters:
@@ -186,7 +185,7 @@ blocks:
     inputs:
       power: random_state
   stairs_lights:
-    type: HTTP
+    type: http.http
     method: post
     url: http://celestia.hackafe.net/put_saved_animation/{animation}
     parameters:
@@ -194,7 +193,7 @@ blocks:
     inputs:
       animation: light_pattern
   light_pattern:
-    type: RandomList
+    type: random.list
     period: 10
     items:
       - Rainbow
@@ -203,17 +202,17 @@ blocks:
       - Bluestrobe
       - Strobey
   random_state:
-    type: RandomList
+    type: random.list
     period: 20
     items:
       - "on"
       - "off"
   counter_lights:
-    type: X10
+    type: x10.x10
     code: A4
     inputs:
       power: random_power
   random_power:
-    type: RandomBoolBlock
+    type: random.bool
     period: 5
 {% endif %}
