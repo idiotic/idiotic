@@ -89,7 +89,7 @@ class Cluster:
 
         # FIXME there is a race condition here
         if self.block_owner(name):
-            log.debug("Block %s is already assigned to %S", name, self.block_owner(name))
+            log.debug("Block %s is already assigned to %s", name, self.block_owner(name))
             return
 
         eligible = sorted([(fit, node) for node, fit in fitnesses.items() if fit is not False])
