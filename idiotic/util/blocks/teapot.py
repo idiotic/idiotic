@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 class Teapot(block.Block):
     def __init__(self, name, **config):
+        super().__init__(name, **config)
         self.name = name
         self.config = {"address": "https://api.particle.io",
                        "path": "/v1/devices/",
@@ -21,7 +22,7 @@ class Teapot(block.Block):
         self.inputs = {"temperature": self.temperature,
                        "hold": self.hold
                       }
-        self.require(http.URLReachable(self.config['address']))
+        self.require(http.HostReachable('api.particle.io', 443))
         self.hold_start = 0
         self.hold_duration = 0
 

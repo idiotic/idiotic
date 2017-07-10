@@ -1,6 +1,7 @@
 from idiotic import resource
 from idiotic import config
 from idiotic import block
+from idiotic.util.resources import http
 import aiohttp
 import re
 
@@ -13,16 +14,17 @@ class InvalidCodeError(Exception):
 
 class X10(block.Block):
     def __init__(self, name, **params):
-        self.name = name
-        self.config = {
+        super().__init__(name, **params)
+        defaults = {
             "base_url": "http://localhost:5000",
             "code": "",
             "house": "",
             "item": "",
         }
 
-        self.config.update(config.config.get("modules", {}).get("x10", {}))
-        self.config.update(params)
+        defaults.update(config.config.get("modules", {}).get("x10", {}))
+        defaults.update(self.config)
+        self.config = defaults
 
         if self.config["code"]:
             self.code = self.config["code"].lower()
@@ -45,8 +47,7 @@ class X10(block.Block):
         else:
             raise InvalidCodeError("Code or house and item must be provided")
 
-        self.inputs = {}
-        self.resources = [resource.HTTPResource(self.config['base_url'])]
+        self.require(http.URLReachable(self.config['base_url']))
 
     async def _action(self, action):
         async with aiohttp.ClientSession() as client:

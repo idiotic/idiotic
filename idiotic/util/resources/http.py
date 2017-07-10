@@ -1,7 +1,36 @@
 from idiotic.resource import Resource
 
 import aiohttp
+import asyncio
+import logging
 import time
+
+log = logging.getLogger(__name__)
+
+
+class HostReachable(Resource):
+    def __init__(self, host, port=80):
+        super().__init__()
+        self.host = host
+        self.port = port
+
+    def describe(self):
+        return 'http.HostReachable/' + self.host + ':' + str(self.port)
+
+    async def fitness(self):
+        return True
+
+        try:
+            log.debug("Checking host...")
+            start = time.time()
+            reader, writer = await asyncio.open_connection(self.host, self.port)
+            log.debug("Connection opened!")
+            writer.close()
+            log.debug("Writer closed")
+            return -(time.time() - start) or -1e-6
+        except:
+            log.exception("Connection chck failed for %s:%d", self.host, self.port)
+            return False
 
 
 class URLReachable(Resource):

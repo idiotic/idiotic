@@ -6,56 +6,48 @@ from idiotic import node
 
 
 class Float(block.Block):
-    def __init__(self, name, **config):
-        self.name = name
-        self.config = {"period": 1,
-                       "min": 0,
-                       "max": 1
-                      }
-        self.config.update(config)
+    def __init__(self, name, period=1, min=0, max=1, **config):
+        super().__init__(name, **config)
 
-        self.inputs = {}
-        self.resources = []
+        self.period = period
+        self.min = min
+        self.max = max
 
     async def run(self):
-        await asyncio.sleep(self.config['period'])
-        val = random.random()*(self.config['max']-self.config['min'])+self.config['min']
+        await asyncio.sleep(self.period)
+        val = random.random()*(self.max-self.min)+self.min
         await self.output(val)
 
 
 class Bool(block.Block):
-    def __init__(self, name, **config):
-        self.name = name
-        self.config = {"period": 1
-                      }
-        self.config.update(config)
-        self.resources = []
+    def __init__(self, name, period=1, **config):
+        super().__init__(name, **config)
+
+        self.period = period
 
     async def run(self):
-        await asyncio.sleep(self.config['period'])
+        await asyncio.sleep(self.period)
         val = bool(random.getrandbits(1))
         await self.output(val)
 
 
 class Int(block.Block):
-    def __init__(self, name, **config):
-        self.name = name
-        self.config = {"period": 1,
-                       "min": 0,
-                       "max": 1
-                      }
-        self.config.update(config)
-        self.resources = []
+    def __init__(self, name, period=1, min=0, max=1, **config):
+        super().__init__(name, **config)
+
+        self.period = period
+        self.min = min
+        self.max = max
 
     async def run(self):
-        await asyncio.sleep(self.config['period'])
-        val = random.randrange(self.config['min'], self.config['max'])
+        await asyncio.sleep(self.period)
+        val = random.randrange(self.min, self.max)
         await self.output(val)
 
 
 class List(block.Block):
-    def __init__(self, name, period=1, items=None):
-        super().__init__(name)
+    def __init__(self, name, period=1, items=None, **config):
+        super().__init__(name, **config)
         self.period = period
         self.items = items or []
 

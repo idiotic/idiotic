@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class HTTP(block.Block):
     def __init__(self, name, url, method="GET", parameters=None, defaults=None, skip_repeats=False, format_data=True,
                  output=True, **options):
-        self.name = name
+        super().__init__(name, **options)
 
         self.url = url
         self.parameters = parameters or []

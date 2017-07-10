@@ -36,6 +36,7 @@ setup(
         'pysyncobj>=0.2.1',
         'PyYAML',
         'aiohttp',
+        'flask',
     ],
     data_files=[
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),

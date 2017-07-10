@@ -1,9 +1,6 @@
-import requests
 from idiotic import block
-from idiotic import resource
-from idiotic import node
+from idiotic.util.resources import http
 import asyncio
-import aiohttp
 
 
 class WinkDeviceNotFound(Exception):
@@ -12,24 +9,21 @@ class WinkDeviceNotFound(Exception):
 
 class Device(block.Block):
     def __init__(self, name, **config):
-        self.name = name
-        self.config = {"base_url": "https://winkapi.quirky.com",
-                       "client_id": "quirky_wink_android_app",
-                       "client_secret": "e749124ad386a5a35c0ab554a4f2c045",
-                       "username": "",
-                       "password": "",
-                       "wink_name": "",
-                       "wink_label": "",
-                       "wink_id": "",
-                      }
-        self.config.update(config)
+        super().__init__(name, **config)
+        self.config.setdefault('base_url', 'https://winkapi.quirky.com')
+        self.config.setdefault('client_id', 'quirky_wink_android_app')
+        self.config.setdefault('client_secret', 'e749124ad386a5a35c0ab554a4f2c045')
+        self.config.setdefault('username', '')
+        self.config.setdefault('password', '')
+        self.config.setdefault('wink_name', '')
+        self.config.setdefault('wink_label', '')
+        self.config.setdefault('wink_id', '')
 
         self.auth = None
         self.wink = None
         self.device = None
 
-        self.inputs = {}
-        self.resources = [resource.HTTPResource(self.config['base_url'])]
+        self.require(http.URLReachable(self.config['base_url']))
 
     async def run(self, *_, **__):
         import wink
@@ -59,6 +53,9 @@ class Toggle(Device):
 
     async def power(self, value):
         self.power_state = value
+
+        if not self.running:
+            return
 
         await asyncio.get_event_loop().run_in_executor(None, self.device.turn_on if value else self.device.turn_off)
 

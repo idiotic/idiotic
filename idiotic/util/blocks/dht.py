@@ -3,6 +3,7 @@ import asyncio
 import functools
 
 from idiotic.block import Block
+from idiotic.util.resources import module
 
 
 class DHT(Block):
@@ -18,6 +19,8 @@ class DHT(Block):
         self._sensor = None
         self._perform = None
         self._lock = asyncio.Lock()
+
+        self.require(module.Module('Adafruit_DHT'))
 
     async def run(self):
         import Adafruit_DHT
@@ -50,3 +53,18 @@ class DHT(Block):
             await self.output((humidity, temp))
             await self.output(temp, "temperature")
             await self.output(humidity, "humidity")
+
+
+class DHT11(DHT):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, sensor='DHT11', **kwargs)
+
+
+class DHT22(DHT):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, sensor='DHT22', **kwargs)
+
+
+class AM2302(DHT):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, sensor='AM2302', **kwargs)
