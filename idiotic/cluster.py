@@ -369,13 +369,23 @@ class Node:
         <html>
         <head><title>Cluster Status</title></head>
         <body>
+        <h1>Allocated Blocks</h1>
         <table>
         <thead><tr><th>Block</th><th>Owner</th><th>Resources</th></tr></thead>
         <tbody>"""
 
         for blk, owner in sorted(self.cluster.block_owners.items()):
             res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(blk, owner, len(self.blocks[blk].resources))
-        res += "</tbody></table></body></html>"
+        res += "</tbody></table>"
+
+        res += "<h1>Unallocated Blocks</h1>"
+        res += "<ul>"
+
+        unallocated = set(self.config.blocks.keys()) - set(self.cluster.block_owners.keys())
+        for blk in sorted(unallocated):
+            res += "<li>{}</li>".format(blk)
+        res += "</ul>"
+        res += "</body></html>"
 
         return web.Response(text=res, content_type='text/html')
 
