@@ -2,7 +2,6 @@ import asyncio
 import functools
 import json
 import logging
-import random
 
 import aiohttp
 from aiohttp import web
@@ -317,15 +316,13 @@ class Node:
         )
 
     async def run_blocks(self):
-        blacklist = set()
         while True:
             tasks = []
             for name, blk in self.blocks.items():
-                if self.cluster.block_owner(name) is None and name not in blacklist:
+                if self.cluster.block_owner(name) is None:
                     try:
                         self.cluster.assign_block(blk)
                     except UnassignableBlock as e:
-                        blacklist.add(name)
                         if blk.optional:
                             log.warning("Block left unassigned: %s", name)
                         else:
