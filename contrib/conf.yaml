@@ -16,6 +16,10 @@ modules:
     base_url: http://vinyl.hackafe.net:5000
   espeak:
     command: espeak --stdout | paplay
+  smartthings:
+    oauth_token: xxxxxxxx
+    endpoints_uri: https://graph.api.smartthings.com/api/smartapps/endpoints
+    location: Home
 blocks:
   zero:
     type: value.float

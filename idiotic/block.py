@@ -49,7 +49,7 @@ class Block:
             if idiotic.node.own_block(self.name):
                 await self.init_resources()
 
-            while idiotic.node.own_block(self.name) and self.check_resources():
+            while idiotic.node.own_block(self.name) and (await self.check_resources()):
                 await self.run()
 
         except KeyboardInterrupt:
@@ -71,8 +71,12 @@ class Block:
     async def run_resources(self):
         await asyncio.gather(*[asyncio.ensure_future(r.run()) for r in self.resources])
 
-    def check_resources(self) -> bool:
-        return all((r.available() for r in self.resources))
+    async def check_resources(self) -> bool:
+        for res in self.resources:
+            if not await res.available():
+                return False
+
+        return True
 
     async def output(self, data, *args):
         if not args:

@@ -139,6 +139,9 @@ class Cluster:
         for resource in block.resources:
             resource_fitnesses = self.resource_fitnesses(resource)
 
+            if not resource_fitnesses:
+                raise UnassignableBlock(block.name)
+
             max_fit = max(resource_fitnesses.values())
             min_fit = min(resource_fitnesses.values())
 
