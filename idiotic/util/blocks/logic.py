@@ -111,6 +111,21 @@ class OutputIf(block.Block):
             await self.output(self._value)
 
 
+class FlipFlop(block.Block):
+    """
+    Inverts its output each time it receives a truthy input.
+    """
+    def __init__(self, *args, initial=None, edge=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._value = initial
+        self._edge = edge
+
+    async def trigger(self, val):
+        if val == self._edge:
+            self._value = not self._value
+            self.output(self._value)
+
+
 class Ternary(block.Block):
     def __init__(self, *args, initial=None, **kwargs):
         super().__init__(*args, **kwargs)
