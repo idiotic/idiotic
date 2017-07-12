@@ -28,6 +28,12 @@ class Value(block.Block):
         self._value = self.coerce(val)
         await self.output(self._value)
 
+    async def run(self, *args, **kwargs):
+        if self._value is not None:
+            await self.output(self._value)
+
+        await super().run()
+
 
 class Int(Value):
     def __init__(self, name, **kwargs):
