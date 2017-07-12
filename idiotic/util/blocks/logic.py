@@ -118,10 +118,10 @@ class FlipFlop(block.Block):
     def __init__(self, *args, initial=None, edge=True, **kwargs):
         super().__init__(*args, **kwargs)
         self._value = initial
-        self._edge = edge
+        self._edge = bool(edge)
 
     async def trigger(self, val):
-        if val == self._edge:
+        if bool(val) == self._edge:
             self._value = not self._value
             self.output(self._value)
 
