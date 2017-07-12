@@ -154,10 +154,10 @@ class Switch(Device):
     async def command(self, *args, **kwargs):
         await super().command(*args, subpath='switches', **kwargs)
 
-    async def on(self):
+    async def on(self, *_):
         await self.command('on')
 
-    async def off(self):
+    async def off(self, *_):
         await self.command('off')
 
     async def power(self, value):
