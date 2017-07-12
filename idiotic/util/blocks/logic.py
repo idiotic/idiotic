@@ -123,7 +123,7 @@ class FlipFlop(block.Block):
     async def trigger(self, val):
         if bool(val) == self._edge:
             self._value = not self._value
-            self.output(self._value)
+            await self.output(self._value)
 
 
 class Ternary(block.Block):
