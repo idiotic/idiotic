@@ -14,7 +14,7 @@ class Module(Resource):
     def describe(self):
         return 'module.Module/' + ','.join(sorted(self.modules))
 
-    def fitness(self):
+    async def fitness(self):
         try:
             for mod in self.modules:
                 importlib.import_module(mod)
