@@ -40,7 +40,7 @@ LED_RAINBOW_MODES = 7
 CONFIGURE = 8
 DEEP_SLEEP = 9
 
-SCAN_INTERVAL = 600
+SCAN_INTERVAL = 30
 WIFI_INTERVAL = 10000
 
 
@@ -218,7 +218,7 @@ class BadgeServer(Block):
                         debug(badge_id, 'no gpio received and game map is', self.game_map[badge_id])
                         await self.set_lights(badge_id, *self.default_color)
 
-                elif msg_type == WIFI_UPDATE_REPLY and False:
+                elif msg_type == WIFI_UPDATE_REPLY:
                     log.debug("Got wifi reply: {}".format(packet))
                     scan_id = int.from_bytes(packet[0:4], 'big')
                     scan_len = packet[4]
@@ -259,6 +259,7 @@ class BadgeServer(Block):
     def scan_complete(self, badge_id, scan_id):
         log.debug("Sending off scan with #{} SSIDs".format(len(self.wifi_scans[scan_id])))
         if len(self.wifi_scans[scan_id]):
-            self.publish(u'me.magbadge.badge.scan', badge_id, [{"mac": format_mac(mac), "rssi": rssi} for mac, rssi in self.wifi_scans[scan_id]])
+            #self.publish(u'me.magbadge.badge.scan', badge_id, [{"mac": format_mac(mac), "rssi": rssi} for mac, rssi in self.wifi_scans[scan_id]])
+            log.debug([{"mac": format_mac(mac), "rssi": rssi} for mac, rssi in self.wifi_scans[scan_id]])
         del self.wifi_scans[scan_id]
 ''
