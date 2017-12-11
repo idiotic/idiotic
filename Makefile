@@ -22,8 +22,8 @@ clean:
 
 rpm: venv
 	venv/bin/python setup.py bdist_rpm --release $(shell git rev-list $(shell git tag)..HEAD --count)
-	
-			
+
+
 deps_rpm: venv
 	venv/bin/python contrib/build-deps.py
 

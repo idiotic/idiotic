@@ -5,12 +5,11 @@ def read_license():
     with open("LICENSE") as f:
         return f.read()
 
-data_files = [
-    ('/etc/idiotic/', ['contrib/conf.yaml']),
-]
+data_files = []
 
 if 'bdist_rpm' in sys.argv:
     data_files.extend([
+        ('/etc/idiotic/', ['contrib/conf.yaml']),
         ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
     ])
 
