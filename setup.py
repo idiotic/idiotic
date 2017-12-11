@@ -48,6 +48,7 @@ setup(
         'flask',
         'python-nest',
         'requests',
+        'astral',
     ],
     data_files=data_files,
     entry_points={
