@@ -41,7 +41,7 @@ class Int(block.Block):
 
     async def run(self):
         await asyncio.sleep(self.period)
-        val = random.randrange(self.min, self.max)
+        val = random.randint(self.min, self.max)
         await self.output(val)
 
 
