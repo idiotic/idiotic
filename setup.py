@@ -1,8 +1,18 @@
+import sys
 from setuptools import setup, find_packages
 
 def read_license():
     with open("LICENSE") as f:
         return f.read()
+
+data_files = [
+    ('/etc/idiotic/', ['contrib/conf.yaml']),
+]
+
+if 'bdist_rpm' in sys.argv:
+    data_files.extend([
+        ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
+    ])
 
 setup(
     name='idiotic',
@@ -37,11 +47,10 @@ setup(
         'PyYAML',
         'aiohttp',
         'flask',
+        'python-nest',
+        'requests',
     ],
-    data_files=[
-        ('/usr/lib/systemd/system/', ['contrib/idiotic.service']),
-        ('/etc/idiotic/', ['contrib/conf.yaml']),
-    ],
+    data_files=data_files,
     entry_points={
         'console_scripts': [
             'idiotic=idiotic.__main__:main',
