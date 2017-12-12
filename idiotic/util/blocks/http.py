@@ -1,5 +1,7 @@
 import logging
 
+from urllib.parse import urlparse, urlunparse
+
 from idiotic import block
 from idiotic.util.resources import http
 import aiohttp
@@ -43,6 +45,9 @@ class HTTP(block.Block):
         else:
             self.outputter = None
 
+        parsed_url = urlparse(url, scheme='http')
+        url_root = urlunparse((parsed_url[0], parsed_url[1], '', '', '', ''))
+
         #: Options
         self.options = options
 
@@ -55,7 +60,7 @@ class HTTP(block.Block):
             setattr(self, name, types.MethodType(setparam, self))
 
         self.inputs = {}
-        self.resources = [http.URLReachable(self.url)]
+        self.resources = [http.URLReachable(url_root)]
 
     async def _setparam(self, name, value):
         if not self.skip_repeats or value != self._param_dict.get(name):
