@@ -256,3 +256,6 @@ class Thermostat(Device):
 
     async def eco_temperature(self, val):
         await self._set_prop('eco_temperature', val)
+
+    async def temperature_scale(self, val):
+        await self._set_prop('temperature_scale', val)
