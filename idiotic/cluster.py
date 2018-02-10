@@ -6,10 +6,10 @@ import logging
 import aiohttp
 from aiohttp import web
 from pysyncobj import SyncObj, replicated
+import collections
 
 from idiotic import block
 from idiotic import config
-from idiotic import util
 
 log = logging.getLogger(__name__)
 
@@ -18,54 +18,89 @@ class UnassignableBlock(Exception):
     pass
 
 
-class KVStorage(SyncObj):
-    def __init__(self, selfAddress, partnerAddrs):
-        super(KVStorage, self).__init__(selfAddress, partnerAddrs)
-        self.__data = {}
-
-    @replicated
-    def set(self, key, value):
-        self.__data[key] = value
-
-    @replicated
-    def pop(self, key):
-        return self.__data.pop(key)
-
-    def delete(self, key):
-        self.pop(key)
-
-    def get(self, key, default=None):
-        return self.__data.get(key, default)
-
-    def __setitem__(self, key, value):
-        return self.set(key, value)
+class FrozenDict(collections.Mapping):
+    def __init__(self, data):
+        self._data = data
 
     def __getitem__(self, key):
-        return self.get(key)
+        return self._data[key]
 
-    def __delitem__(self, key):
-        self.delete(key)
+    def __len__(self):
+        return len(self._data)
 
-    def __str__(self):
-        return str(self.__data)
+    def __iter__(self):
+        return iter(self._data)
+
+
+class KVStorage(SyncObj):
+    __owners = {}
+    __resources = {}
+
+    def __init__(self, self_address, partner_addrs):
+        super(KVStorage, self).__init__(self_address, partner_addrs)
+
+    @replicated
+    def set_block_owner(self, block_id, owner):
+        self.__owners[block_id] = owner
+
+    def find_block_owner(self, block_id):
+        return self.__owners.get(block_id, None)
+
+    @property
+    def block_owners(self):
+        return FrozenDict(self.__owners)
+
+    @replicated
+    def set_resource_fitness(self, resource, node, result):
+        self.__resources[(resource, node)] = result
+
+    def resource_fitness(self, resource, node):
+        return self.__resources.get((resource, node), 0)
+
+    @property
+    def resources(self):
+        return FrozenDict(self.__resources)
+
+
+class LocalKVStorage:
+    __owners = {}
+    __resources = {}
+
+    def __init__(self):
+        pass
+
+    def set_block_owner(self, block_id, owner):
+        self.__owners[block_id] = owner
+
+    def find_block_owner(self, block_id):
+        return self.__owners.get(block_id, None)
+
+    def block_owners(self):
+        return FrozenDict(self.__owners)
+
+    def set_resource_fitness(self, resource, node, result):
+        self.__resources[(resource, node)] = result
+
+    def resource_fitness(self, resource, node):
+        return self.__resources.get((resource, node), 0)
+
+    def resources(self):
+        return FrozenDict(self.__resources)
 
 
 class Cluster:
     def __init__(self, configuration: config.Config):
         if len(configuration.nodes) == 1:
-            self.shared_data = {}
+            self.shared_data = LocalKVStorage
             self.single_node = True
         else:
             self.single_node = False
-            self.shared_data = util.NestDict(KVStorage(
+            self.shared_data = KVStorage(
                 '{}:{}'.format(configuration.cluster_host, configuration.cluster_port),
                 ['{}:{}'.format(h, p) for h, p in configuration.connect_hosts()],
-            ))
+            )
         log.info("Listening for cluster on %s:%s", configuration.cluster_host, configuration.cluster_port)
         log.debug("Connecting to %s", list(configuration.connect_hosts()))
-
-        self.shared_data["block_owners"] = {}
-        self.shared_data["resources"] = {}
 
         self.config = configuration
 
@@ -74,13 +109,13 @@ class Cluster:
 
     @property
     def block_owners(self):
-        return self.shared_data["block_owners"]
+        return self.shared_data.block_owners
 
     def block_owner(self, name):
-        return self.block_owners.get(name, None)
+        return self.shared_data.find_block_owner(name)
 
     def set_block_owner(self, name, owner):
-        self.block_owners[name] = owner
+        self.shared_data.set_block_owner(name, owner)
 
     def _assign_block(self, name, fitnesses):
         if not self.ready():
@@ -102,27 +137,26 @@ class Cluster:
 
     @property
     def resources(self):
-        return self.shared_data["resources"]
+        return self.shared_data.resources
 
     def set_resource_fitness(self, resource, fitness):
-        desc = resource.describe()
-
-        if desc not in self.resources:
-            self.resources[desc] = {}
-
-        self.resources[desc][self.config.nodename] = fitness
+        log.debug('Setting fitness for {} on node {}: {}'.format(resource.describe(), self.config.nodename, fitness))
+        self.shared_data.set_resource_fitness(resource.describe(), self.config.nodename, fitness)
 
     def resource_checked_here(self, resource):
-        return self.config.nodename in self.resources.get(resource.describe(), {})
+        return (resource.describe(), self.config.nodename) in self.resources
 
     def resource_checked_all(self, resource):
-        return len(self.resources.get(resource.describe(), {})) == len(self.config.nodes)
+        resources = self.shared_data.resources
+
+        return all(((resource.describe(), node) in resources for node in self.config.nodes.keys()))
 
     def resource_fitnesses(self, resource):
-        return dict(self.resources.get(resource.describe(), {}))
+        resources = self.shared_data.resources
+        return {node: resources.get((resource.describe(), node), 0) for node in self.config.nodes.keys()}
 
     def resource_targets(self, resource):
-        return {k: v for k, v in self.resource_fitnesses(resource).items() if v}
+        return {k: v for k, v in self.resource_fitnesses(resource.describe()).items() if v}
 
     def block_resource_fitnesses(self, block: block.Block):
         """Returns a map of nodename to average fitness value for this block.
