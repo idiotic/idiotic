@@ -3,7 +3,7 @@ import functools
 import asyncio
 
 
-class RPiGPIO(block.Block, block.ParameterBlock):
+class PiGpio(block.Block, block.ParameterBlock):
     ID = 'rpi'
 
     def __init__(self, *args, device=None, options=None, **kwargs):
