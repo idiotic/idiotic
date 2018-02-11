@@ -155,6 +155,7 @@ class ZoneMinderSql(resource.Resource):
 
     async def fitness(self):
         def do_check():
+            conn = None
             try:
                 conn = self.engine.connect()
 
