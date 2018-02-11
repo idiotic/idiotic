@@ -147,9 +147,14 @@ class Cluster:
         return (resource.describe(), self.config.nodename) in self.resources
 
     def resource_checked_all(self, resource):
-        resources = self.shared_data.resources
+        for node in self.config.nodes.keys():
+            checked = (resource.describe(), node) in self.resources
+            log.debug("Resource {} checked on node {}: {}".format(resource.describe(), node, checked))
 
-        return all(((resource.describe(), node) in resources for node in self.config.nodes.keys()))
+            if not checked:
+                return False
+
+        return True
 
     def resource_fitnesses(self, resource):
         resources = self.shared_data.resources
