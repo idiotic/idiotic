@@ -126,12 +126,19 @@ class ZoneMinderSql(resource.Resource):
 
         return cls.SERVERS['zoneminder.ZoneMinderSql/' + database]
 
+    @property
+    def engine(self):
+        if not self._engine:
+            self._engine = create_engine(self._database, echo=False, isolation_level="READ_UNCOMMITTED")
+
+        return self._engine
+
     def __init__(self, database, **options):
         super().__init__()
 
         self.update_interval = options.get('update_interval', 10)
 
-        self._engine = create_engine(database, echo=False, isolation_level="READ_UNCOMMITTED")
+        self._engine = None
         self._database = database
         self._conn = None
         self.last_start = datetime.datetime.now() - datetime.timedelta(seconds=self.update_interval)
@@ -149,7 +156,7 @@ class ZoneMinderSql(resource.Resource):
     async def fitness(self):
         def do_check():
             try:
-                conn = self._engine.connect()
+                conn = self.engine.connect()
 
                 monitor_names = set()
                 result = conn.execute("SELECT `Name` from `Monitors`")
@@ -180,7 +187,7 @@ class ZoneMinderSql(resource.Resource):
         self._zones[monitor][zone] = block
 
     def _connect_sync(self):
-        self._conn = self._engine.connect()
+        self._conn = self.engine.connect()
         return self._conn
 
     def _new_events_sync(self):
