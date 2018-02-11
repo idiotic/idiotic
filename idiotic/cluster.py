@@ -397,6 +397,7 @@ class Node:
                                 log.debug(await request.json())
                     except:
                         log.exception("Exception occurred in run_dispatch()")
+                        self.events_out.put_nowait(event)
 
     async def rpc_endpoint(self, request: aiohttp.web.Request):
         self.events_in.put_nowait(await request.json())
