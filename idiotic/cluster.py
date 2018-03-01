@@ -91,7 +91,7 @@ class LocalKVStorage:
 class Cluster:
     def __init__(self, configuration: config.Config):
         if len(configuration.nodes) == 1:
-            self.shared_data = LocalKVStorage
+            self.shared_data = LocalKVStorage()
             self.single_node = True
         else:
             self.single_node = False
