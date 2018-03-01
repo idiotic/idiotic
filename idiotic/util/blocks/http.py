@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 class HTTP(block.Block):
     def __init__(self, name, url, method="GET", parameters=None, defaults=None, skip_repeats=False, format_data=True,
-                 output=True, data=None, **options):
+                 output=True, data=None, json=False, **options):
         super().__init__(name, **options)
 
         self.url = url
@@ -23,6 +23,8 @@ class HTTP(block.Block):
         self.method = method
 
         self.data = data or {}
+        self.headers = {}
+        self.json = json
         self.defaults = defaults or {}
         self.skip_repeats = skip_repeats
         self.format_data = format_data
@@ -79,10 +81,19 @@ class HTTP(block.Block):
         while True:
             try:
                 async with aiohttp.ClientSession() as client:
+                    headers = dict(self.headers)
+                    data = self.formatted_data()
+
+                    if self.json:
+                        data = json.dumps(data)
+                        if 'content-type' not in headers:
+                            headers['content-type'] = 'application/json'
+
                     async with client.request(
                             self.method,
                             self.url.format(**self._param_dict),
-                            data=self.formatted_data(),
+                            data=data,
+                            headers=headers,
                     ) as request:
                         res = await request.text()
 
