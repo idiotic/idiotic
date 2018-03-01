@@ -75,6 +75,7 @@ class LocalKVStorage:
     def find_block_owner(self, block_id):
         return self.__owners.get(block_id, None)
 
+    @property
     def block_owners(self):
         return FrozenDict(self.__owners)
 
@@ -84,6 +85,7 @@ class LocalKVStorage:
     def resource_fitness(self, resource, node):
         return self.__resources.get((resource, node), 0)
 
+    @property
     def resources(self):
         return FrozenDict(self.__resources)
 
