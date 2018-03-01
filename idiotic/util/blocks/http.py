@@ -15,14 +15,14 @@ log = logging.getLogger(__name__)
 
 class HTTP(block.Block):
     def __init__(self, name, url, method="GET", parameters=None, defaults=None, skip_repeats=False, format_data=True,
-                 output=True, **options):
+                 output=True, data=None, **options):
         super().__init__(name, **options)
 
         self.url = url
         self.parameters = parameters or []
         self.method = method
 
-        self.data = {}
+        self.data = data or {}
         self.defaults = defaults or {}
         self.skip_repeats = skip_repeats
         self.format_data = format_data
